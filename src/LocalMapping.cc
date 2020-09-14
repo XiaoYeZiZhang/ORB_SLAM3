@@ -244,7 +244,11 @@ void LocalMapping::Run()
             f_lm << t_KF_cull << ",";
             f_lm << setprecision(0) << num_FixedKF_BA << "\n";*/
             //--
-
+            // for objectRecognition
+            if(mpCurrentKeyFrame) {
+                cv::imshow("keyframe: ", mpCurrentKeyFrame->imgLeft);
+                cv::waitKey(9);
+            }
         }
         else if(Stop() && !mbBadImu)
         {

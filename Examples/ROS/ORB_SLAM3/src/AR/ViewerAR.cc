@@ -131,6 +131,8 @@ void ViewerAR::Run()
         // Add text to image
         PrintStatus(status,bLocalizationMode,im);
 
+        cv::cvtColor(im, im, CV_GRAY2RGB);
+
         if(menu_drawpoints)
             DrawTrackedPoints(vKeys,vMPs,im);
 
