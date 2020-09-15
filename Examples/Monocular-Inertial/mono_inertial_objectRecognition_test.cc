@@ -10,15 +10,22 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <System.h>
-#include "ImuTypes.h"
+#include <include/ORBSLAM3/System.h>
+#include "include/ORBSLAM3/ImuTypes.h"
+#include "ObjectRecognition/Utility/Camera.h"
+
+//#define SCANNER;
 
 using namespace std;
 class TestViewer {
 public:
-    ORB_SLAM3::System *InitializeSLAM(int argc, char *argv[]);
-    bool RunSLAM(ORB_SLAM3::System *&SLAM, int argc, char *argv[]);
-
+    bool InitializeSLAM(int argc, char *argv[]);
+    bool InitializeObjectRecognition();
+    bool RunSLAM(int argc, char *argv[]);
+    ORB_SLAM3::System* GetSystem() {
+        return SLAM;
+    }
+    bool SaveMappointFor3DObject(const std::string save_path);
 private:
     void LoadImages(
         const string &strImagePath, const string &strPathTimes,
@@ -38,7 +45,28 @@ private:
     double ttrack_tot = 0;
     bool bFileName;
     vector<float> vTimesTrack;
+    ORB_SLAM3::System *SLAM;
 };
+
+bool TestViewer::InitializeObjectRecognition() {
+    return true;
+}
+
+bool TestViewer::SaveMappointFor3DObject(const std::string save_path) {
+    char *buffer = NULL;
+    int buffer_size = 0;
+
+    std::ofstream out(save_path, std::ios::out | std::ios::binary);
+    if (out.is_open()) {
+        out.write(buffer, buffer_size);
+        delete[] buffer;
+    } else {
+        delete[] buffer;
+        std::cout << "Error opening the pointCloud file!";
+        return false;
+    }
+    return SLAM->PackAtlasToMemoryFor3DObject(&buffer, buffer_size);
+}
 
 void TestViewer::LoadImages(
     const string &strImagePath, const string &strPathTimes,
@@ -100,7 +128,7 @@ void TestViewer::LoadIMU(
     }
 }
 
-ORB_SLAM3::System *TestViewer::InitializeSLAM(int argc, char *argv[]) {
+bool TestViewer::InitializeSLAM(int argc, char *argv[]) {
     num_seq = (argc - 3) / 2;
     cout << "num_seq = " << num_seq << endl;
     bFileName = (((argc - 3) % 2) == 1);
@@ -147,7 +175,7 @@ ORB_SLAM3::System *TestViewer::InitializeSLAM(int argc, char *argv[]) {
         if ((nImages[seq] <= 0) || (nImu[seq] <= 0)) {
             cerr << "ERROR: Failed to load images or IMU for sequence" << seq
                  << endl;
-            return NULL;
+            return false;
         }
 
         // Find first imu to be considered, supposing imu measurements start
@@ -168,12 +196,24 @@ ORB_SLAM3::System *TestViewer::InitializeSLAM(int argc, char *argv[]) {
 
     // Create SLAM system. It initializes all system threads and gets ready to
     // process frames.
-    ORB_SLAM3::System *SLAM = new ORB_SLAM3::System(
+
+    cv::FileStorage fsSettings(argv[2], cv::FileStorage::READ);
+    double fx = fsSettings["Camera.fx"];
+    double fy = fsSettings["Camera.fy"];
+    double cx = fsSettings["Camera.cx"];
+    double cy = fsSettings["Camera.cy"];
+    int width = fsSettings["Camera.width"];
+    int height = fsSettings["Camera.height"];
+
+    ObjRecognition::CameraIntrinsic::GetInstance().SetParameters(
+        fx, fy, cx, cy, width, height);
+
+    SLAM = new ORB_SLAM3::System(
         argv[1], argv[2], ORB_SLAM3::System::IMU_MONOCULAR, true);
-    return SLAM;
+    return true;
 }
 
-bool TestViewer::RunSLAM(ORB_SLAM3::System *&SLAM, int argc, char *argv[]) {
+bool TestViewer::RunSLAM(int argc, char *argv[]) {
     int proccIm = 0;
     for (int seq = 0; seq < num_seq; seq++) {
 
@@ -181,6 +221,7 @@ bool TestViewer::RunSLAM(ORB_SLAM3::System *&SLAM, int argc, char *argv[]) {
         cv::Mat im;
         vector<ORB_SLAM3::IMU::Point> vImuMeas;
         proccIm = 0;
+        nImages[seq] = 20;
         for (int ni = 0; ni < nImages[seq]; ni++, proccIm++) {
             // Read image from file
             im = cv::imread(
@@ -264,6 +305,10 @@ bool TestViewer::RunSLAM(ORB_SLAM3::System *&SLAM, int argc, char *argv[]) {
         }
     }
 
+
+
+
+
     // Stop all threads
     SLAM->Shutdown();
 
@@ -295,12 +340,26 @@ int main(int argc, char *argv[]) {
 
     TestViewer testViewer;
 
-    ORB_SLAM3::System *SLAM = testViewer.InitializeSLAM(argc, argv);
+    bool initial_slam_result = testViewer.InitializeSLAM(argc, argv);
 
-    if (SLAM) {
-        testViewer.RunSLAM(SLAM, argc, argv);
+    if(!initial_slam_result) {
+        std::cout << "slam initialize fail!" << std::endl;
+        return 0;
     }
 
-    delete SLAM;
+    bool initialize_objectRecognition_result = testViewer.InitializeObjectRecognition();
+    if(!initialize_objectRecognition_result) {
+        std::cout << "objectRecognition initialize fail!" << std::endl;
+        return 0;
+    }
+
+    testViewer.RunSLAM(argc, argv);
+
+#ifdef SCANNER
+        std::string mappoint_save_path = "/home/zhangye/data/ObjectRecognition/shoe.bin";
+        if(testViewer.SaveMappointFor3DObject(mappoint_save_path)) {
+            std::cout << "save mappoint for 3dobject success!";
+        }
+#endif
     return 0;
 }

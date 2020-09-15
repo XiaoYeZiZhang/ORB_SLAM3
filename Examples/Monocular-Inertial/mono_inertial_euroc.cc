@@ -28,8 +28,8 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <System.h>
-#include "ImuTypes.h"
+#include <include/ORBSLAM3/System.h>
+#include "include/ORBSLAM3/ImuTypes.h"
 
 using namespace std;
 

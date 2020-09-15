@@ -33,7 +33,7 @@
 
 #include "GeometricCamera.h"
 
-#include "TwoViewReconstruction.h"
+#include "include/ORBSLAM3/TwoViewReconstruction.h"
 
 namespace ORB_SLAM3 {
 class Pinhole : public GeometricCamera {
