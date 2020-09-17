@@ -4,7 +4,12 @@
 
 #ifndef ORB_SLAM3_OBJECTRECOGNITIONSYSTEM_H
 #define ORB_SLAM3_OBJECTRECOGNITIONSYSTEM_H
-#include "include/ObjectRecognition/Utility/Thread/ThreadBase.h"
+#include "Tracker/PointCloudTracker.h"
+#include "Detector/PointCloudDetector.h"
+#include "Struct/PointCloudObject.h"
+#include "Detector/DetectorThread.h"
+#include "Tracker/TrackerThread.h"
+#include "Utility/Thread/ThreadBase.h"
 namespace ObjRecognition {
 
 class ObjRecogThread : public Common::ThreadBase {
@@ -14,7 +19,7 @@ public:
 
     int Init();
 
-    /*int SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);
+    /*int SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);*/
     int SetModel(const std::shared_ptr<Object> &object);
 
     void PushUnProcessedFrame(
@@ -22,9 +27,10 @@ public:
 
     void GetResult(
         FrameIndex &frmIndex, double &timeStamp, ObjRecogState &state,
-        Mat3d &R_cam, Vec3d &t_cam, Mat3d &R_obj, Vec3d &t_obj);*/
+        Eigen::Matrix3d &R_cam, Eigen::Vector3d &t_cam, Eigen::Matrix3d &R_obj,
+        Eigen::Vector3d &t_obj);
 
-    // int GetInfo(std::string &info);
+    int GetInfo(std::string &info);
 
 protected:
     enum { DATA_TYPE_UNPROCESSED_FRAME = 0 };
@@ -36,21 +42,16 @@ protected:
 
 private:
     /*std::shared_ptr<DBoW3::Vocabulary> voc_;
+     */
+    std::shared_ptr<ObjRecognition::Object> object_;
 
-    std::shared_ptr<STObjRecognition::Object> object_;
+    ObjRecognition::DetectorThread detector_thread_;
+    ObjRecognition::TrackerThread tracker_thread_;
 
-    STObjRecognition::DetectorThread detector_thread_;
-    STObjRecognition::TrackerThread tracker_thread_;
-
-    std::shared_ptr<STObjRecognition::PointCloudObjDetector>
+    std::shared_ptr<ObjRecognition::PointCloudObjDetector>
         pointcloudobj_detector_;
-    std::shared_ptr<STObjRecognition::PointCloudObjTracker>
+    std::shared_ptr<ObjRecognition::PointCloudObjTracker>
         pointcloudobj_tracker_;
-
-    std::shared_ptr<STObjRecognition::OpticalFlowObjDetector>
-        opticalFlowobj_detector_;
-    std::shared_ptr<STObjRecognition::OpticalFlowObjTracker>
-        opticalFlowobj_tracker_;*/
 
     std::string info_;
 
@@ -58,6 +59,6 @@ private:
 
     std::mutex mMutexInfoBuffer;
 
-}; // namespace STObjRecognition
+}; // namespace ObjRecognition
 } // namespace ObjRecognition
 #endif // ORB_SLAM3_OBJECTRECOGNITIONSYSTEM_H

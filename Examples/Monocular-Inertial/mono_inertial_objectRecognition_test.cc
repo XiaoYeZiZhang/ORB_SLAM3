@@ -3,24 +3,25 @@
 //
 #include <iostream>
 #include <algorithm>
-#include <fstream>
 #include <chrono>
 #include <ctime>
-#include <sstream>
-
 #include <opencv2/core/core.hpp>
-
-#include <include/ORBSLAM3/System.h>
-#include "include/ORBSLAM3/ImuTypes.h"
-#include "ObjectRecognition/Utility/Camera.h"
+#include <Eigen/Dense>
+#include "ORBSLAM3/System.h"
+#include "Utility/GlobalSummary.h"
+#include "Utility/FileIO.h"
+#include "ORBSLAM3/ImuTypes.h"
+#include "Utility/Camera.h"
+#include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
 
 //#define SCANNER;
+#define OBJECTRECOGNITION;
 
 using namespace std;
 class TestViewer {
 public:
-    bool InitializeSLAM(int argc, char *argv[]);
-    bool InitializeObjectRecognition();
+    bool InitSLAM(int argc, char **argv);
+    bool InitObjectRecognition();
     bool RunSLAM(int argc, char *argv[]);
     ORB_SLAM3::System* GetSystem() {
         return SLAM;
@@ -33,7 +34,12 @@ private:
     void LoadIMU(
         const string &strImuPath, vector<double> &vTimeStamps,
         vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro);
+    bool SaveResultInit();
+    void ObjectResultParse(const ObjRecognition::ObjRecogResult &result);
+    void SaveObjRecogResult();
 
+
+    std::string m_result_dir;
     vector<vector<string>> vstrImageFilenames;
     vector<vector<double>> vTimestampsCam;
     vector<vector<cv::Point3f>> vAcc, vGyro;
@@ -46,26 +52,85 @@ private:
     bool bFileName;
     vector<float> vTimesTrack;
     ORB_SLAM3::System *SLAM;
+
+    // 3d object
+    std::shared_ptr<ObjRecognition::Object> m_pointCloud =
+        std::make_shared<ObjRecognition::Object>(0);
+    std::string camera_pose_result_file_;
+    std::string object_pose_result_file_;
+    std::ofstream camera_pose_result_stream_;
+    std::ofstream object_pose_result_stream_;
+    ObjRecognition::ObjRecogResult m_objrecog_result;
+    Eigen::Matrix<double, 3, 3> m_Row = Eigen::Matrix<double, 3, 3>::Identity();
+    Eigen::Matrix<double, 3, 1> m_Tow = Eigen::Matrix<double, 3, 1>::Zero();
+    std::string objrecog_info_str;
+
 };
 
-bool TestViewer::InitializeObjectRecognition() {
+bool TestViewer::SaveResultInit() {
+    //STObjRecognition::GlobalSummary::SetDatasetPath(m_dataset_dir);
+    m_result_dir = m_result_dir + "/" + GetTimeStampString();
+    if (!CreateFolder(m_result_dir)) {
+        LOG(INFO) << "can't create the result dir" << m_result_dir;
+    }
+
+    camera_pose_result_file_ = m_result_dir + "/camera_pose_result.txt";
+    object_pose_result_file_ = m_result_dir + "/object_pose_result.txt";
+
+    camera_pose_result_stream_.open(camera_pose_result_file_);
+    object_pose_result_stream_.open(object_pose_result_file_);
+
+    if (!camera_pose_result_stream_.is_open()) {
+        LOG(WARNING) << "camera pose result can't open "
+                     << camera_pose_result_file_;
+        return false;
+    }
+
+    if (!object_pose_result_stream_.is_open()) {
+        LOG(WARNING) << "object pose result can't open "
+                     << object_pose_result_file_;
+        return false;
+    }
+    return true;
+}
+
+bool TestViewer::InitObjectRecognition() {
+    ObjRecognitionExd::ObjRecongManager::Instance().CreateWithConfig();
+
+    // set slam data callback
+
+    std::string cloud_point_model_dir = "/home/zhangye/data/ObjectRecognition/shoe.bin";
+    int model_id = 0;
+    char *cloud_point_model_buffer = nullptr;
+    int cloud_point_model_buf_size = 0;
+    LoadPointCloudModel(cloud_point_model_dir, m_pointCloud);
+    ReadPointCloudModelToBuffer(
+        cloud_point_model_dir, &cloud_point_model_buffer,
+        cloud_point_model_buf_size);
+    ObjRecognitionExd::ObjRecongManager::Instance().LoadModel(model_id,
+         cloud_point_model_buffer, cloud_point_model_buf_size);
+    SaveResultInit();
     return true;
 }
 
 bool TestViewer::SaveMappointFor3DObject(const std::string save_path) {
     char *buffer = NULL;
     int buffer_size = 0;
-
-    std::ofstream out(save_path, std::ios::out | std::ios::binary);
-    if (out.is_open()) {
-        out.write(buffer, buffer_size);
-        delete[] buffer;
-    } else {
-        delete[] buffer;
-        std::cout << "Error opening the pointCloud file!";
-        return false;
+    bool save_result = SLAM->PackAtlasToMemoryFor3DObject(&buffer, buffer_size);
+    if(save_result) {
+        std::ofstream out(save_path, std::ios::out | std::ios::binary);
+        if (out.is_open()) {
+            out.write(buffer, buffer_size);
+            delete[] buffer;
+            return true;
+        } else {
+            delete[] buffer;
+            std::cout << "Error opening the pointCloud file!";
+            return false;
+        }
     }
-    return SLAM->PackAtlasToMemoryFor3DObject(&buffer, buffer_size);
+    delete[] buffer;
+    return false;
 }
 
 void TestViewer::LoadImages(
@@ -128,7 +193,7 @@ void TestViewer::LoadIMU(
     }
 }
 
-bool TestViewer::InitializeSLAM(int argc, char *argv[]) {
+bool TestViewer::InitSLAM(int argc, char **argv) {
     num_seq = (argc - 3) / 2;
     cout << "num_seq = " << num_seq << endl;
     bFileName = (((argc - 3) % 2) == 1);
@@ -213,6 +278,90 @@ bool TestViewer::InitializeSLAM(int argc, char *argv[]) {
     return true;
 }
 
+void TestViewer::SaveObjRecogResult() {
+
+    Eigen::Matrix3f R_obj;
+    Eigen::Matrix3f R_camera =
+        ObjRecognition::TypeConverter::Mat3Array2Mat3Eigen(
+            m_objrecog_result.R_camera);
+    Eigen::Vector3f t_camera =
+        Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
+    Eigen::Vector3f t_obj =
+        Eigen::Vector3f::Map(m_objrecog_result.t_obj_buffer, 3);
+
+    R_obj.row(0) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[0], 3);
+    R_obj.row(1) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[3], 3);
+    R_obj.row(2) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[6], 3);
+
+    Eigen::Quaternionf q_camera(R_camera);
+    Eigen::Quaternionf q_obj(R_obj);
+
+    if (m_objrecog_result.frame_index <= 0) {
+        VLOG(10) << "result frame index: " << m_objrecog_result.frame_index;
+        return;
+    }
+
+    camera_pose_result_stream_
+        << std::to_string(m_objrecog_result.time_stamp) << ","
+        << std::setprecision(7) << t_camera(0) << "," << t_camera(1) << ","
+        << t_camera(2) << "," << q_camera.w() << "," << q_camera.x() << ","
+        << q_camera.y() << "," << q_camera.z() << std::endl;
+
+    if (m_objrecog_result.num) {
+        object_pose_result_stream_
+            << std::to_string(m_objrecog_result.time_stamp) << ","
+            << std::setprecision(7) << t_obj(0) << "," << t_obj(1) << ","
+            << t_obj(2) << "," << q_obj.w() << "," << q_obj.x() << ","
+            << q_obj.y() << "," << q_obj.z() << std::endl;
+    }
+}
+
+void TestViewer::ObjectResultParse(const ObjRecognition::ObjRecogResult &result) {
+
+    m_objrecog_result = result;
+    Eigen::Matrix<float, 3, 3> Rcw =
+        ObjRecognition::TypeConverter::Mat3Array2Mat3Eigen(
+            m_objrecog_result.R_camera);
+    Eigen::Vector3f Tcw = Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
+    Eigen::Matrix<float, 3, 3> Rwo;
+    Rwo.col(0) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[0], 3);
+    Rwo.col(1) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[3], 3);
+    Rwo.col(2) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[6], 3);
+    Eigen::Vector3f Two =
+        Eigen::Vector3f::Map(&m_objrecog_result.t_obj_buffer[0], 3);
+
+    Eigen::Matrix3f Rco = Eigen::Matrix3f::Identity();
+    Rco = Rcw * Rwo;
+
+    Eigen::Matrix3f Rslam2gl = Eigen::Matrix3f::Zero();
+    Rslam2gl(0, 0) = 1;
+    Rslam2gl(1, 2) = -1;
+    Rslam2gl(2, 1) = 1;
+    Rco = Rco * Rslam2gl.transpose();
+    Rwo = Rcw.transpose() * Rco;
+    Eigen::Matrix3f Row = Eigen::Matrix3f::Identity();
+    Eigen::Vector3f Tow = Eigen::Vector3f::Zero();
+    Row = Rwo.transpose();
+    Tow = -Row * Two;
+
+    if (result.num == 1) {
+        m_Row = Row.cast<double>(); // world -> obj
+        m_Tow = Tow.cast<double>();
+    } else {
+        m_Row = Eigen::Matrix3d::Identity();
+        m_Tow = Eigen::Vector3d::Zero();
+    }
+
+    int info_size = m_objrecog_result.info_length;
+    const char *info_char = m_objrecog_result.info;
+    objrecog_info_str = std::string(info_char);
+
+    // save the object recognition result to file.
+    SaveObjRecogResult();
+
+    //ObjectResultTransmitMultiTabs();
+}
+
 bool TestViewer::RunSLAM(int argc, char *argv[]) {
     int proccIm = 0;
     for (int seq = 0; seq < num_seq; seq++) {
@@ -289,6 +438,9 @@ bool TestViewer::RunSLAM(int argc, char *argv[]) {
 
             vTimesTrack[ni] = ttrack;
 
+
+            ObjectResultParse(ObjRecognitionExd::ObjRecongManager::Instance().GetObjRecognitionResult());
+
             // Wait to load the next frame
             double T = 0;
             if (ni < nImages[seq] - 1)
@@ -306,8 +458,15 @@ bool TestViewer::RunSLAM(int argc, char *argv[]) {
     }
 
 
+    ObjRecognition::GlobalSummary::SaveAllPoses(m_result_dir);
 
+    /*ObjRecognition::GlobalSummary::SaveTimer(
+        m_result_dir, STSLAMCommon::Timing::Print());
 
+    ObjRecognition::GlobalSummary::SaveStatics(
+        m_result_dir, STSLAMCommon::Statistics::Print());*/
+
+    ObjRecognitionExd::ObjRecongManager::Instance().Destroy();
 
     // Stop all threads
     SLAM->Shutdown();
@@ -327,6 +486,8 @@ bool TestViewer::RunSLAM(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
 
+    Eigen::Vector2d x;
+    x.homogeneous();
     if (argc < 5) {
         cerr << endl
              << "Usage: ./mono_inertial_euroc path_to_vocabulary "
@@ -337,21 +498,26 @@ int main(int argc, char *argv[]) {
              << endl;
         return 1;
     }
-
+    google::InitGoogleLogging(argv[0]);
+    google::SetLogDestination(google::GLOG_INFO,"./myInfo");
     TestViewer testViewer;
 
-    bool initial_slam_result = testViewer.InitializeSLAM(argc, argv);
+    bool initial_slam_result = testViewer.InitSLAM(argc, argv);
 
     if(!initial_slam_result) {
         std::cout << "slam initialize fail!" << std::endl;
         return 0;
     }
 
-    bool initialize_objectRecognition_result = testViewer.InitializeObjectRecognition();
+#ifdef OBJECTRECOGNITION
+    bool initialize_objectRecognition_result =
+        testViewer.InitObjectRecognition();
     if(!initialize_objectRecognition_result) {
         std::cout << "objectRecognition initialize fail!" << std::endl;
         return 0;
     }
+
+#endif
 
     testViewer.RunSLAM(argc, argv);
 

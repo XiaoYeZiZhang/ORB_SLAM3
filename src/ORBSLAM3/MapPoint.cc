@@ -606,7 +606,7 @@ void MapPoint::WriteToMemoryFor3DObject(
 
     for (auto &curOb : obs) {
         ObjRecognition::PutDataToMem(
-            mem + mem_pos, &curOb.first, sizeof(curOb.first), mem_pos);
+            mem + mem_pos, &curOb.first, sizeof(curOb.first->mnId), mem_pos);
     }
     ObjRecognition::PutDataToMem(
         mem + mem_pos, &mnVisible, sizeof(mnVisible), mem_pos);

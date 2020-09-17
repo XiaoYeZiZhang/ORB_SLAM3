@@ -4,6 +4,7 @@
 
 #ifndef ORB_SLAM3_HANDLEBASE_H
 #define ORB_SLAM3_HANDLEBASE_H
+
 namespace ObjRecognitionInterface {
 class HandleBase {
 public:

@@ -1,26 +1,22 @@
 //
 // Created by zhangye on 2020/9/15.
 //
-#include <include/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionSystem.h>
+#include "Utility/Thread/ThreadBase.h"
+#include "ObjectRecognitionSystem/ObjectRecognitionSystem.h"
+#include "Utility/FeatureExtractor/ORBExtractor.h"
 namespace ObjRecognition {
 
 ObjRecogThread::ObjRecogThread() : ThreadBase(1, false) {
 }
 
 int ObjRecogThread::Init() {
+    pointcloudobj_detector_ =
+        std::make_shared<ObjRecognition::PointCloudObjDetector>();
+    detector_thread_.SetDetector(pointcloudobj_detector_);
 
-    /*if (detector_type == STObjDetectorType::STObjPointCloudDetector) {
-        detector_type_ = STObjDetectorType::STObjPointCloudDetector;
-        pointcloudobj_detector_ =
-            std::make_shared<STObjRecognition::PointCloudObjDetector>();
-        detector_thread_.SetDetector(pointcloudobj_detector_);
-    }
-    if (tracker_type == STObjTrackerType::STObjPointCloudTracker) {
-        tracker_type_ = STObjTrackerType::STObjPointCloudTracker;
-        pointcloudobj_tracker_ =
-            std::make_shared<STObjRecognition::PointCloudObjTracker>();
-        tracker_thread_.SetTracker(pointcloudobj_tracker_);
-    }
+    pointcloudobj_tracker_ =
+        std::make_shared<ObjRecognition::PointCloudObjTracker>();
+    tracker_thread_.SetTracker(pointcloudobj_tracker_);
 
     if (!detector_thread_.StartThread()) {
         VLOG(0) << "create detect thread failed";
@@ -32,43 +28,31 @@ int ObjRecogThread::Init() {
         return -1;
     }
 
-    if (detector_type == STObjDetectorType::STObjPointCloudDetector) {
-        pointcloudobj_detector_->SetVoc(voc_);
-        VLOG(10) << "Detector set voc success";
-    } else if (detector_type == STObjDetectorType::STObjPointCloudDetector) {
-        opticalFlowobj_detector_->SetVoc(voc_);
-    }
+    // pointcloudobj_detector_->SetVoc(voc_);
+    VLOG(10) << "Detector set voc success";
 
-    return 0;*/
+    return 0;
 }
 
 /*int ObjRecogThread::SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary>
 &voc) { voc_ = voc; return 0;
 }
+*/
 
 int ObjRecogThread::SetModel(const std::shared_ptr<Object> &object) {
     object_ = object;
 
-    std::shared_ptr<DBoW3::Database> database =
+    /*std::shared_ptr<DBoW3::Database> database =
         std::make_shared<DBoW3::Database>(voc_, true, 4);
-    object_->SetDatabase(database);
+    object_->SetDatabase(database);*/
     VLOG(0) << "PointCloud detector database create success ";
-    VLOG(5) << "PointCloud database size: " << object_->GetDatabase()->size();
+    // VLOG(5) << "PointCloud database size: " <<
+    // object_->GetDatabase()->size();
     auto allKFs = object_->GetKeyFrames();
-    object_->AddKeyFrames2Database(allKFs);
+    // object_->AddKeyFrames2Database(allKFs);
 
-    if (detector_type_ == STObjDetectorType::STObjPointCloudDetector) {
-        pointcloudobj_detector_->SetPointCloudObj(object_);
-    } else if (detector_type_ == STObjDetectorType::STObjOpticalFlowDetector) {
-        opticalFlowobj_detector_->SetOpticalFlowObj(object_);
-    }
-    object_->SetDetectorType(detector_type_);
-    if (tracker_type_ == STObjTrackerType::STObjPointCloudTracker) {
-        pointcloudobj_tracker_->SetPointCloudObj(object_);
-    } else if (tracker_type_ == STObjTrackerType::STObjOpticalFlowTracker) {
-        opticalFlowobj_tracker_->SetOpticalFlowObj(object_);
-    }
-    object_->SetTrackerType(tracker_type_);
+    pointcloudobj_detector_->SetPointCloudObj(object_);
+    pointcloudobj_tracker_->SetPointCloudObj(object_);
     VLOG(0) << "tracker and detector thread load object " << object_->GetId();
 
     return 0;
@@ -80,8 +64,9 @@ void ObjRecogThread::PushUnProcessedFrame(
 }
 
 void ObjRecogThread::GetResult(
-    FrameIndex &frmIndex, double &timeStamp, ObjRecogState &state, Mat3d &R_cam,
-    Vec3d &t_cam, Mat3d &Rwo, Vec3d &two) {
+    FrameIndex &frmIndex, double &timeStamp, ObjRecogState &state,
+    Eigen::Matrix3d &R_cam, Eigen::Vector3d &t_cam, Eigen::Matrix3d &Rwo,
+    Eigen::Vector3d &two) {
 
     if (object_ != nullptr) {
         object_->GetPose(frmIndex, timeStamp, state, R_cam, t_cam, Rwo, two);
@@ -94,7 +79,6 @@ void ObjRecogThread::GetResult(
 }
 
 int ObjRecogThread::GetInfo(std::string &info) {
-
     {
         std::unique_lock<std::mutex> lock(mMutexInfoBuffer);
         info = info_;
@@ -102,6 +86,7 @@ int ObjRecogThread::GetInfo(std::string &info) {
     return 0;
 }
 
+/*
 template <typename T>
 std::string to_string_with_precision(const T a_value, const int n = 6) {
     std::ostringstream out;
@@ -192,7 +177,6 @@ void ObjRecogThread::SetInfo() {
 */
 
 int ObjRecogThread::Process() {
-    /*ATRACE_CALL();
     int ret = -1;
 
     if (object_ == nullptr) {
@@ -213,25 +197,25 @@ int ObjRecogThread::Process() {
     std::shared_ptr<ObjRecogFrameCallbackData> platformFrame =
         std::static_pointer_cast<ObjRecogFrameCallbackData>(frame_tmp);
 
-    STSLAMCommon::Timer timer("raw data process");
+    // STSLAMCommon::Timer timer("raw data process");
 
     std::shared_ptr<FrameData> cur_frame = std::make_shared<FrameData>();
 
     cur_frame->mTimeStamp = platformFrame->timestamp;
     cur_frame->mFrmIndex = platformFrame->id;
-    if (platformFrame->img.height <= 0 ||  platformFrame->img.width <= 0)
+    if (platformFrame->img.height <= 0 || platformFrame->img.width <= 0)
         return ret;
 
     cur_frame->img = cv::Mat(
         platformFrame->img.height, platformFrame->img.width, CV_8UC1,
         platformFrame->img.data);
 
-    STSLAMCommon::Timer ORBExtractorTimer("ORBExtractor process");
-    STSLAMCommon::ORBExtractor orb_extractor(2000, 1.2f, 8, 20, 7);
+    // STSLAMCommon::Timer ORBExtractorTimer("ORBExtractor process");
+    SLAMCommon::ORBExtractor orb_extractor(2000, 1.2f, 8, 20, 7);
     orb_extractor.DetectKeyPoints(cur_frame->img, cur_frame->mKpts);
     orb_extractor.ComputeDescriptors(
         cur_frame->img, cur_frame->mKpts, cur_frame->mDesp);
-    VLOG(10) << "ORBExtractor process time: " << ORBExtractorTimer.Stop();
+    // VLOG(10) << "ORBExtractor process time: " << ORBExtractorTimer.Stop();
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             cur_frame->mRcw(i, j) = platformFrame->R[i][j];
@@ -245,49 +229,43 @@ int ObjRecogThread::Process() {
 
     frame_processed_num_++;
 
-    SetInfo();
+    // SetInfo();
 
-    timer.Stop();
+    // timer.Stop();
 
-    return ret;*/
-    return 0;
+    return ret;
 }
 
 int StatisticsPrint() {
-
-#ifdef MOBILE_PLATFORM
-    VLOG(5) << STSLAMCommon::Statistics::Print();
-    VLOG(5) << STSLAMCommon::Timing::Print();
-#endif
     return 0;
 }
 
 int ObjRecogThread::Reset() {
-
     //    StatisticsPrint();
-
-    /*frame_processed_num_ = 0;
+    frame_processed_num_ = 0;
     {
         std::unique_lock<std::mutex> lock(mMutexInfoBuffer);
         info_.clear();
     }
+
     if (object_) {
         object_->Reset();
     }
+
     detector_thread_.RequestReset();
     detector_thread_.WaitEndReset();
     tracker_thread_.RequestReset();
     tracker_thread_.WaitEndReset();
 
-    return 0;*/
+    return 0;
 }
 
 int ObjRecogThread::Stop() {
-    /*detector_thread_.RequestStop();
+    detector_thread_.RequestStop();
     tracker_thread_.RequestStop();
     detector_thread_.WaitEndStop();
     tracker_thread_.WaitEndStop();
-    return 0;*/
+    return 0;
 }
 
 } // namespace ObjRecognition

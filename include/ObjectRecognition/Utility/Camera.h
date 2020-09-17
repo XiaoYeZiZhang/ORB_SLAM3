@@ -5,9 +5,7 @@
 #ifndef OBJECTRECOGNITION_ORBSLAM3_CAMERA_H
 #define OBJECTRECOGNITION_ORBSLAM3_CAMERA_H
 #include <opencv2/opencv.hpp>
-#include <Eigen/src/Core/MatrixBase.h>
-#include <Eigen/src/Core/Matrix.h>
-
+#include <Eigen/Core>
 namespace ObjRecognition {
 
 class CameraIntrinsic {

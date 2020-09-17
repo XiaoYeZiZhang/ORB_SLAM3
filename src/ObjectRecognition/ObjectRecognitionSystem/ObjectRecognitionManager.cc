@@ -3,7 +3,9 @@
 //
 //
 #include <zlib.h>
-#include "include/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionManager.h"
+#include <iostream>
+#include "Utility/Camera.h"
+#include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
 namespace ObjRecognitionExd {
 
 ObjRecongManager &ObjRecongManager::Instance() {
@@ -40,21 +42,21 @@ ObjRecongManager::~ObjRecongManager() {
 }
 
 void ObjRecongManager::Clear() {
-    std::cout << "ObjRecong Manager Clear" << std::endl;
+    VLOG(10) << "ObjRecong Manager Clear";
     info_buffer_length_ = 0;
 
     {
         std::unique_lock<std::mutex> lock(m_mutex_info_buffer);
         memset(info_buffer_, 0, info_Buffer_maxsize_);
     }
-    // object_map_.clear();
+    object_map_.clear();
     objrecog_thread_.RequestReset();
     objrecog_thread_.WaitEndReset();
     objrecog_thread_.StartRunning();
 }
 
 int ObjRecongManager::Destroy() {
-    /*std::cout << "ObjRecong Manager Destroy" << std::endl;
+    std::cout << "ObjRecong Manager Destroy" << std::endl;
     std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
     if (!IsInitializedState()) {
         return -1;
@@ -63,11 +65,11 @@ int ObjRecongManager::Destroy() {
     ToUninitializedState();
     objrecog_thread_.RequestStop();
     objrecog_thread_.WaitEndStop();
-    return 0;*/
+    return 0;
 }
 
 int ObjRecongManager::Reset() {
-    /*std::cout << "ObjRecong Manager Reset" << std::endl;
+    std::cout << "ObjRecong Manager Reset" << std::endl;
     std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
     if (!IsInitializedState()) {
         return -1;
@@ -75,10 +77,9 @@ int ObjRecongManager::Reset() {
 
     Clear();
 
-    return 0;*/
+    return 0;
 }
 
-/*
 int ObjRecongManager::CreateWithConfig() {
     std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
 
@@ -95,7 +96,7 @@ int ObjRecongManager::CreateWithConfig() {
 
     return 0;
 }
-
+/*
 int read_compressed_voc(
     const char *zip_buffer, uint64_t len, DBoW3::Vocabulary *voc) {
     const char *ptr = zip_buffer;
@@ -157,10 +158,10 @@ int ObjRecongManager::LoadDic(char const *buffer, int buffer_len) {
 
     return res;
 }
+*/
 
 int ObjRecongManager::LoadModel(
-    const int id, const STObjModelType type, const char *buffer,
-    int buffer_len) {
+    const int id, const char *buffer, int buffer_len) {
     VLOG(10) << "ObjRecong Manager LoadModel";
     std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
     if (IsUninitializedState()) {
@@ -172,118 +173,98 @@ int ObjRecongManager::LoadModel(
         return -1;
     }
 
-    object_ = std::make_shared<STObjRecognition::Object>(id);
+    object_ = std::make_shared<ObjRecognition::Object>(id);
     object_map_.insert(
-        std::pair<int, std::shared_ptr<STObjRecognition::Object>>(id, object_));
-    // TODO(xiarui): add model several times
-    if (type == STObjModelType::STObjPointCloudModel) {
-        if (!object_->LoadPointCloud(buffer_len, buffer)) {
-            LOG(ERROR) << "Load PointCloud failed, not set model";
-            return -1;
-        }
+        std::pair<int, std::shared_ptr<ObjRecognition::Object>>(id, object_));
+    if (!object_->LoadPointCloud(buffer_len, buffer)) {
+        LOG(ERROR) << "Load PointCloud failed, not set model";
+        return -1;
     }
 
-    object_->SetVocabulary(voc_);
+    // object_->SetVocabulary(voc_);
 
     objrecog_thread_.SetModel(object_);
 
     return 0;
 }
-*/
 
 int ObjRecongManager::Init() {
-    /*VLOG(0) << "Object Recongnition detector type: "
-            << objREcogConfig.detector_type;
-    VLOG(0) << "Object Recongnition trackter type： "
-            << objREcogConfig.tracker_type;
+    // objrecog_thread_.SetVocabulary(voc_);
 
-    objrecog_config_ = objREcogConfig;
-
-    STObjRecognition::CameraIntrinsic::GetInstance().SetParameters(
-        objREcogConfig.fx, objREcogConfig.fy, objREcogConfig.cx,
-        objREcogConfig.cy, objREcogConfig.width, objREcogConfig.height);
-
-    objrecog_thread_.SetVocabulary(voc_);
-
-    objrecog_thread_.Init(
-        objrecog_config_.detector_type, objrecog_config_.tracker_type);
-
+    objrecog_thread_.Init();
     objrecog_thread_.StartThread("ObjRecongManager", 0x10);
 
-    return 0;*/
-}
-
-int ObjRecongManager::Run() {
     return 0;
 }
-/*
-int ObjRecongManager::Run(const ObjRecogFrameCallbackData &platform_frame) {
-   std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
 
-  int ret = -1;
-  if (object_map_.size() <= 0) {
-      VLOG(10) << "Objects' num is zero";
-      return ret;
-  }
+int ObjRecongManager::Run(
+    const ObjRecognition::ObjRecogFrameCallbackData &platform_frame) {
+    std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
 
-  Common::StatsCollector pointCloudFrameNum("Frame num");
-  pointCloudFrameNum.IncrementOne();
+    int ret = -1;
+    if (object_map_.size() <= 0) {
+        VLOG(10) << "Objects' num is zero";
+        return ret;
+    }
 
-  VLOG(10) << "ObjRecogManager Run";
+    // Common::StatsCollector pointCloudFrameNum("Frame num");
+    // pointCloudFrameNum.IncrementOne();
 
-  std::shared_ptr<ObjRecogFrameCallbackData> frame =
-      std::make_shared<ObjRecogFrameCallbackData>();
+    VLOG(10) << "ObjRecogManager Run";
 
-  frame->timestamp = platform_frame.timestamp;
-  frame->id = platform_frame.id;
-  frame->has_image = platform_frame.has_image;
-  frame->feature_mem_size = platform_frame.feature_mem_size;
-  std::memcpy(&frame->t, &platform_frame.t, 3 * sizeof(platform_frame.t[0]));
-  for (int index = 0; index < 3; index++) {
-      std::memcpy(
-          &frame->R[index], &platform_frame.R[index],
-          3 * sizeof(platform_frame.R[index][0]));
-  }
-  //    std::memcpy(frame->feature_mem, platform_frame.feature_mem,
-  //        frame->feature_mem_size * sizeof(char));
-  frame->img.width = 0;
-  frame->img.height = 0;
-  if (frame->has_image) {
-      frame->img.width =
-          STObjRecognition::CameraIntrinsic::GetInstance().Width();
-      frame->img.height =
-          STObjRecognition::CameraIntrinsic::GetInstance().Height();
-      frame->img.data =
-          new unsigned char[frame->img.height * frame->img.width];
-      std::memcpy(
-          frame->img.data, platform_frame.img.data,
-          sizeof(char) * frame->img.height * frame->img.width);
-  }
+    std::shared_ptr<ObjRecognition::ObjRecogFrameCallbackData> frame =
+        std::make_shared<ObjRecognition::ObjRecogFrameCallbackData>();
 
-  objrecog_thread_.PushUnProcessedFrame(frame);
+    frame->timestamp = platform_frame.timestamp;
+    frame->id = platform_frame.id;
+    frame->has_image = platform_frame.has_image;
+    frame->feature_mem_size = platform_frame.feature_mem_size;
+    std::memcpy(&frame->t, &platform_frame.t, 3 * sizeof(platform_frame.t[0]));
+    for (int index = 0; index < 3; index++) {
+        std::memcpy(
+            &frame->R[index], &platform_frame.R[index],
+            3 * sizeof(platform_frame.R[index][0]));
+    }
+    //    std::memcpy(frame->feature_mem, platform_frame.feature_mem,
+    //        frame->feature_mem_size * sizeof(char));
+    frame->img.width = 0;
+    frame->img.height = 0;
+    if (frame->has_image) {
+        frame->img.width =
+            ObjRecognition::CameraIntrinsic::GetInstance().Width();
+        frame->img.height =
+            ObjRecognition::CameraIntrinsic::GetInstance().Height();
+        frame->img.data =
+            new unsigned char[frame->img.height * frame->img.width];
+        std::memcpy(
+            frame->img.data, platform_frame.img.data,
+            sizeof(char) * frame->img.height * frame->img.width);
+    }
 
-  ret = 0;
+    objrecog_thread_.PushUnProcessedFrame(frame);
 
-  return ret;*/
-} // namespace ObjRecognitionExd
-/*
-STObjRecogResult ObjRecongManager::GetResult() {
+    ret = 0;
+
+    return ret;
+}
+
+ObjRecognition::ObjRecogResult ObjRecongManager::GetObjRecognitionResult() {
 
     double timestamp = 0;
-    STObjRecognition::FrameIndex frmIndex = -1;
-    STObjRecognition::ObjRecogState state =
-        STObjRecognition::ObjRecogState::TrackingBad;
-    STObjRecognition::Mat3d R_camera = Eigen::Matrix3d::Identity();
-    STObjRecognition::Vec3d t_camera = Eigen::Vector3d::Zero();
-    STObjRecognition::Mat3d R_obj = Eigen::Matrix3d::Identity();
-    STObjRecognition::Vec3d t_obj = Eigen::Vector3d::Zero();
-    STObjRecognition::Mat3d Row = Eigen::Matrix3d::Identity();
-    STObjRecognition::Vec3d tow = Eigen::Vector3d::Zero();
-    STObjRecognition::Mat3d Rwo = Eigen::Matrix3d::Identity();
-    STObjRecognition::Vec3d two = Eigen::Vector3d::Zero();
-    STObjRecognition::Mat3d Rco = Eigen::Matrix3d::Identity();
-    STObjRecognition::Vec3d tco = Eigen::Vector3d::Zero();
-    STObjRecognition::Mat3d Rslam2gl = Eigen::Matrix3d::Zero();
+    ObjRecognition::FrameIndex frmIndex = -1;
+    ObjRecognition::ObjRecogState state =
+        ObjRecognition::ObjRecogState::TrackingBad;
+    Eigen::Matrix3d R_camera = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d t_camera = Eigen::Vector3d::Zero();
+    Eigen::Matrix3d R_obj = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d t_obj = Eigen::Vector3d::Zero();
+    Eigen::Matrix3d Row = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d tow = Eigen::Vector3d::Zero();
+    Eigen::Matrix3d Rwo = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d two = Eigen::Vector3d::Zero();
+    Eigen::Matrix3d Rco = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d tco = Eigen::Vector3d::Zero();
+    Eigen::Matrix3d Rslam2gl = Eigen::Matrix3d::Zero();
 
     if (IsInitializedState()) {
         objrecog_thread_.GetResult(
@@ -309,13 +290,13 @@ STObjRecogResult ObjRecongManager::GetResult() {
     Eigen::Matrix3f R_obj_f = Rwo.cast<float>();
     Eigen::Vector3f t_obj_f = two.cast<float>();
 
-    STObjRecogResult objrecog_result;
+    ObjRecognition::ObjRecogResult objrecog_result;
     objrecog_result.frame_index = frmIndex;
     objrecog_result.time_stamp = timestamp;
 
     obj_id_buffer_[0] = 0;
     obj_state_buffer_[0] = 0;
-    if (state == STObjRecognition::ObjRecogState::TrackingGood) {
+    if (state == ObjRecognition::ObjRecogState::TrackingGood) {
         obj_state_buffer_[0] = 0;
         objrecog_result.num = 1;
     } else {
@@ -402,8 +383,9 @@ int ObjRecongManager::SetObjRecongInfo() {
 
     return ret;
 }
-
+/*
 char *ObjRecongManager::GetVersion() {
     //    std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
     return version_buffer;
 }*/
+} // namespace ObjRecognitionExd

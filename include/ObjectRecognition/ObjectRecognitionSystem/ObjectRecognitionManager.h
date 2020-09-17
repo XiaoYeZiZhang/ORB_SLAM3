@@ -6,8 +6,7 @@
 #define ORB_SLAM3_OBJECTRECOGNITIONMANAGER_H
 #include <memory>
 #include <mutex>
-#include "../Interface/HandleBase.h"
-#include "Thirdparty/DBoW2/DBoW2/TemplatedVocabulary.h"
+#include "Interface/HandleBase.h"
 #include "ObjectRecognitionSystem.h"
 namespace ObjRecognitionExd {
 class ObjRecongManager : public ObjRecognitionInterface::HandleBase {
@@ -17,14 +16,14 @@ public:
     int Destroy();
     int Reset();
 
-    int Run();
+    int Run(const ObjRecognition::ObjRecogFrameCallbackData &platform_frame);
     int CreateWithConfig();
-    /*int LoadDic(char const *buffer, int buffer_len);
-    int LoadModel(const char *buffer, int buffer_len);
-    int Run(const ObjRecogFrameCallbackData &platform_frame);
-    STObjRecogResult GetResult();
+    /*int LoadDic(char const *buffer, int buffer_len);*/
+    int LoadModel(const int id, const char *buffer, int buffer_len);
+
+    ObjRecognition::ObjRecogResult GetObjRecognitionResult();
     int SetObjRecongInfo();
-    char *GetVersion();*/
+    /*char *GetVersion();*/
 
 private:
     ObjRecongManager();
@@ -38,11 +37,9 @@ private:
 
 private:
     std::mutex mMutexForPublicAPI;
-    /*STObjRecogConfig  objrecog_config_;
 
-    std::map<int, std::shared_ptr<STObjRecognition::Object>> object_map_;
-    std::shared_ptr<STObjRecognition::Object> object_;
-    */
+    std::map<int, std::shared_ptr<ObjRecognition::Object>> object_map_;
+    std::shared_ptr<ObjRecognition::Object> object_;
     // std::shared_ptr<DBoW3::Vocabulary> voc_;
     ObjRecognition::ObjRecogThread objrecog_thread_;
     std::string version_ = "V1.0.1.0";

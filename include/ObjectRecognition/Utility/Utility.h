@@ -5,7 +5,7 @@
 #ifndef ORB_SLAM3_UTILITY_H
 #define ORB_SLAM3_UTILITY_H
 #include <Eigen/Core>
-#include <Eigen/Geometry>
+#include <opencv2/core/eigen.hpp>
 #define STSLAM_SAFE_DELETE(p)                                                  \
     do {                                                                       \
         delete (p);                                                            \
@@ -31,8 +31,98 @@
     ClassName &operator=(const ClassName &) = delete
 
 #define SLIGHT_ANGLE 0.008726646 // 0.5°
-
 namespace ObjRecognition {
+class TypeConverter {
+public:
+    // from Eigen::Matrix to cv::Mat
+    template <
+        typename _Tp, int _rows, int _cols, int _options, int _maxRows,
+        int _maxCols>
+    static void Eigen2CV(
+        const Eigen::Matrix<_Tp, _rows, _cols, _options, _maxRows, _maxCols>
+            &src,
+        cv::Mat &dst) {
+        cv::eigen2cv(src, dst);
+    }
+
+    // from Eigen::Vec2 to cv::Point2
+    template <typename _Tp>
+    static inline cv::Point_<_Tp>
+    Eigen2CVPoint(const Eigen::Matrix<_Tp, 2, 1> &src) {
+        return cv::Point_<_Tp>(src(0), src(1));
+    }
+
+    // from Eigen::Vec3 to cv::Point3
+    template <typename _Tp>
+    static inline cv::Point3_<_Tp>
+    Eigen2CVPoint(const Eigen::Matrix<_Tp, 3, 1> &src) {
+        return cv::Point3_<_Tp>(src(0), src(1), src(2));
+    }
+
+    // from cv::Mat to Eigen::Matrix
+    template <
+        typename _Tp, int _rows, int _cols, int _options, int _maxRows,
+        int _maxCols>
+    static void CV2Eigen(
+        const cv::Mat &src,
+        Eigen::Matrix<_Tp, _rows, _cols, _options, _maxRows, _maxCols> &dst) {
+        cv::cv2eigen(src, dst);
+    }
+
+    template <typename _Tp>
+    static void CV2Eigen(
+        const cv::Mat &src,
+        Eigen::Matrix<_Tp, Eigen::Dynamic, Eigen::Dynamic> &dst) {
+        cv::cv2eigen(src, dst);
+    }
+
+    // from cv::Mat(Vec) to Eigen::Vec
+    template <typename _Tp>
+    static void
+    CV2Eigen(const cv::Mat &src, Eigen::Matrix<_Tp, Eigen::Dynamic, 1> &dst) {
+        cv::cv2eigen(src, dst);
+    }
+
+    template <typename _Tp>
+    static void
+    CV2Eigen(const cv::Mat &src, Eigen::Matrix<_Tp, 1, Eigen::Dynamic> &dst) {
+        cv::cv2eigen(src, dst);
+    }
+
+    // from cv::Point2 to Eigen::Vec2
+    template <typename _Tp>
+    static inline Eigen::Matrix<_Tp, 2, 1>
+    CV2EigenPoint(const cv::Point_<_Tp> &src) {
+        return Eigen::Matrix<_Tp, 2, 1>(src.x, src.y);
+    }
+
+    // from cv::Point3 to Eigen::Vec3
+    template <typename _Tp>
+    static inline Eigen::Matrix<_Tp, 3, 1>
+    CV2EigenPoint(const cv::Point3_<_Tp> &src) {
+        return Eigen::Matrix<_Tp, 3, 1>(src.x, src.y, src.z);
+    }
+
+    //　from matrix3*3 array to Eigen matrix3*3
+    template <typename _Tp>
+    static inline Eigen::Matrix<_Tp, 3, 3>
+    Mat3Array2Mat3Eigen(const _Tp src[3][3]) {
+        Eigen::Matrix<_Tp, 3, 3> dst;
+        dst.row(0) = Eigen::Matrix<_Tp, 3, 1>::Map(src[0], 3);
+        dst.row(1) = Eigen::Matrix<_Tp, 3, 1>::Map(src[1], 3);
+        dst.row(2) = Eigen::Matrix<_Tp, 3, 1>::Map(src[2], 3);
+        return dst;
+    }
+};
+template <typename Derived>
+static Eigen::Matrix<typename Derived::Scalar, 3, 3>
+skewSymmetric(const Eigen::MatrixBase<Derived> &q) {
+    Eigen::Matrix<typename Derived::Scalar, 3, 3> ans;
+    ans << typename Derived::Scalar(0), -q(2), q(1), q(2),
+        typename Derived::Scalar(0), -q(0), -q(1), q(0),
+        typename Derived::Scalar(0);
+    return ans;
+}
 
 template <typename Derived>
 static Eigen::Quaternion<typename Derived::Scalar>
@@ -86,6 +176,20 @@ template <typename Derived>
 static Eigen::Quaternion<typename Derived::Scalar>
 positify(const Eigen::QuaternionBase<Derived> &q) {
     return q;
+}
+
+// from Eigen::Vec2 to cv::Point2
+template <typename _Tp>
+static inline cv::Point_<_Tp>
+Eigen2CVPoint(const Eigen::Matrix<_Tp, 2, 1> &src) {
+    return cv::Point_<_Tp>(src(0), src(1));
+}
+
+// from Eigen::Vec3 to cv::Point3
+template <typename _Tp>
+static inline cv::Point3_<_Tp>
+Eigen2CVPoint(const Eigen::Matrix<_Tp, 3, 1> &src) {
+    return cv::Point3_<_Tp>(src(0), src(1), src(2));
 }
 
 template <typename Derived>

@@ -10,7 +10,7 @@
 #include "Helper/Utility.h"
 #endif
 
-#include "include/ObjectRecognition/Utility/Performance.h"
+#include "Utility/Performance.h"
 
 namespace Common {
 

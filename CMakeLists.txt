@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(ORB_SLAM3)
-
+set(CMAKE_CXX_STANDARD 14)
 add_definitions(-w)
 
 IF(NOT CMAKE_BUILD_TYPE)
@@ -37,7 +37,7 @@ endif()
 
 LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-SET(OpenCV_DIR /home/zhangye/Downloads/install/opencv-3.4.0/install/share/OpenCV)
+
 find_package(OpenCV 3)
 if(NOT OpenCV_FOUND)
    message(FATAL_ERROR "OpenCV3 not found.")
@@ -46,8 +46,10 @@ endif()
 MESSAGE("OPENCV VERSION:")
 MESSAGE(${OpenCV_VERSION})
 
-find_package(Eigen3 3.1.0 REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(Pangolin REQUIRED)
+find_package(gflags REQUIRED)
+find_package(glog REQUIRED)
 
 include_directories(
 ${PROJECT_SOURCE_DIR}
@@ -55,9 +57,16 @@ ${PROJECT_SOURCE_DIR}/include
 ${PROJECT_SOURCE_DIR}/include/CameraModels
 ${EIGEN3_INCLUDE_DIR}
 ${Pangolin_INCLUDE_DIRS}
+${GFLAS_INCLUDE_DIRS}
+${GLOG_INCLUDE_DIRS}
 )
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+
+include_directories(${PROJECT_SOURCE_DIR}/include/ceres-solver/include)
+include_directories(${PROJECT_SOURCE_DIR}/include/ObjectRecognition)
+include_directories(${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Utility/FeatureExtractor)
+include_directories(${PROJECT_SOURCE_DIR}/include/PoseSolver)
 
 add_library(${PROJECT_NAME} SHARED
 src/ORBSLAM3/System.cc
@@ -137,6 +146,103 @@ src/ObjectRecognition/Utility/Thread/ThreadBase.cc
 include/ObjectRecognition/Utility/Performance.h
 src/ObjectRecognition/Utility/Performance.cc
 include/ObjectRecognition/Utility/Tools.h
+include/ObjectRecognition/Detector/DetectorThread.h
+src/ObjectRecognition/Detector/DetectorThread.cc
+include/ObjectRecognition/Detector/PointCloudDetector.h
+src/ObjectRecognition/Detector/PointCloudDetector.cc
+include/ObjectRecognition/Utility/ThreadBase.h
+src/ObjectRecognition/Utility/ThreadBase.cc
+include/ObjectRecognition/Struct/Frame.h
+include/ObjectRecognition/Utility/RecognitionBase.h
+include/ObjectRecognition/Tracker/TrackerThread.h
+src/ObjectRecognition/Tracker/TrackerThread.cc
+src/ObjectRecognition/Struct/Object.cc
+include/ObjectRecognition/Struct/Object.h
+include/ObjectRecognition/Struct/PointCloudObject.h
+src/ObjectRecognition/Struct/PointCloudObject.cc
+include/ObjectRecognition/Struct/FrameBase.h
+src/ObjectRecognition/Struct/FrameBase.cc
+src/ObjectRecognition/Detector/DetectorFrame.cc
+include/ObjectRecognition/Detector/DetectorFrame.h
+src/ObjectRecognition/Utility/Parameters.cc
+include/ObjectRecognition/Utility/Parameters.h
+#include/ObjectRecognition/Optimizer/Factor.h
+#include/ObjectRecognition/Optimizer/LBAOptimizer.h
+#src/ObjectRecognition/Optimizer/LBAOptimizer.cc
+src/ObjectRecognition/Tracker/TrackerFrame.cc
+include/ObjectRecognition/Tracker/TrackerFrame.h
+src/ObjectRecognition/Tracker/PointCloudTracker.cc
+include/ObjectRecognition/Tracker/PointCloudTracker.h
+include/ObjectRecognition/Tracker/TrackerCommon.h
+src/ObjectRecognition/Tracker/TrackerCommon.cc
+include/ceres-solver/include/ceres/autodiff_cost_function.h
+include/ceres-solver/include/ceres/c_api.h
+include/ceres-solver/include/ceres/autodiff_local_parameterization.h
+include/ceres-solver/include/ceres/ceres.h
+include/ceres-solver/include/ceres/conditioned_cost_function.h
+include/ceres-solver/include/ceres/cost_function.h
+include/ceres-solver/include/ceres/cost_function_to_functor.h
+include/ceres-solver/include/ceres/covariance.h
+include/ceres-solver/include/ceres/crs_matrix.h
+include/ceres-solver/include/ceres/cubic_interpolation.h
+include/ceres-solver/include/ceres/dynamic_autodiff_cost_function.h
+include/ceres-solver/include/ceres/dynamic_cost_function.h
+include/ceres-solver/include/ceres/dynamic_cost_function_to_functor.h
+include/ceres-solver/include/ceres/dynamic_numeric_diff_cost_function.h
+include/ceres-solver/include/ceres/fpclassify.h
+include/ceres-solver/include/ceres/gradient_checker.h
+include/ceres-solver/include/ceres/gradient_problem.h
+include/ceres-solver/include/ceres/gradient_problem_solver.h
+include/ceres-solver/include/ceres/iteration_callback.h
+include/ceres-solver/include/ceres/jet.h
+include/ceres-solver/include/ceres/local_parameterization.h
+include/ceres-solver/include/ceres/loss_function.h
+include/ceres-solver/include/ceres/normal_prior.h
+include/ceres-solver/include/ceres/numeric_diff_cost_function.h
+include/ceres-solver/include/ceres/numeric_diff_options.h
+include/ceres-solver/include/ceres/ordered_groups.h
+include/ceres-solver/include/ceres/problem.h
+include/ceres-solver/include/ceres/rotation.h
+include/ceres-solver/include/ceres/sized_cost_function.h
+include/ceres-solver/include/ceres/solver.h
+include/ceres-solver/include/ceres/types.h
+include/ceres-solver/include/ceres/version.h
+src/ObjectRecognition/Detector/DetectorCommon.cc
+include/ObjectRecognition/Detector/DetectorCommon.h
+include/ceres-solver/include/ceres/internal/autodiff.h
+include/ceres-solver/include/ceres/internal/config.h
+include/ceres-solver/include/ceres/internal/disable_warnings.h
+include/ceres-solver/include/ceres/internal/eigen.h
+include/ceres-solver/include/ceres/internal/fixed_array.h
+include/ceres-solver/include/ceres/internal/macros.h
+include/ceres-solver/include/ceres/internal/manual_constructor.h
+include/ceres-solver/include/ceres/internal/numeric_diff.h
+include/ceres-solver/include/ceres/internal/port.h
+include/ceres-solver/include/ceres/internal/reenable_warnings.h
+include/ceres-solver/include/ceres/internal/scoped_ptr.h
+include/ceres-solver/include/ceres/internal/variadic_evaluate.h
+src/ObjectRecognition/Utility/FeatureExtractor/FeatureExtractor.cc
+src/ObjectRecognition/Utility/FeatureExtractor/ORBExtractor.cc
+src/ObjectRecognition/Utility/FeatureExtractor/ORBExtractorFactory.cc
+src/ObjectRecognition/Utility/FeatureExtractor/ORBExtractorHPC.cc
+include/ObjectRecognition/Utility/FeatureExtractor/FeatureExtractor.h
+include/ObjectRecognition/Utility/FeatureExtractor/ORBExtractor.h
+include/ObjectRecognition/Utility/FeatureExtractor/ORBExtractorHPC.h
+src/ObjectRecognition/Utility/FileIO.cc
+include/ObjectRecognition/Utility/FileIO.h
+include/ObjectRecognition/Utility/GlobalSummary.h
+src/ObjectRecognition/Utility/GlobalSummary.cc
+include/PoseSolver/essential3.h
+include/PoseSolver/Generator.h
+include/PoseSolver/geometry.h
+include/PoseSolver/p2p.h
+include/PoseSolver/PoseSolver.h
+src/PoseSolver/Generator.cc
+src/PoseSolver/p2p.cc
+src/PoseSolver/PoseSolver.cc
+src/PoseSolver/PoseSolverRansac.cc
+src/PoseSolver/PoseSolverRefine.cc
+src/PoseSolver/essential3.cc
 )
 
 add_subdirectory(Thirdparty/g2o)
@@ -145,6 +251,8 @@ target_link_libraries(${PROJECT_NAME}
 ${OpenCV_LIBS}
 ${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
+glog::glog
+${GFLAGS_LIBRARIES}
 ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
 ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 -lboost_serialization
@@ -185,4 +293,3 @@ target_link_libraries(mono_inertial_objectRecognition_test ${PROJECT_NAME})
 add_executable(mono_inertial_tum_vi
 Examples/Monocular-Inertial/mono_inertial_tum_vi.cc)
 target_link_libraries(mono_inertial_tum_vi ${PROJECT_NAME})
-
