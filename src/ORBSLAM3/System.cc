@@ -33,6 +33,8 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
+#include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
+#include "Utility/Camera.h"
 
 namespace ORB_SLAM3 {
 
@@ -186,6 +188,10 @@ System::System(
     mpLocalMapper = new LocalMapping(
         this, mpAtlas, mSensor == MONOCULAR || mSensor == IMU_MONOCULAR,
         mSensor == IMU_MONOCULAR, strSequence);
+
+    // set data callback for objectRecognition
+    mpLocalMapper->SetObjRecogCallback(ObjRecognitionExd::ObjRecogCallback_V3);
+
     mptLocalMapping = new thread(&ORB_SLAM3::LocalMapping::Run, mpLocalMapper);
     mpLocalMapper->mInitFr = initFr;
     mpLocalMapper->mThFarPoints = fsSettings["thFarPoints"];

@@ -30,9 +30,9 @@ typedef struct ObjRecogImageCallbackData {
 } ObjRecogImageCallbackData;
 
 typedef struct ObjRecogFrameCallbackData {
-    int id;           /// frame index
-    int flag;         /// frame state
-    double timestamp; /// frame timestamp
+    long unsigned int id; /// frame index
+    int flag;             /// frame state
+    double timestamp;     /// frame timestamp
 
     bool has_image;                /// rgb is valid
     ObjRecogImageCallbackData img; /// img data

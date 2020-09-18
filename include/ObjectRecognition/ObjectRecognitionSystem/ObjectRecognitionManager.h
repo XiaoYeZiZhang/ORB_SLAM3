@@ -8,7 +8,9 @@
 #include <mutex>
 #include "Interface/HandleBase.h"
 #include "ObjectRecognitionSystem.h"
+#include "Utility/Camera.h"
 namespace ObjRecognitionExd {
+
 class ObjRecongManager : public ObjRecognitionInterface::HandleBase {
 public:
     static ObjRecongManager &Instance();
@@ -58,5 +60,35 @@ private:
 
     std::mutex m_mutex_info_buffer;
 };
+
+static void
+ObjRecogCallback_V3(ObjRecognition::ObjRecogFrameCallbackData *&callback_data) {
+    ObjRecognition::ObjRecogFrameCallbackData frame;
+    frame.id = (callback_data)->id;
+
+    memcpy(&frame.t, (callback_data)->t, 3 * sizeof((callback_data)->t[0]));
+    memcpy(
+        &frame.R[0], (callback_data)->R[0],
+        3 * sizeof((callback_data)->R[0][0]));
+    memcpy(
+        &frame.R[1], (callback_data)->R[1],
+        3 * sizeof((callback_data)->R[1][0]));
+    memcpy(
+        &frame.R[2], (callback_data)->R[2],
+        3 * sizeof((callback_data)->R[2][0]));
+
+    frame.feature_mem_size = 0;
+
+    frame.img.width = ObjRecognition::CameraIntrinsic::GetInstance().Width();
+    frame.img.height = ObjRecognition::CameraIntrinsic::GetInstance().Height();
+    frame.img.data = new unsigned char[frame.img.height * frame.img.width];
+    memcpy(
+        frame.img.data, (callback_data)->img.data,
+        sizeof(char) * frame.img.height * frame.img.width);
+    frame.has_image = true;
+    frame.timestamp = (callback_data)->timestamp;
+
+    ObjRecongManager::Instance().Run(frame);
+}
 } // namespace ObjRecognitionExd
 #endif // ORB_SLAM3_OBJECTRECOGNITIONMANAGER_H

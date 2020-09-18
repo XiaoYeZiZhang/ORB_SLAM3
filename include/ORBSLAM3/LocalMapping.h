@@ -28,7 +28,7 @@
 #include "Tracking.h"
 #include "KeyFrameDatabase.h"
 #include "Initializer.h"
-
+#include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
 #include <mutex>
 
 namespace ORB_SLAM3 {
@@ -47,6 +47,15 @@ public:
     void SetLoopCloser(LoopClosing *pLoopCloser);
 
     void SetTracker(Tracking *pTracker);
+    void SetObjRecogCallback(
+        void (*callback)(ObjRecognition::ObjRecogFrameCallbackData *&)) {
+        cb_ = callback;
+    }
+
+    /*void SetObjRecogCallback(
+        std::function<void (const ObjRecogFrameCallbackData* &)> callback) {
+
+    }*/
 
     // Main function
     void Run();
@@ -180,6 +189,8 @@ protected:
 
     // DEBUG
     ofstream f_lm;
+
+    void (*cb_)(ObjRecognition::ObjRecogFrameCallbackData *&);
 };
 
 } // namespace ORB_SLAM3

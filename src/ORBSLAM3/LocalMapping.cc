@@ -289,11 +289,50 @@ void LocalMapping::Run() {
             f_lm << t_KF_cull << ",";
             f_lm << setprecision(0) << num_FixedKF_BA << "\n";*/
             //--
+
             // for objectRecognition
             if (mpCurrentKeyFrame) {
                 cv::imshow("keyframe: ", mpCurrentKeyFrame->imgLeft);
                 cv::waitKey(9);
             }
+
+            // callback
+            ObjRecognition::ObjRecogFrameCallbackData *callbackData =
+                new ObjRecognition::ObjRecogFrameCallbackData();
+            callbackData->id = mpCurrentKeyFrame->mnId;
+            cv::Mat Tcw = mpCurrentKeyFrame->GetPose();
+            Eigen::Matrix4d Tcw_eigen;
+            cv::cv2eigen(Tcw, Tcw_eigen);
+
+            Eigen::Vector3d t;
+            callbackData->t[0] = Tcw_eigen(0, 3);
+            callbackData->t[1] = Tcw_eigen(1, 3);
+            callbackData->t[2] = Tcw_eigen(2, 3);
+
+            Eigen::Matrix3d R;
+
+            for (size_t i = 0; i < 3; i++) {
+                for (size_t j = 0; j < 3; j++) {
+                    callbackData->R[i][j] = R(i, j);
+                }
+            }
+
+            ObjRecognition::ObjRecogImageCallbackData callbackImg;
+            callbackImg.height = mpCurrentKeyFrame->imgLeft.cols;
+            callbackImg.width = mpCurrentKeyFrame->imgLeft.rows;
+
+            callbackImg.data =
+                new unsigned char[callbackImg.height * callbackImg.width];
+            memcpy(
+                callbackImg.data, mpCurrentKeyFrame->imgLeft.data,
+                sizeof(unsigned char) * callbackImg.height * callbackImg.width);
+            callbackData->img = callbackImg;
+            callbackData->has_image = true;
+
+            callbackData->timestamp = mpCurrentKeyFrame->mTimeStamp;
+
+            cb_(callbackData);
+
         } else if (Stop() && !mbBadImu) {
             // Safe area to stop
             while (isStopped() && !CheckFinish()) {

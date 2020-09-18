@@ -13,7 +13,7 @@
 #include "ORBSLAM3/ImuTypes.h"
 #include "Utility/Camera.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
-
+#include "ORBSLAM3/LocalMapping.h"
 //#define SCANNER;
 #define OBJECTRECOGNITION;
 
@@ -98,6 +98,8 @@ bool TestViewer::InitObjectRecognition() {
     ObjRecognitionExd::ObjRecongManager::Instance().CreateWithConfig();
 
     // set slam data callback
+
+
 
     std::string cloud_point_model_dir = "/home/zhangye/data/ObjectRecognition/shoe.bin";
     int model_id = 0;
