@@ -38,7 +38,7 @@ void GlobalSummary::SaveAllPoses(const std::string &result_path) {
 
     pose_mutex_.lock();
 
-    std::cout << all_poses_.size() << std::endl;
+    // std::cout << all_poses_.size() << std::endl;
     for (auto const &trajectory : all_poses_) {
 
         std::ofstream f_stream;

@@ -37,8 +37,7 @@ protected:
     int Reset();
     int Stop();
     int Process();
-
-    // void SetInfo();
+    void SetInfo();
 
 private:
     /*std::shared_ptr<DBoW3::Vocabulary> voc_;

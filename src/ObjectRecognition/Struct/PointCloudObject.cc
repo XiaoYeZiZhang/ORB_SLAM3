@@ -15,20 +15,24 @@ void GetDataFromMem(
 }
 
 bool MapPoint::Load(unsigned int &mem_pos, const char *mem) {
-
     GetDataFromMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
     Eigen::Vector3d posTmp;
 
+    // TODO(zhangye): the mappoint position, OPENGL Coords??? Need to change???
+    // (Tco) SLAM Coords
     GetDataFromMem(&posTmp(0), ((mem) + mem_pos), sizeof(double), mem_pos);
     GetDataFromMem(&posTmp(1), ((mem) + mem_pos), sizeof(double), mem_pos);
     GetDataFromMem(&posTmp(2), ((mem) + mem_pos), sizeof(double), mem_pos);
 
     /// pointcloud model is OpenGL coordiante, turn them to the
     /// SLAM coordinate
-    mWorldPos(0) = posTmp(0);
+    /*mWorldPos(0) = posTmp(0);
     mWorldPos(1) = -posTmp(2);
-    mWorldPos(2) = posTmp(1);
+    mWorldPos(2) = posTmp(1);*/
 
+    mWorldPos(0) = posTmp(0);
+    mWorldPos(1) = posTmp(1);
+    mWorldPos(2) = posTmp(2);
     int desps_size;
     GetDataFromMem(&desps_size, ((mem) + mem_pos), sizeof(int), mem_pos);
 
@@ -38,7 +42,6 @@ bool MapPoint::Load(unsigned int &mem_pos, const char *mem) {
         cv::Mat desp = cv::Mat::zeros(32, 1, CV_8U);
         GetDataFromMem(
             desp.data, ((mem) + mem_pos), 32 * sizeof(uchar), mem_pos);
-
         m_multi_desps.push_back({index, desp});
     }
 
@@ -49,7 +52,7 @@ bool MapPoint::Load(unsigned int &mem_pos, const char *mem) {
     for (int i = 0; i < ref_kfs_id_size; i++) {
         FrameIndex kf_id;
         GetDataFromMem(&kf_id, ((mem) + mem_pos), sizeof(FrameIndex), mem_pos);
-        m_reference_kf_ids.push_back(kf_id);
+        m_reference_kf_ids.emplace_back(kf_id);
     }
 
     GetDataFromMem(&mnVisible, ((mem) + mem_pos), sizeof(mnVisible), mem_pos);
@@ -57,7 +60,6 @@ bool MapPoint::Load(unsigned int &mem_pos, const char *mem) {
     VLOG(0) << "MapPoint Data: " << mnId << ", " << m_multi_desps.size() << ", "
             << m_reference_kf_ids.size() << ", " << mnVisible << ", "
             << mnFound;
-
     return true;
 }
 
@@ -153,25 +155,24 @@ void UnPackCamCWFromMem(
 }
 
 void KeyFrame::ReadFromMemory(unsigned int &mem_pos, const char *mem) {
-
     PutDataToMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
     std::tie(mvKeypoints, mDescriptors) = UnpackORBFeatures(mem_pos, mem);
+    // TODO(zhangye): check keyframe pose, Tcw under OPENGL?? need to change to
+    // SLAM COords?
     UnPackCamCWFromMem(mem_pos, mem, mtcw, mRcw);
 
     // KF pose in the model file is under the OpenGL coordinate,
     // convert the coordinate to the SLAM coordinate
-    Eigen::Matrix3d Rgl2slam = Eigen::Matrix3d::Zero();
+    /*Eigen::Matrix3d Rgl2slam = Eigen::Matrix3d::Zero();
     Rgl2slam(0, 0) = 1;
     Rgl2slam(1, 2) = -1;
     Rgl2slam(2, 1) = 1;
-    mRcw = mRcw * Rgl2slam.transpose();
+    mRcw = mRcw * Rgl2slam.transpose();*/
 
     {
-
         /// upload image ???
         int imgWidth = ObjRecognition::CameraIntrinsic::GetInstance().Width();
         int imgHeight = ObjRecognition::CameraIntrinsic::GetInstance().Height();
-
         cv::Mat tempImg(imgHeight, imgWidth, CV_8UC1, (void *)(mem + mem_pos));
         mem_pos += sizeof(char) * imgHeight * imgWidth;
         mImage = tempImg.clone();
@@ -256,6 +257,7 @@ bool Object::LoadPointCloud(const int &mem_size, const char *mem) {
     GetDataFromMem(&cx, mem + mem_pos, sizeof(cx), mem_pos);
     GetDataFromMem(&cy, mem + mem_pos, sizeof(cy), mem_pos);
 
+    // TODO(zhangye): how to set the right boundingbox when scanning
     double bounding_box[24];
     GetDataFromMem(bounding_box, mem + mem_pos, 24 * sizeof(double), mem_pos);
     for (size_t index = 0; index < 8; index++) {
@@ -274,7 +276,6 @@ bool Object::LoadPointCloud(const int &mem_size, const char *mem) {
     for (int i = 0; i < mapPointNum; i++) {
 
         std::shared_ptr<MapPoint> mapPoint = std::make_shared<MapPoint>();
-
         if (mapPoint->Load(mem_pos, mem)) {
             m_pointclouds.push_back(mapPoint);
         } else {

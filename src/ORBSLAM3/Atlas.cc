@@ -315,6 +315,7 @@ bool Atlas::WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem) {
 
     // bounding box
 
+    // TODO(zhangye): check bbx data
     double bounding_box[24];
 
     /*for(int i = 0; i < m_obj_corner_points.size(); i++) {
@@ -343,6 +344,7 @@ bool Atlas::WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem) {
     // std::cout << "writememsize1" << mem_pos << std::endl;
     ObjRecognition::PutDataToMem(mem + mem_pos, &nMPs, sizeof(nMPs), mem_pos);
 
+    // TODO(zhangye): check Two???
     Eigen::Matrix4d m_object_Two = Eigen::Matrix4d::Identity();
     for (MapPoint *pMPi : m_saved_mappoint_for_3dobject_) {
         pMPi->WriteToMemoryFor3DObject(mem_pos, mem, m_object_Two);

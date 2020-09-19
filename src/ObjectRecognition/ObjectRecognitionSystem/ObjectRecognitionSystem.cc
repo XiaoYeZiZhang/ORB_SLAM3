@@ -1,6 +1,9 @@
 //
 // Created by zhangye on 2020/9/15.
 //
+#include <iostream>
+#include <cv.hpp>
+#include <iomanip>
 #include "Utility/Thread/ThreadBase.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionSystem.h"
 #include "Utility/FeatureExtractor/ORBExtractor.h"
@@ -45,10 +48,13 @@ int ObjRecogThread::SetModel(const std::shared_ptr<Object> &object) {
     /*std::shared_ptr<DBoW3::Database> database =
         std::make_shared<DBoW3::Database>(voc_, true, 4);
     object_->SetDatabase(database);*/
+
     VLOG(0) << "PointCloud detector database create success ";
     // VLOG(5) << "PointCloud database size: " <<
     // object_->GetDatabase()->size();
+
     auto allKFs = object_->GetKeyFrames();
+
     // object_->AddKeyFrames2Database(allKFs);
 
     pointcloudobj_detector_->SetPointCloudObj(object_);
@@ -86,7 +92,6 @@ int ObjRecogThread::GetInfo(std::string &info) {
     return 0;
 }
 
-/*
 template <typename T>
 std::string to_string_with_precision(const T a_value, const int n = 6) {
     std::ostringstream out;
@@ -97,33 +102,24 @@ std::string to_string_with_precision(const T a_value, const int n = 6) {
 void ObjRecogThread::SetInfo() {
     std::string info;
 
-    info += "frame processed num: " +
-            std::to_string(frame_processed_num_) + '\n';
+    info +=
+        "frame processed num: " + std::to_string(frame_processed_num_) + '\n';
 
-    if (detector_type_ == STObjDetectorType::STObjPointCloudDetector) {
-        pointcloudobj_detector_->GetInfo(info);
-    } else if (detector_type_ == STObjDetectorType::STObjOpticalFlowDetector) {
-        opticalFlowobj_detector_->GetInfo(info);
-    }
-
-    if (tracker_type_ == STObjTrackerType::STObjPointCloudTracker) {
-        pointcloudobj_tracker_->GetInfo(info);
-    } else if (tracker_type_ == STObjTrackerType::STObjOpticalFlowTracker) {
-        opticalFlowobj_tracker_->GetInfo(info);
-    }
+    pointcloudobj_detector_->GetInfo(info);
+    pointcloudobj_tracker_->GetInfo(info);
 
     FrameIndex frmIndex;
     double timeStamp;
     ObjRecogState state;
-    Mat3d Rcw, R_obj;
-    Vec3d Tcw, T_obj;
+    Eigen::Matrix3d Rcw, R_obj;
+    Eigen::Vector3d Tcw, T_obj;
     int obj_num = 0;
 
     object_->GetPose(frmIndex, timeStamp, state, Rcw, Tcw, R_obj, T_obj);
     if (state == TrackingGood) {
-        STSLAMCommon::StatsCollector pointCloudFinalStateNum(
-            "pointCloud finalState good num");
-        pointCloudFinalStateNum.IncrementOne();
+        // STSLAMCommon::StatsCollector pointCloudFinalStateNum(
+        //"pointCloud finalState good num");
+        // pointCloudFinalStateNum.IncrementOne();
         obj_num = 1;
     }
     info += "obj num: " + std::to_string(obj_num) + '\n';
@@ -174,7 +170,6 @@ void ObjRecogThread::SetInfo() {
         info_ = info + "\0";
     }
 }
-*/
 
 int ObjRecogThread::Process() {
     int ret = -1;
@@ -223,16 +218,18 @@ int ObjRecogThread::Process() {
         cur_frame->mTcw(i) = platformFrame->t[i];
     }
 
+    std::cout << "push frame to detector and tracker thread" << std::endl;
+    cv::imshow("frame for detector and tracker", cur_frame->img);
+    cv::waitKey(10);
     detector_thread_.PushData(cur_frame);
     tracker_thread_.PushData(cur_frame);
     ret = 0;
 
     frame_processed_num_++;
 
-    // SetInfo();
+    SetInfo();
 
     // timer.Stop();
-
     return ret;
 }
 

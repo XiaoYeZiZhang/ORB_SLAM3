@@ -76,7 +76,6 @@ int ObjRecongManager::Reset() {
     }
 
     Clear();
-
     return 0;
 }
 
@@ -190,7 +189,6 @@ int ObjRecongManager::LoadModel(
 
 int ObjRecongManager::Init() {
     // objrecog_thread_.SetVocabulary(voc_);
-
     objrecog_thread_.Init();
     objrecog_thread_.StartThread("ObjRecongManager", 0x10);
 
@@ -225,8 +223,7 @@ int ObjRecongManager::Run(
             &frame->R[index], &platform_frame.R[index],
             3 * sizeof(platform_frame.R[index][0]));
     }
-    //    std::memcpy(frame->feature_mem, platform_frame.feature_mem,
-    //        frame->feature_mem_size * sizeof(char));
+
     frame->img.width = 0;
     frame->img.height = 0;
     if (frame->has_image) {
@@ -242,7 +239,6 @@ int ObjRecongManager::Run(
     }
 
     objrecog_thread_.PushUnProcessedFrame(frame);
-
     ret = 0;
 
     return ret;
@@ -341,7 +337,7 @@ ObjRecognition::ObjRecogResult ObjRecongManager::GetObjRecognitionResult() {
         }
     }
 
-    if (bounding_box.size() == 0) {
+    if (bounding_box.empty()) {
         objrecog_result.num = 0;
     }
 
@@ -383,9 +379,8 @@ int ObjRecongManager::SetObjRecongInfo() {
 
     return ret;
 }
-/*
 char *ObjRecongManager::GetVersion() {
     //    std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
     return version_buffer;
-}*/
+}
 } // namespace ObjRecognitionExd

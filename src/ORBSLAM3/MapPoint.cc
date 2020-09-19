@@ -580,6 +580,8 @@ void MapPoint::WriteToMemoryFor3DObject(
     pos = Eigen::Vector3d(pos[0], pos[2], -pos[1]);
     pos = Tow.block<3, 3>(0, 0) * pos + Tow.block<3, 1>(0, 3);
 
+    // Tco
+    // TODO(zhangye): check coords
     ObjRecognition::PutDataToMem(
         mem + mem_pos, &(pos(0)), sizeof(double), mem_pos);
     ObjRecognition::PutDataToMem(

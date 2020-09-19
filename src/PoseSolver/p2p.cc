@@ -133,6 +133,7 @@ bool SolveRotation(
                            .toRotationMatrix(),
                    gravity_dir_R_unit_z = unit_z_R_gravity_dir.transpose();
 
+    // TODO(zhangye): check eigen problem
     if (!SolveRotationC(
             X,
             (unit_z_R_gravity_dir * Vector3d(x(0), x(1), 1.0)).head<2>() /

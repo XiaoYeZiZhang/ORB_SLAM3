@@ -10,7 +10,7 @@ namespace ObjRecognition {
 
 class FrameData {
 public:
-    int mFrmIndex;
+    long unsigned int mFrmIndex;
     double mTimeStamp;
 
     Eigen::Matrix3d mRcw;

@@ -507,6 +507,8 @@ void PointCloudObjDetector::Process(
         mObj == nullptr) {
         return;
     }
+
+    std::cout << "detector process start:" << std::endl;
     // STSLAMCommon::Timer timer("PointCloud detector process");
 
     PreProcess(frm);

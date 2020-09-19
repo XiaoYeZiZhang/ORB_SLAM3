@@ -156,7 +156,7 @@ void PointCloudObjTracker::OpticalFlowRejectWithF(
         p2.at<float>(i, 1) = static_cast<float>(ptsPre[i].y);
     }
     cv::findFundamentalMat(p1, p2, cv::FM_RANSAC, kFThreshold, 0.99, status);
-    if (status.size() == 0) {
+    if (status.empty()) {
         ptsPre.clear();
         m_frame_cur->m_opticalflow_point2ds.clear();
         mapPointIndexes.clear();
@@ -291,7 +291,6 @@ PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
             << m_match_points_opticalFlow_num;
 
     //    ShowOpticalFlowpoints(OpticalFlowKeypointsPreMatches);
-
     matchset_3d = OpticalFlowGenerate3DMatch(m_frame_cur, mapPointsObj);
 
     // VLOG(20) << "PointCloud tracker opticalFlowMatch process time: "
@@ -396,8 +395,7 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
         m_frame_cur, m_projection_matches2dTo3d_cur, m_projection_points2d_cur,
         mapPointsObj);
 
-    //    ShowProjectedPointsAndMatchingKeyPoints(projectPoints,
-    //    matchKeyPointsState);
+    ShowProjectedPointsAndMatchingKeyPoints(projectPoints, matchKeyPointsState);
 
     return matchset_3d;
 }
@@ -700,6 +698,7 @@ void PointCloudObjTracker::Process(
         return;
     }
 
+    std::cout << "tracker process start:" << std::endl;
     // STSLAMCommon::Timer timer("PointCloud tracker process");
 
     PreProcess(frm);

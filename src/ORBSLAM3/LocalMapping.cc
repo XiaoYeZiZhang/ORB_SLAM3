@@ -297,23 +297,23 @@ void LocalMapping::Run() {
             }
 
             // callback
+            std::cout << "slam set callback" << std::endl;
             ObjRecognition::ObjRecogFrameCallbackData *callbackData =
                 new ObjRecognition::ObjRecogFrameCallbackData();
             callbackData->id = mpCurrentKeyFrame->mnId;
+
+            // TODO(zhangye): CHECK Tcw is the right pose after opt
             cv::Mat Tcw = mpCurrentKeyFrame->GetPose();
+
             Eigen::Matrix4d Tcw_eigen;
             cv::cv2eigen(Tcw, Tcw_eigen);
-
-            Eigen::Vector3d t;
-            callbackData->t[0] = Tcw_eigen(0, 3);
-            callbackData->t[1] = Tcw_eigen(1, 3);
-            callbackData->t[2] = Tcw_eigen(2, 3);
-
-            Eigen::Matrix3d R;
+            /*std::cout << "Tcw_cv: " << Tcw;
+            std::cout << "Tcw_eigen: " << Tcw_eigen;*/
 
             for (size_t i = 0; i < 3; i++) {
+                callbackData->t[i] = Tcw_eigen(i, 3);
                 for (size_t j = 0; j < 3; j++) {
-                    callbackData->R[i][j] = R(i, j);
+                    callbackData->R[i][j] = Tcw_eigen(i, j);
                 }
             }
 
@@ -330,6 +330,14 @@ void LocalMapping::Run() {
             callbackData->has_image = true;
 
             callbackData->timestamp = mpCurrentKeyFrame->mTimeStamp;
+
+            /*std::cout << "callback data R: " << callbackData->R[0][0] << " "
+            << callbackData->R[0][1] << " " << callbackData->R[0][2] << " " <<
+            callbackData->R[1][0] << " " << callbackData->R[1][1] << " " <<
+            callbackData->R[1][2] << " " << callbackData->R[2][0] << " " <<
+            callbackData->R[2][1] << " " << callbackData->R[2][2] << std::endl;
+            std::cout << "callback data t: " << callbackData->t[0] << " " <<
+            callbackData->t[1] << " " << callbackData->t[2] << std::endl;*/
 
             cb_(callbackData);
 

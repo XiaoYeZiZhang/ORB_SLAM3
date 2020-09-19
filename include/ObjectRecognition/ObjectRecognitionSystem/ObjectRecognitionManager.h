@@ -25,7 +25,7 @@ public:
 
     ObjRecognition::ObjRecogResult GetObjRecognitionResult();
     int SetObjRecongInfo();
-    /*char *GetVersion();*/
+    char *GetVersion();
 
 private:
     ObjRecongManager();

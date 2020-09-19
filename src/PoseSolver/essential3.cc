@@ -201,6 +201,8 @@ bool SolveRotation(
 
     // TODO(chen): The hnormalized operation maybe dangerous, figure out and
     // hangle these cases.
+
+    // TODO(zhangye): Check eigen problem
     if (!SolveRotationC(
             p0, p1, p2,
             (unit_z_R_gravity_dir * Vector3d(q0(0), q0(1), 1.0)).head<2>() /
@@ -228,6 +230,7 @@ bool SolveRotation(
 
     // TODO(chen): The hnormalized operation maybe dangerous, figure out and
     // hangle these cases.
+    // TODO(zhangye): check eigen problem
     if (!SolveRotation(
             (ref_R_world.transpose() * Vector3d(p0(0), p0(1), 1.0)).head<2>() /
                 (ref_R_world.transpose() *

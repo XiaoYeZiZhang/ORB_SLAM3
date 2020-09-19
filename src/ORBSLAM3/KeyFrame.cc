@@ -899,7 +899,9 @@ void KeyFrame::WriteToMemoryFor3DObject(
     Rcw = Tcw_4_4.block<3, 3>(0, 0);
     Tcw = Tcw_4_4.block<3, 1>(0, 3);
 
-    Eigen::Matrix3d Rcw_gl = Rcw * Rgl2slam;
+    // TODO(zhangye): check coords
+    // Eigen::Matrix3d Rcw_gl = Rcw * Rgl2slam;
+    Eigen::Matrix3d Rcw_gl = Rcw;
     Eigen::Matrix3d Rco = Rcw_gl * Two.block<3, 3>(0, 0);
     Eigen::Vector3d tco = Rcw_gl * Two.block<3, 1>(0, 3) + Tcw;
 
