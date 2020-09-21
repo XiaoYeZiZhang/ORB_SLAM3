@@ -75,3 +75,21 @@ bool CreateFolder(std::string file_path_name) {
     }
     return true;
 }
+
+void LoadVoc(
+    std::string voc_path_compressed, char **voc_buffer,
+    unsigned int &voc_buf_size) {
+    VLOG(0) << "LoadVoc voc path = " << voc_path_compressed.c_str();
+    auto fb = fopen(voc_path_compressed.c_str(), "rb");
+    fseek(fb, 0, SEEK_END);
+    auto nFileLen = ftell(fb);
+    fseek(fb, 0, SEEK_SET);
+    *voc_buffer = new char[nFileLen];
+    fread(*voc_buffer, sizeof(char), nFileLen, fb);
+    fclose(fb);
+    voc_buf_size = nFileLen;
+
+    if (voc_buf_size <= 0 || voc_buffer == nullptr) {
+        LOG(FATAL) << "voc file can't open " << voc_path_compressed;
+    }
+}

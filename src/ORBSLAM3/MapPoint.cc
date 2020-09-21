@@ -575,13 +575,12 @@ void MapPoint::WriteToMemoryFor3DObject(
     ObjRecognition::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
     Eigen::Matrix4d Tow = Two.inverse();
     Eigen::Vector3d pos = Eigen::Vector3d(
-        mWorldPos.at<uchar>(0, 0), mWorldPos.at<uchar>(0, 1),
-        mWorldPos.at<uchar>(0, 2));
-    pos = Eigen::Vector3d(pos[0], pos[2], -pos[1]);
-    pos = Tow.block<3, 3>(0, 0) * pos + Tow.block<3, 1>(0, 3);
+        mWorldPos.at<float>(0), mWorldPos.at<float>(1), mWorldPos.at<float>(2));
+    // TODO(zhangye): check coords
+    // pos = Eigen::Vector3d(pos[0], pos[2], -pos[1]);
+    // pos = Tow.block<3, 3>(0, 0) * pos + Tow.block<3, 1>(0, 3);
 
     // Tco
-    // TODO(zhangye): check coords
     ObjRecognition::PutDataToMem(
         mem + mem_pos, &(pos(0)), sizeof(double), mem_pos);
     ObjRecognition::PutDataToMem(

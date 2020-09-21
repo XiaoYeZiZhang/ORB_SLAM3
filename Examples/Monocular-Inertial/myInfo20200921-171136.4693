@@ -1,0 +1,4 @@
+Log file created at: 2020/09/21 17:11:36
+Running on machine: zhangye-Z390-UD
+Log line format: [IWEF]yyyymmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I20200921 17:11:36.384446  4693 FileIO.cc:81] LoadVoc voc path = /home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/ORBvoc.txt

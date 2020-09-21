@@ -43,6 +43,8 @@ public:
         const bool bDrawInertialGraph);
     void DrawCurrentCamera(pangolin::OpenGlMatrix &Twc);
     void SetCurrentCameraPose(const cv::Mat &Tcw);
+    void DrawCameraTrajectory(const std::vector<cv::Mat> &trajectory);
+    void GetCurrentCameraPos(cv::Mat &cam_pos);
     void SetReferenceKeyFrame(KeyFrame *pKF);
     void GetCurrentOpenGLCameraMatrix(
         pangolin::OpenGlMatrix &M, pangolin::OpenGlMatrix &MOw);

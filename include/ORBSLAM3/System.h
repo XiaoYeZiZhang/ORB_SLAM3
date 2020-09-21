@@ -42,6 +42,8 @@
 #include "Viewer.h"
 #include "ImuTypes.h"
 
+#include "Struct/PointCloudObject.h"
+
 namespace ORB_SLAM3 {
 
 class Verbose {
@@ -67,7 +69,6 @@ public:
     }
 };
 
-class Viewer;
 class FrameDrawer;
 class Atlas;
 class Tracking;
@@ -94,7 +95,8 @@ public:
     System(
         const string &strVocFile, const string &strSettingsFile,
         const eSensor sensor, const bool bUseViewer = true,
-        const int initFr = 0, const string &strSequence = std::string(),
+        bool isObjRecognition = false, const int initFr = 0,
+        const string &strSequence = std::string(),
         const string &strLoadingFile = std::string());
 
     // Proccess the given monocular frame and optionally imu data
@@ -170,6 +172,15 @@ public:
 
     bool PackAtlasToMemoryFor3DObject(char **buffer_out, int &buffer_out_len);
 
+    // ObjectRecognition
+    void SetPointCloudModel(
+        std::shared_ptr<ObjRecognition::Object> &pointCloud_model) {
+        m_pointCloud_model_ = pointCloud_model;
+    }
+
+    // The viewer draws the map and the current camera pose. It uses Pangolin.
+    Viewer *mpViewer;
+
 private:
     // bool LoadAtlas(string filename, int type);
 
@@ -203,9 +214,6 @@ private:
     // a new thread) afterwards.
     LoopClosing *mpLoopCloser;
 
-    // The viewer draws the map and the current camera pose. It uses Pangolin.
-    Viewer *mpViewer;
-
     FrameDrawer *mpFrameDrawer;
     MapDrawer *mpMapDrawer;
 
@@ -231,6 +239,10 @@ private:
     std::vector<MapPoint *> mTrackedMapPoints;
     std::vector<cv::KeyPoint> mTrackedKeyPointsUn;
     std::mutex mMutexState;
+
+    // objectRecognition
+    bool m_recognition_mode_;
+    std::shared_ptr<ObjRecognition::Object> m_pointCloud_model_;
 };
 
 } // namespace ORB_SLAM3

@@ -1,0 +1,857 @@
+Log file created at: 2020/09/21 13:53:17
+Running on machine: zhangye-Z390-UD
+Log line format: [IWEF]yyyymmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I20200921 13:53:17.318549 27224 PointCloudObject.cc:60] MapPoint Data: 0, 1, 3, 17, 8
+I20200921 13:53:17.318753 27224 PointCloudObject.cc:60] MapPoint Data: 1, 1, 4, 17, 12
+I20200921 13:53:17.318763 27224 PointCloudObject.cc:60] MapPoint Data: 2, 1, 4, 15, 14
+I20200921 13:53:17.318770 27224 PointCloudObject.cc:60] MapPoint Data: 3, 1, 3, 14, 12
+I20200921 13:53:17.318792 27224 PointCloudObject.cc:60] MapPoint Data: 4, 1, 4, 17, 17
+I20200921 13:53:17.318797 27224 PointCloudObject.cc:60] MapPoint Data: 5, 1, 3, 15, 8
+I20200921 13:53:17.318802 27224 PointCloudObject.cc:60] MapPoint Data: 9, 1, 3, 13, 7
+I20200921 13:53:17.318809 27224 PointCloudObject.cc:60] MapPoint Data: 11, 1, 3, 17, 16
+I20200921 13:53:17.318814 27224 PointCloudObject.cc:60] MapPoint Data: 21, 1, 3, 16, 12
+I20200921 13:53:17.318819 27224 PointCloudObject.cc:60] MapPoint Data: 22, 1, 3, 11, 7
+I20200921 13:53:17.318825 27224 PointCloudObject.cc:60] MapPoint Data: 23, 1, 3, 14, 8
+I20200921 13:53:17.318830 27224 PointCloudObject.cc:60] MapPoint Data: 24, 1, 3, 15, 9
+I20200921 13:53:17.318835 27224 PointCloudObject.cc:60] MapPoint Data: 25, 1, 3, 16, 13
+I20200921 13:53:17.318841 27224 PointCloudObject.cc:60] MapPoint Data: 26, 1, 3, 17, 8
+I20200921 13:53:17.318846 27224 PointCloudObject.cc:60] MapPoint Data: 38, 1, 3, 14, 8
+I20200921 13:53:17.318851 27224 PointCloudObject.cc:60] MapPoint Data: 39, 1, 3, 14, 10
+I20200921 13:53:17.318857 27224 PointCloudObject.cc:60] MapPoint Data: 50, 1, 3, 15, 10
+I20200921 13:53:17.318862 27224 PointCloudObject.cc:60] MapPoint Data: 52, 1, 3, 17, 10
+I20200921 13:53:17.318867 27224 PointCloudObject.cc:60] MapPoint Data: 56, 1, 3, 12, 10
+I20200921 13:53:17.318872 27224 PointCloudObject.cc:60] MapPoint Data: 57, 1, 4, 17, 17
+I20200921 13:53:17.318878 27224 PointCloudObject.cc:60] MapPoint Data: 61, 1, 3, 16, 10
+I20200921 13:53:17.318883 27224 PointCloudObject.cc:60] MapPoint Data: 63, 1, 3, 16, 10
+I20200921 13:53:17.318888 27224 PointCloudObject.cc:60] MapPoint Data: 68, 1, 3, 16, 14
+I20200921 13:53:17.318893 27224 PointCloudObject.cc:60] MapPoint Data: 69, 1, 3, 16, 12
+I20200921 13:53:17.318899 27224 PointCloudObject.cc:60] MapPoint Data: 74, 1, 3, 17, 15
+I20200921 13:53:17.318904 27224 PointCloudObject.cc:60] MapPoint Data: 78, 1, 3, 15, 12
+I20200921 13:53:17.318909 27224 PointCloudObject.cc:60] MapPoint Data: 83, 1, 3, 16, 11
+I20200921 13:53:17.318914 27224 PointCloudObject.cc:60] MapPoint Data: 93, 1, 3, 25, 14
+I20200921 13:53:17.318920 27224 PointCloudObject.cc:60] MapPoint Data: 96, 1, 3, 15, 7
+I20200921 13:53:17.318925 27224 PointCloudObject.cc:60] MapPoint Data: 108, 1, 3, 12, 9
+I20200921 13:53:17.318930 27224 PointCloudObject.cc:60] MapPoint Data: 114, 1, 3, 14, 4
+I20200921 13:53:17.318935 27224 PointCloudObject.cc:60] MapPoint Data: 115, 1, 3, 15, 11
+I20200921 13:53:17.318941 27224 PointCloudObject.cc:60] MapPoint Data: 116, 1, 3, 16, 10
+I20200921 13:53:17.318946 27224 PointCloudObject.cc:60] MapPoint Data: 117, 1, 3, 14, 14
+I20200921 13:53:17.318951 27224 PointCloudObject.cc:60] MapPoint Data: 120, 1, 3, 17, 6
+I20200921 13:53:17.318956 27224 PointCloudObject.cc:60] MapPoint Data: 122, 1, 4, 17, 17
+I20200921 13:53:17.318961 27224 PointCloudObject.cc:60] MapPoint Data: 126, 1, 3, 16, 9
+I20200921 13:53:17.318967 27224 PointCloudObject.cc:60] MapPoint Data: 129, 1, 3, 16, 4
+I20200921 13:53:17.318972 27224 PointCloudObject.cc:60] MapPoint Data: 130, 1, 3, 14, 7
+I20200921 13:53:17.318977 27224 PointCloudObject.cc:60] MapPoint Data: 131, 1, 3, 14, 6
+I20200921 13:53:17.318982 27224 PointCloudObject.cc:60] MapPoint Data: 133, 1, 3, 16, 12
+I20200921 13:53:17.318989 27224 PointCloudObject.cc:60] MapPoint Data: 134, 1, 3, 14, 8
+I20200921 13:53:17.318994 27224 PointCloudObject.cc:60] MapPoint Data: 145, 1, 4, 17, 14
+I20200921 13:53:17.318998 27224 PointCloudObject.cc:60] MapPoint Data: 147, 1, 3, 15, 12
+I20200921 13:53:17.319005 27224 PointCloudObject.cc:60] MapPoint Data: 148, 1, 4, 17, 17
+I20200921 13:53:17.319010 27224 PointCloudObject.cc:60] MapPoint Data: 142, 1, 4, 16, 14
+I20200921 13:53:17.319015 27224 PointCloudObject.cc:60] MapPoint Data: 144, 1, 4, 16, 16
+I20200921 13:53:17.319020 27224 PointCloudObject.cc:60] MapPoint Data: 139, 1, 4, 17, 16
+I20200921 13:53:17.319034 27224 PointCloudObject.cc:60] MapPoint Data: 150, 1, 4, 15, 11
+I20200921 13:53:17.319041 27224 PointCloudObject.cc:60] MapPoint Data: 152, 1, 3, 15, 10
+I20200921 13:53:17.319070 27224 PointCloudObject.cc:60] MapPoint Data: 153, 1, 4, 17, 17
+I20200921 13:53:17.319075 27224 PointCloudObject.cc:60] MapPoint Data: 154, 1, 4, 17, 17
+I20200921 13:53:17.319082 27224 PointCloudObject.cc:60] MapPoint Data: 157, 1, 4, 16, 14
+I20200921 13:53:17.319087 27224 PointCloudObject.cc:60] MapPoint Data: 158, 1, 4, 17, 17
+I20200921 13:53:17.319092 27224 PointCloudObject.cc:60] MapPoint Data: 159, 1, 3, 17, 16
+I20200921 13:53:17.319097 27224 PointCloudObject.cc:60] MapPoint Data: 160, 1, 3, 15, 14
+I20200921 13:53:17.319118 27224 PointCloudObject.cc:60] MapPoint Data: 161, 1, 4, 14, 14
+I20200921 13:53:17.319123 27224 PointCloudObject.cc:60] MapPoint Data: 164, 1, 4, 17, 17
+I20200921 13:53:17.319129 27224 PointCloudObject.cc:60] MapPoint Data: 165, 1, 4, 16, 16
+I20200921 13:53:17.319134 27224 PointCloudObject.cc:60] MapPoint Data: 167, 1, 4, 17, 15
+I20200921 13:53:17.319139 27224 PointCloudObject.cc:60] MapPoint Data: 168, 1, 4, 16, 16
+I20200921 13:53:17.319144 27224 PointCloudObject.cc:60] MapPoint Data: 169, 1, 4, 18, 18
+I20200921 13:53:17.319150 27224 PointCloudObject.cc:60] MapPoint Data: 170, 1, 4, 17, 17
+I20200921 13:53:17.319155 27224 PointCloudObject.cc:60] MapPoint Data: 171, 1, 4, 15, 15
+I20200921 13:53:17.319160 27224 PointCloudObject.cc:60] MapPoint Data: 173, 1, 4, 15, 15
+I20200921 13:53:17.319165 27224 PointCloudObject.cc:60] MapPoint Data: 175, 1, 4, 17, 16
+I20200921 13:53:17.319171 27224 PointCloudObject.cc:60] MapPoint Data: 176, 1, 3, 17, 11
+I20200921 13:53:17.319176 27224 PointCloudObject.cc:60] MapPoint Data: 178, 1, 3, 15, 13
+I20200921 13:53:17.319181 27224 PointCloudObject.cc:60] MapPoint Data: 179, 1, 4, 16, 14
+I20200921 13:53:17.319187 27224 PointCloudObject.cc:60] MapPoint Data: 180, 1, 3, 16, 11
+I20200921 13:53:17.319192 27224 PointCloudObject.cc:60] MapPoint Data: 183, 1, 4, 16, 13
+I20200921 13:53:17.319197 27224 PointCloudObject.cc:60] MapPoint Data: 184, 1, 4, 17, 16
+I20200921 13:53:17.319203 27224 PointCloudObject.cc:60] MapPoint Data: 186, 1, 4, 17, 15
+I20200921 13:53:17.319208 27224 PointCloudObject.cc:60] MapPoint Data: 187, 1, 4, 15, 14
+I20200921 13:53:17.319214 27224 PointCloudObject.cc:60] MapPoint Data: 188, 1, 4, 16, 16
+I20200921 13:53:17.319219 27224 PointCloudObject.cc:60] MapPoint Data: 189, 1, 3, 15, 15
+I20200921 13:53:17.319224 27224 PointCloudObject.cc:60] MapPoint Data: 190, 1, 4, 17, 16
+I20200921 13:53:17.319231 27224 PointCloudObject.cc:60] MapPoint Data: 191, 1, 4, 16, 14
+I20200921 13:53:17.319236 27224 PointCloudObject.cc:60] MapPoint Data: 192, 1, 4, 18, 16
+I20200921 13:53:17.319240 27224 PointCloudObject.cc:60] MapPoint Data: 194, 1, 3, 13, 6
+I20200921 13:53:17.319247 27224 PointCloudObject.cc:60] MapPoint Data: 197, 1, 4, 17, 17
+I20200921 13:53:17.319252 27224 PointCloudObject.cc:60] MapPoint Data: 198, 1, 4, 15, 15
+I20200921 13:53:17.319257 27224 PointCloudObject.cc:60] MapPoint Data: 202, 1, 4, 17, 17
+I20200921 13:53:17.319262 27224 PointCloudObject.cc:60] MapPoint Data: 204, 1, 3, 17, 16
+I20200921 13:53:17.319267 27224 PointCloudObject.cc:60] MapPoint Data: 205, 1, 4, 16, 15
+I20200921 13:53:17.319272 27224 PointCloudObject.cc:60] MapPoint Data: 206, 1, 4, 18, 18
+I20200921 13:53:17.319278 27224 PointCloudObject.cc:60] MapPoint Data: 207, 1, 3, 17, 15
+I20200921 13:53:17.319283 27224 PointCloudObject.cc:60] MapPoint Data: 208, 1, 3, 15, 10
+I20200921 13:53:17.319288 27224 PointCloudObject.cc:60] MapPoint Data: 211, 1, 4, 17, 17
+I20200921 13:53:17.319293 27224 PointCloudObject.cc:60] MapPoint Data: 212, 1, 4, 16, 15
+I20200921 13:53:17.319298 27224 PointCloudObject.cc:60] MapPoint Data: 216, 1, 3, 17, 9
+I20200921 13:53:17.319304 27224 PointCloudObject.cc:60] MapPoint Data: 217, 1, 4, 17, 17
+I20200921 13:53:17.319309 27224 PointCloudObject.cc:60] MapPoint Data: 218, 1, 4, 17, 17
+I20200921 13:53:17.319314 27224 PointCloudObject.cc:60] MapPoint Data: 219, 1, 4, 16, 16
+I20200921 13:53:17.319326 27224 PointCloudObject.cc:60] MapPoint Data: 224, 1, 4, 17, 17
+I20200921 13:53:17.319334 27224 PointCloudObject.cc:60] MapPoint Data: 225, 1, 4, 15, 11
+I20200921 13:53:17.319341 27224 PointCloudObject.cc:60] MapPoint Data: 228, 1, 3, 14, 6
+I20200921 13:53:17.319348 27224 PointCloudObject.cc:60] MapPoint Data: 229, 1, 3, 16, 6
+I20200921 13:53:17.319355 27224 PointCloudObject.cc:60] MapPoint Data: 230, 1, 3, 16, 12
+I20200921 13:53:17.319361 27224 PointCloudObject.cc:60] MapPoint Data: 232, 1, 4, 17, 17
+I20200921 13:53:17.319367 27224 PointCloudObject.cc:60] MapPoint Data: 233, 1, 4, 17, 14
+I20200921 13:53:17.319373 27224 PointCloudObject.cc:60] MapPoint Data: 236, 1, 3, 16, 11
+I20200921 13:53:17.319380 27224 PointCloudObject.cc:60] MapPoint Data: 238, 1, 3, 14, 11
+I20200921 13:53:17.319387 27224 PointCloudObject.cc:60] MapPoint Data: 239, 1, 4, 14, 12
+I20200921 13:53:17.319394 27224 PointCloudObject.cc:60] MapPoint Data: 240, 1, 4, 15, 15
+I20200921 13:53:17.319401 27224 PointCloudObject.cc:60] MapPoint Data: 248, 1, 4, 17, 16
+I20200921 13:53:17.319407 27224 PointCloudObject.cc:60] MapPoint Data: 249, 1, 4, 16, 11
+I20200921 13:53:17.319413 27224 PointCloudObject.cc:60] MapPoint Data: 250, 1, 4, 17, 16
+I20200921 13:53:17.319418 27224 PointCloudObject.cc:60] MapPoint Data: 251, 1, 3, 16, 7
+I20200921 13:53:17.319424 27224 PointCloudObject.cc:60] MapPoint Data: 252, 1, 3, 17, 16
+I20200921 13:53:17.319429 27224 PointCloudObject.cc:60] MapPoint Data: 253, 1, 3, 16, 6
+I20200921 13:53:17.319434 27224 PointCloudObject.cc:60] MapPoint Data: 256, 1, 4, 16, 10
+I20200921 13:53:17.319439 27224 PointCloudObject.cc:60] MapPoint Data: 257, 1, 4, 17, 17
+I20200921 13:53:17.319445 27224 PointCloudObject.cc:60] MapPoint Data: 258, 1, 3, 15, 10
+I20200921 13:53:17.319450 27224 PointCloudObject.cc:60] MapPoint Data: 261, 1, 3, 15, 10
+I20200921 13:53:17.319455 27224 PointCloudObject.cc:60] MapPoint Data: 265, 1, 3, 17, 12
+I20200921 13:53:17.319466 27224 PointCloudObject.cc:60] MapPoint Data: 266, 1, 4, 14, 14
+I20200921 13:53:17.319471 27224 PointCloudObject.cc:60] MapPoint Data: 267, 1, 4, 17, 15
+I20200921 13:53:17.319499 27224 PointCloudObject.cc:60] MapPoint Data: 271, 1, 4, 16, 10
+I20200921 13:53:17.319504 27224 PointCloudObject.cc:60] MapPoint Data: 275, 1, 3, 17, 5
+I20200921 13:53:17.319509 27224 PointCloudObject.cc:60] MapPoint Data: 276, 1, 3, 17, 11
+I20200921 13:53:17.319514 27224 PointCloudObject.cc:60] MapPoint Data: 277, 1, 3, 16, 16
+I20200921 13:53:17.319535 27224 PointCloudObject.cc:60] MapPoint Data: 279, 1, 3, 16, 13
+I20200921 13:53:17.319540 27224 PointCloudObject.cc:60] MapPoint Data: 286, 1, 3, 17, 10
+I20200921 13:53:17.319558 27224 PointCloudObject.cc:60] MapPoint Data: 292, 1, 3, 16, 7
+I20200921 13:53:17.319563 27224 PointCloudObject.cc:60] MapPoint Data: 299, 1, 3, 17, 14
+I20200921 13:53:17.319568 27224 PointCloudObject.cc:60] MapPoint Data: 301, 1, 3, 13, 11
+I20200921 13:53:17.319573 27224 PointCloudObject.cc:60] MapPoint Data: 305, 1, 4, 16, 15
+I20200921 13:53:17.319578 27224 PointCloudObject.cc:60] MapPoint Data: 308, 1, 3, 15, 9
+I20200921 13:53:17.319583 27224 PointCloudObject.cc:60] MapPoint Data: 311, 1, 3, 9, 9
+I20200921 13:53:17.319588 27224 PointCloudObject.cc:60] MapPoint Data: 312, 1, 2, 7, 7
+I20200921 13:53:17.319593 27224 PointCloudObject.cc:60] MapPoint Data: 313, 1, 4, 9, 8
+I20200921 13:53:17.319599 27224 PointCloudObject.cc:60] MapPoint Data: 315, 1, 3, 8, 6
+I20200921 13:53:17.319604 27224 PointCloudObject.cc:60] MapPoint Data: 316, 1, 3, 7, 3
+I20200921 13:53:17.319609 27224 PointCloudObject.cc:60] MapPoint Data: 317, 1, 3, 9, 9
+I20200921 13:53:17.319614 27224 PointCloudObject.cc:60] MapPoint Data: 319, 1, 4, 8, 7
+I20200921 13:53:17.319620 27224 PointCloudObject.cc:60] MapPoint Data: 321, 1, 3, 7, 7
+I20200921 13:53:17.319625 27224 PointCloudObject.cc:60] MapPoint Data: 331, 1, 2, 9, 3
+I20200921 13:53:17.319630 27224 PointCloudObject.cc:60] MapPoint Data: 332, 1, 3, 7, 4
+I20200921 13:53:17.319635 27224 PointCloudObject.cc:60] MapPoint Data: 334, 1, 2, 6, 5
+I20200921 13:53:17.319664 27224 PointCloudObject.cc:60] MapPoint Data: 335, 1, 2, 6, 4
+I20200921 13:53:17.319669 27224 PointCloudObject.cc:60] MapPoint Data: 336, 1, 2, 4, 1
+I20200921 13:53:17.319675 27224 PointCloudObject.cc:60] MapPoint Data: 337, 1, 2, 3, 3
+I20200921 13:53:17.319680 27224 PointCloudObject.cc:60] MapPoint Data: 353, 1, 4, 9, 9
+I20200921 13:53:17.319700 27224 PointCloudObject.cc:60] MapPoint Data: 355, 1, 4, 9, 9
+I20200921 13:53:17.319705 27224 PointCloudObject.cc:60] MapPoint Data: 356, 1, 3, 8, 8
+I20200921 13:53:17.319710 27224 PointCloudObject.cc:60] MapPoint Data: 358, 1, 3, 8, 6
+I20200921 13:53:17.319715 27224 PointCloudObject.cc:60] MapPoint Data: 359, 1, 3, 7, 5
+I20200921 13:53:17.319721 27224 PointCloudObject.cc:60] MapPoint Data: 360, 1, 4, 8, 7
+I20200921 13:53:17.319728 27224 PointCloudObject.cc:60] MapPoint Data: 361, 1, 4, 8, 8
+I20200921 13:53:17.319736 27224 PointCloudObject.cc:60] MapPoint Data: 362, 1, 4, 8, 6
+I20200921 13:53:17.319742 27224 PointCloudObject.cc:60] MapPoint Data: 363, 1, 4, 9, 9
+I20200921 13:53:17.319747 27224 PointCloudObject.cc:60] MapPoint Data: 366, 1, 3, 8, 6
+I20200921 13:53:17.319752 27224 PointCloudObject.cc:60] MapPoint Data: 368, 1, 4, 9, 9
+I20200921 13:53:17.319757 27224 PointCloudObject.cc:60] MapPoint Data: 369, 1, 3, 9, 6
+I20200921 13:53:17.319762 27224 PointCloudObject.cc:60] MapPoint Data: 370, 1, 3, 9, 8
+I20200921 13:53:17.319767 27224 PointCloudObject.cc:60] MapPoint Data: 371, 1, 4, 9, 8
+I20200921 13:53:17.319773 27224 PointCloudObject.cc:60] MapPoint Data: 372, 1, 4, 9, 9
+I20200921 13:53:17.319778 27224 PointCloudObject.cc:60] MapPoint Data: 373, 1, 4, 7, 8
+I20200921 13:53:17.319783 27224 PointCloudObject.cc:60] MapPoint Data: 375, 1, 3, 7, 5
+I20200921 13:53:17.319788 27224 PointCloudObject.cc:60] MapPoint Data: 323, 1, 2, 9, 4
+I20200921 13:53:17.319793 27224 PointCloudObject.cc:60] MapPoint Data: 328, 1, 3, 8, 8
+I20200921 13:53:17.319798 27224 PointCloudObject.cc:60] MapPoint Data: 329, 1, 2, 8, 4
+I20200921 13:53:17.319803 27224 PointCloudObject.cc:60] MapPoint Data: 339, 1, 4, 10, 10
+I20200921 13:53:17.319808 27224 PointCloudObject.cc:60] MapPoint Data: 340, 1, 4, 9, 8
+I20200921 13:53:17.319813 27224 PointCloudObject.cc:60] MapPoint Data: 341, 1, 4, 9, 9
+I20200921 13:53:17.319819 27224 PointCloudObject.cc:60] MapPoint Data: 343, 1, 4, 9, 9
+I20200921 13:53:17.319824 27224 PointCloudObject.cc:60] MapPoint Data: 344, 1, 4, 9, 9
+I20200921 13:53:17.319829 27224 PointCloudObject.cc:60] MapPoint Data: 345, 1, 3, 9, 6
+I20200921 13:53:17.319834 27224 PointCloudObject.cc:60] MapPoint Data: 346, 1, 3, 8, 7
+I20200921 13:53:17.319839 27224 PointCloudObject.cc:60] MapPoint Data: 348, 1, 3, 7, 4
+I20200921 13:53:17.319844 27224 PointCloudObject.cc:60] MapPoint Data: 350, 1, 4, 10, 10
+I20200921 13:53:17.319849 27224 PointCloudObject.cc:60] MapPoint Data: 352, 1, 4, 9, 9
+I20200921 13:53:17.319854 27224 PointCloudObject.cc:60] MapPoint Data: 378, 1, 4, 9, 8
+I20200921 13:53:17.319860 27224 PointCloudObject.cc:60] MapPoint Data: 379, 1, 3, 8, 7
+I20200921 13:53:17.319865 27224 PointCloudObject.cc:60] MapPoint Data: 381, 1, 4, 7, 7
+I20200921 13:53:17.319870 27224 PointCloudObject.cc:60] MapPoint Data: 383, 1, 3, 9, 7
+I20200921 13:53:17.319875 27224 PointCloudObject.cc:60] MapPoint Data: 384, 1, 3, 8, 8
+I20200921 13:53:17.319880 27224 PointCloudObject.cc:60] MapPoint Data: 385, 1, 3, 9, 6
+I20200921 13:53:17.319885 27224 PointCloudObject.cc:60] MapPoint Data: 386, 1, 4, 9, 9
+I20200921 13:53:17.319890 27224 PointCloudObject.cc:60] MapPoint Data: 387, 1, 4, 7, 7
+I20200921 13:53:17.319898 27224 PointCloudObject.cc:60] MapPoint Data: 388, 1, 3, 8, 5
+I20200921 13:53:17.319903 27224 PointCloudObject.cc:60] MapPoint Data: 389, 1, 4, 10, 10
+I20200921 13:53:17.319908 27224 PointCloudObject.cc:60] MapPoint Data: 390, 1, 3, 8, 5
+I20200921 13:53:17.319914 27224 PointCloudObject.cc:60] MapPoint Data: 391, 1, 3, 8, 5
+I20200921 13:53:17.319919 27224 PointCloudObject.cc:60] MapPoint Data: 392, 1, 3, 8, 4
+I20200921 13:53:17.319924 27224 PointCloudObject.cc:60] MapPoint Data: 394, 1, 4, 8, 6
+I20200921 13:53:17.319953 27224 PointCloudObject.cc:60] MapPoint Data: 395, 1, 4, 8, 7
+I20200921 13:53:17.319959 27224 PointCloudObject.cc:60] MapPoint Data: 396, 1, 4, 8, 4
+I20200921 13:53:17.319965 27224 PointCloudObject.cc:60] MapPoint Data: 397, 1, 4, 9, 9
+I20200921 13:53:17.319970 27224 PointCloudObject.cc:60] MapPoint Data: 398, 1, 4, 9, 9
+I20200921 13:53:17.319975 27224 PointCloudObject.cc:60] MapPoint Data: 399, 1, 3, 14, 10
+I20200921 13:53:17.319995 27224 PointCloudObject.cc:60] MapPoint Data: 400, 1, 3, 6, 5
+I20200921 13:53:17.320000 27224 PointCloudObject.cc:60] MapPoint Data: 401, 1, 3, 6, 3
+I20200921 13:53:17.320005 27224 PointCloudObject.cc:60] MapPoint Data: 402, 1, 3, 8, 2
+I20200921 13:53:17.320010 27224 PointCloudObject.cc:60] MapPoint Data: 404, 1, 2, 4, 1
+I20200921 13:53:17.320015 27224 PointCloudObject.cc:60] MapPoint Data: 405, 1, 3, 8, 3
+I20200921 13:53:17.320020 27224 PointCloudObject.cc:60] MapPoint Data: 449, 1, 2, 1, 1
+I20200921 13:53:17.320025 27224 PointCloudObject.cc:60] MapPoint Data: 450, 1, 2, 1, 1
+I20200921 13:53:17.320031 27224 PointCloudObject.cc:60] MapPoint Data: 451, 1, 3, 2, 2
+I20200921 13:53:17.320036 27224 PointCloudObject.cc:60] MapPoint Data: 452, 1, 4, 1, 1
+I20200921 13:53:17.320041 27224 PointCloudObject.cc:60] MapPoint Data: 453, 1, 3, 1, 1
+I20200921 13:53:17.320046 27224 PointCloudObject.cc:60] MapPoint Data: 454, 1, 3, 1, 1
+I20200921 13:53:17.320051 27224 PointCloudObject.cc:60] MapPoint Data: 455, 1, 2, 1, 1
+I20200921 13:53:17.320056 27224 PointCloudObject.cc:60] MapPoint Data: 457, 1, 2, 1, 1
+I20200921 13:53:17.320061 27224 PointCloudObject.cc:60] MapPoint Data: 458, 1, 2, 1, 1
+I20200921 13:53:17.320066 27224 PointCloudObject.cc:60] MapPoint Data: 459, 1, 4, 1, 1
+I20200921 13:53:17.320071 27224 PointCloudObject.cc:60] MapPoint Data: 460, 1, 4, 1, 1
+I20200921 13:53:17.320077 27224 PointCloudObject.cc:60] MapPoint Data: 461, 1, 4, 1, 1
+I20200921 13:53:17.320082 27224 PointCloudObject.cc:60] MapPoint Data: 462, 1, 3, 1, 1
+I20200921 13:53:17.320087 27224 PointCloudObject.cc:60] MapPoint Data: 463, 1, 3, 1, 1
+I20200921 13:53:17.320092 27224 PointCloudObject.cc:60] MapPoint Data: 464, 1, 4, 2, 2
+I20200921 13:53:17.320097 27224 PointCloudObject.cc:60] MapPoint Data: 466, 1, 4, 1, 1
+I20200921 13:53:17.320102 27224 PointCloudObject.cc:60] MapPoint Data: 469, 1, 2, 1, 1
+I20200921 13:53:17.320107 27224 PointCloudObject.cc:60] MapPoint Data: 470, 1, 2, 1, 1
+I20200921 13:53:17.320112 27224 PointCloudObject.cc:60] MapPoint Data: 471, 1, 4, 1, 1
+I20200921 13:53:17.320117 27224 PointCloudObject.cc:60] MapPoint Data: 472, 1, 2, 1, 1
+I20200921 13:53:17.320123 27224 PointCloudObject.cc:60] MapPoint Data: 474, 1, 3, 1, 1
+I20200921 13:53:17.320128 27224 PointCloudObject.cc:60] MapPoint Data: 475, 1, 2, 1, 1
+I20200921 13:53:17.320133 27224 PointCloudObject.cc:60] MapPoint Data: 476, 1, 4, 1, 1
+I20200921 13:53:17.320138 27224 PointCloudObject.cc:60] MapPoint Data: 477, 1, 3, 1, 1
+I20200921 13:53:17.320144 27224 PointCloudObject.cc:60] MapPoint Data: 478, 1, 4, 9, 3
+I20200921 13:53:17.320149 27224 PointCloudObject.cc:60] MapPoint Data: 479, 1, 4, 1, 1
+I20200921 13:53:17.320154 27224 PointCloudObject.cc:60] MapPoint Data: 407, 1, 3, 2, 2
+I20200921 13:53:17.320159 27224 PointCloudObject.cc:60] MapPoint Data: 408, 1, 3, 2, 2
+I20200921 13:53:17.320164 27224 PointCloudObject.cc:60] MapPoint Data: 409, 1, 4, 1, 1
+I20200921 13:53:17.320169 27224 PointCloudObject.cc:60] MapPoint Data: 410, 1, 2, 1, 1
+I20200921 13:53:17.320174 27224 PointCloudObject.cc:60] MapPoint Data: 411, 1, 2, 1, 1
+I20200921 13:53:17.320179 27224 PointCloudObject.cc:60] MapPoint Data: 412, 1, 4, 1, 1
+I20200921 13:53:17.320184 27224 PointCloudObject.cc:60] MapPoint Data: 413, 1, 3, 1, 1
+I20200921 13:53:17.320190 27224 PointCloudObject.cc:60] MapPoint Data: 419, 1, 3, 1, 1
+I20200921 13:53:17.320195 27224 PointCloudObject.cc:60] MapPoint Data: 421, 1, 3, 1, 1
+I20200921 13:53:17.320200 27224 PointCloudObject.cc:60] MapPoint Data: 422, 1, 3, 1, 1
+I20200921 13:53:17.320205 27224 PointCloudObject.cc:60] MapPoint Data: 423, 1, 2, 1, 1
+I20200921 13:53:17.320210 27224 PointCloudObject.cc:60] MapPoint Data: 424, 1, 4, 3, 3
+I20200921 13:53:17.320238 27224 PointCloudObject.cc:60] MapPoint Data: 516, 1, 4, 2, 2
+I20200921 13:53:17.320245 27224 PointCloudObject.cc:60] MapPoint Data: 517, 1, 2, 1, 1
+I20200921 13:53:17.320250 27224 PointCloudObject.cc:60] MapPoint Data: 518, 1, 2, 1, 1
+I20200921 13:53:17.320255 27224 PointCloudObject.cc:60] MapPoint Data: 519, 1, 2, 1, 1
+I20200921 13:53:17.320259 27224 PointCloudObject.cc:60] MapPoint Data: 520, 1, 2, 1, 1
+I20200921 13:53:17.320277 27224 PointCloudObject.cc:60] MapPoint Data: 521, 1, 2, 1, 1
+I20200921 13:53:17.320282 27224 PointCloudObject.cc:60] MapPoint Data: 522, 1, 2, 1, 1
+I20200921 13:53:17.320287 27224 PointCloudObject.cc:60] MapPoint Data: 523, 1, 2, 1, 1
+I20200921 13:53:17.320292 27224 PointCloudObject.cc:60] MapPoint Data: 525, 1, 2, 1, 1
+I20200921 13:53:17.320297 27224 PointCloudObject.cc:60] MapPoint Data: 526, 1, 2, 1, 1
+I20200921 13:53:17.320302 27224 PointCloudObject.cc:60] MapPoint Data: 528, 1, 2, 1, 1
+I20200921 13:53:17.320307 27224 PointCloudObject.cc:60] MapPoint Data: 529, 1, 2, 1, 1
+I20200921 13:53:17.320312 27224 PointCloudObject.cc:60] MapPoint Data: 530, 1, 2, 1, 1
+I20200921 13:53:17.320317 27224 PointCloudObject.cc:60] MapPoint Data: 531, 1, 2, 1, 1
+I20200921 13:53:17.320322 27224 PointCloudObject.cc:60] MapPoint Data: 532, 1, 2, 1, 1
+I20200921 13:53:17.320327 27224 PointCloudObject.cc:60] MapPoint Data: 533, 1, 2, 1, 1
+I20200921 13:53:17.320331 27224 PointCloudObject.cc:60] MapPoint Data: 534, 1, 2, 1, 1
+I20200921 13:53:17.320336 27224 PointCloudObject.cc:60] MapPoint Data: 535, 1, 2, 1, 1
+I20200921 13:53:17.320341 27224 PointCloudObject.cc:60] MapPoint Data: 536, 1, 2, 1, 1
+I20200921 13:53:17.320346 27224 PointCloudObject.cc:60] MapPoint Data: 537, 1, 2, 1, 1
+I20200921 13:53:17.320351 27224 PointCloudObject.cc:60] MapPoint Data: 538, 1, 2, 1, 1
+I20200921 13:53:17.320356 27224 PointCloudObject.cc:60] MapPoint Data: 540, 1, 4, 1, 1
+I20200921 13:53:17.320361 27224 PointCloudObject.cc:60] MapPoint Data: 541, 1, 2, 1, 1
+I20200921 13:53:17.320366 27224 PointCloudObject.cc:60] MapPoint Data: 542, 1, 2, 1, 1
+I20200921 13:53:17.320371 27224 PointCloudObject.cc:60] MapPoint Data: 543, 1, 2, 1, 1
+I20200921 13:53:17.320375 27224 PointCloudObject.cc:60] MapPoint Data: 544, 1, 2, 1, 1
+I20200921 13:53:17.320380 27224 PointCloudObject.cc:60] MapPoint Data: 545, 1, 2, 1, 1
+I20200921 13:53:17.320385 27224 PointCloudObject.cc:60] MapPoint Data: 546, 1, 2, 1, 1
+I20200921 13:53:17.320390 27224 PointCloudObject.cc:60] MapPoint Data: 547, 1, 3, 1, 1
+I20200921 13:53:17.320395 27224 PointCloudObject.cc:60] MapPoint Data: 548, 1, 2, 1, 1
+I20200921 13:53:17.320400 27224 PointCloudObject.cc:60] MapPoint Data: 549, 1, 2, 1, 1
+I20200921 13:53:17.320405 27224 PointCloudObject.cc:60] MapPoint Data: 550, 1, 2, 1, 1
+I20200921 13:53:17.320410 27224 PointCloudObject.cc:60] MapPoint Data: 551, 1, 2, 1, 1
+I20200921 13:53:17.320415 27224 PointCloudObject.cc:60] MapPoint Data: 552, 1, 2, 1, 1
+I20200921 13:53:17.320420 27224 PointCloudObject.cc:60] MapPoint Data: 553, 1, 2, 1, 1
+I20200921 13:53:17.320425 27224 PointCloudObject.cc:60] MapPoint Data: 554, 1, 2, 1, 1
+I20200921 13:53:17.320430 27224 PointCloudObject.cc:60] MapPoint Data: 555, 1, 2, 1, 1
+I20200921 13:53:17.320434 27224 PointCloudObject.cc:60] MapPoint Data: 414, 1, 2, 1, 1
+I20200921 13:53:17.320441 27224 PointCloudObject.cc:60] MapPoint Data: 415, 1, 4, 2, 2
+I20200921 13:53:17.320444 27224 PointCloudObject.cc:60] MapPoint Data: 417, 1, 2, 1, 1
+I20200921 13:53:17.320451 27224 PointCloudObject.cc:60] MapPoint Data: 418, 1, 3, 1, 1
+I20200921 13:53:17.320454 27224 PointCloudObject.cc:60] MapPoint Data: 556, 1, 2, 1, 1
+I20200921 13:53:17.320461 27224 PointCloudObject.cc:60] MapPoint Data: 557, 1, 3, 1, 1
+I20200921 13:53:17.320464 27224 PointCloudObject.cc:60] MapPoint Data: 558, 1, 2, 1, 1
+I20200921 13:53:17.320469 27224 PointCloudObject.cc:60] MapPoint Data: 559, 1, 2, 1, 1
+I20200921 13:53:17.320474 27224 PointCloudObject.cc:60] MapPoint Data: 560, 1, 2, 1, 1
+I20200921 13:53:17.320479 27224 PointCloudObject.cc:60] MapPoint Data: 561, 1, 3, 3, 3
+I20200921 13:53:17.320508 27224 PointCloudObject.cc:60] MapPoint Data: 562, 1, 3, 1, 1
+I20200921 13:53:17.320513 27224 PointCloudObject.cc:60] MapPoint Data: 563, 1, 2, 1, 1
+I20200921 13:53:17.320518 27224 PointCloudObject.cc:60] MapPoint Data: 564, 1, 2, 1, 1
+I20200921 13:53:17.320523 27224 PointCloudObject.cc:60] MapPoint Data: 565, 1, 4, 1, 1
+I20200921 13:53:17.320528 27224 PointCloudObject.cc:60] MapPoint Data: 566, 1, 2, 1, 1
+I20200921 13:53:17.320547 27224 PointCloudObject.cc:60] MapPoint Data: 567, 1, 2, 1, 1
+I20200921 13:53:17.320552 27224 PointCloudObject.cc:60] MapPoint Data: 568, 1, 2, 1, 1
+I20200921 13:53:17.320557 27224 PointCloudObject.cc:60] MapPoint Data: 570, 1, 2, 1, 1
+I20200921 13:53:17.320562 27224 PointCloudObject.cc:60] MapPoint Data: 571, 1, 2, 1, 1
+I20200921 13:53:17.320567 27224 PointCloudObject.cc:60] MapPoint Data: 572, 1, 2, 1, 1
+I20200921 13:53:17.320572 27224 PointCloudObject.cc:60] MapPoint Data: 573, 1, 2, 1, 1
+I20200921 13:53:17.320577 27224 PointCloudObject.cc:60] MapPoint Data: 574, 1, 4, 1, 1
+I20200921 13:53:17.320582 27224 PointCloudObject.cc:60] MapPoint Data: 575, 1, 2, 1, 1
+I20200921 13:53:17.320587 27224 PointCloudObject.cc:60] MapPoint Data: 576, 1, 2, 1, 1
+I20200921 13:53:17.320592 27224 PointCloudObject.cc:60] MapPoint Data: 577, 1, 2, 1, 1
+I20200921 13:53:17.320596 27224 PointCloudObject.cc:60] MapPoint Data: 578, 1, 2, 1, 1
+I20200921 13:53:17.320601 27224 PointCloudObject.cc:60] MapPoint Data: 579, 1, 2, 1, 1
+I20200921 13:53:17.320606 27224 PointCloudObject.cc:60] MapPoint Data: 580, 1, 2, 1, 1
+I20200921 13:53:17.320611 27224 PointCloudObject.cc:60] MapPoint Data: 581, 1, 2, 1, 1
+I20200921 13:53:17.320616 27224 PointCloudObject.cc:60] MapPoint Data: 582, 1, 2, 1, 1
+I20200921 13:53:17.320621 27224 PointCloudObject.cc:60] MapPoint Data: 583, 1, 2, 1, 1
+I20200921 13:53:17.320626 27224 PointCloudObject.cc:60] MapPoint Data: 584, 1, 2, 1, 1
+I20200921 13:53:17.320631 27224 PointCloudObject.cc:60] MapPoint Data: 585, 1, 2, 1, 1
+I20200921 13:53:17.320636 27224 PointCloudObject.cc:60] MapPoint Data: 586, 1, 2, 1, 1
+I20200921 13:53:17.320641 27224 PointCloudObject.cc:60] MapPoint Data: 587, 1, 2, 1, 1
+I20200921 13:53:17.320647 27224 PointCloudObject.cc:60] MapPoint Data: 588, 1, 2, 1, 1
+I20200921 13:53:17.320652 27224 PointCloudObject.cc:60] MapPoint Data: 589, 1, 2, 1, 1
+I20200921 13:53:17.320657 27224 PointCloudObject.cc:60] MapPoint Data: 590, 1, 2, 1, 1
+I20200921 13:53:17.320677 27224 PointCloudObject.cc:60] MapPoint Data: 591, 1, 2, 1, 1
+I20200921 13:53:17.320681 27224 PointCloudObject.cc:60] MapPoint Data: 592, 1, 2, 1, 1
+I20200921 13:53:17.320686 27224 PointCloudObject.cc:60] MapPoint Data: 593, 1, 2, 1, 1
+I20200921 13:53:17.320691 27224 PointCloudObject.cc:60] MapPoint Data: 594, 1, 2, 1, 1
+I20200921 13:53:17.320696 27224 PointCloudObject.cc:60] MapPoint Data: 595, 1, 2, 1, 1
+I20200921 13:53:17.320701 27224 PointCloudObject.cc:60] MapPoint Data: 596, 1, 2, 1, 1
+I20200921 13:53:17.320719 27224 PointCloudObject.cc:60] MapPoint Data: 597, 1, 2, 1, 1
+I20200921 13:53:17.320724 27224 PointCloudObject.cc:60] MapPoint Data: 480, 1, 2, 1, 1
+I20200921 13:53:17.320729 27224 PointCloudObject.cc:60] MapPoint Data: 481, 1, 2, 1, 1
+I20200921 13:53:17.320734 27224 PointCloudObject.cc:60] MapPoint Data: 483, 1, 2, 1, 1
+I20200921 13:53:17.320739 27224 PointCloudObject.cc:60] MapPoint Data: 484, 1, 2, 1, 1
+I20200921 13:53:17.320744 27224 PointCloudObject.cc:60] MapPoint Data: 485, 1, 2, 1, 1
+I20200921 13:53:17.320749 27224 PointCloudObject.cc:60] MapPoint Data: 486, 1, 3, 1, 1
+I20200921 13:53:17.320755 27224 PointCloudObject.cc:60] MapPoint Data: 487, 1, 3, 1, 1
+I20200921 13:53:17.320760 27224 PointCloudObject.cc:60] MapPoint Data: 488, 1, 3, 1, 1
+I20200921 13:53:17.320765 27224 PointCloudObject.cc:60] MapPoint Data: 489, 1, 3, 1, 1
+I20200921 13:53:17.320770 27224 PointCloudObject.cc:60] MapPoint Data: 490, 1, 4, 1, 1
+I20200921 13:53:17.320775 27224 PointCloudObject.cc:60] MapPoint Data: 491, 1, 4, 1, 1
+I20200921 13:53:17.320780 27224 PointCloudObject.cc:60] MapPoint Data: 492, 1, 4, 1, 1
+I20200921 13:53:17.320808 27224 PointCloudObject.cc:60] MapPoint Data: 493, 1, 3, 1, 1
+I20200921 13:53:17.320814 27224 PointCloudObject.cc:60] MapPoint Data: 494, 1, 4, 1, 1
+I20200921 13:53:17.320820 27224 PointCloudObject.cc:60] MapPoint Data: 495, 1, 3, 1, 1
+I20200921 13:53:17.320825 27224 PointCloudObject.cc:60] MapPoint Data: 497, 1, 2, 1, 1
+I20200921 13:53:17.320830 27224 PointCloudObject.cc:60] MapPoint Data: 498, 1, 3, 1, 1
+I20200921 13:53:17.320849 27224 PointCloudObject.cc:60] MapPoint Data: 499, 1, 3, 1, 1
+I20200921 13:53:17.320854 27224 PointCloudObject.cc:60] MapPoint Data: 500, 1, 3, 1, 1
+I20200921 13:53:17.320859 27224 PointCloudObject.cc:60] MapPoint Data: 501, 1, 4, 1, 1
+I20200921 13:53:17.320864 27224 PointCloudObject.cc:60] MapPoint Data: 502, 1, 2, 1, 1
+I20200921 13:53:17.320869 27224 PointCloudObject.cc:60] MapPoint Data: 503, 1, 3, 1, 1
+I20200921 13:53:17.320874 27224 PointCloudObject.cc:60] MapPoint Data: 505, 1, 3, 1, 1
+I20200921 13:53:17.320880 27224 PointCloudObject.cc:60] MapPoint Data: 507, 1, 4, 1, 1
+I20200921 13:53:17.320885 27224 PointCloudObject.cc:60] MapPoint Data: 508, 1, 3, 1, 1
+I20200921 13:53:17.320890 27224 PointCloudObject.cc:60] MapPoint Data: 509, 1, 4, 1, 1
+I20200921 13:53:17.320895 27224 PointCloudObject.cc:60] MapPoint Data: 510, 1, 2, 1, 1
+I20200921 13:53:17.320900 27224 PointCloudObject.cc:60] MapPoint Data: 511, 1, 2, 1, 1
+I20200921 13:53:17.320905 27224 PointCloudObject.cc:60] MapPoint Data: 512, 1, 3, 1, 1
+I20200921 13:53:17.320910 27224 PointCloudObject.cc:60] MapPoint Data: 513, 1, 4, 1, 1
+I20200921 13:53:17.320915 27224 PointCloudObject.cc:60] MapPoint Data: 514, 1, 2, 1, 1
+I20200921 13:53:17.320920 27224 PointCloudObject.cc:60] MapPoint Data: 426, 1, 3, 1, 1
+I20200921 13:53:17.320925 27224 PointCloudObject.cc:60] MapPoint Data: 428, 1, 4, 1, 1
+I20200921 13:53:17.320930 27224 PointCloudObject.cc:60] MapPoint Data: 430, 1, 3, 1, 1
+I20200921 13:53:17.320936 27224 PointCloudObject.cc:60] MapPoint Data: 431, 1, 4, 1, 1
+I20200921 13:53:17.320940 27224 PointCloudObject.cc:60] MapPoint Data: 433, 1, 2, 1, 1
+I20200921 13:53:17.320945 27224 PointCloudObject.cc:60] MapPoint Data: 434, 1, 4, 1, 1
+I20200921 13:53:17.320950 27224 PointCloudObject.cc:60] MapPoint Data: 436, 1, 3, 1, 1
+I20200921 13:53:17.320955 27224 PointCloudObject.cc:60] MapPoint Data: 437, 1, 2, 1, 1
+I20200921 13:53:17.320960 27224 PointCloudObject.cc:60] MapPoint Data: 438, 1, 2, 1, 1
+I20200921 13:53:17.320966 27224 PointCloudObject.cc:60] MapPoint Data: 440, 1, 2, 1, 1
+I20200921 13:53:17.320971 27224 PointCloudObject.cc:60] MapPoint Data: 441, 1, 2, 1, 1
+I20200921 13:53:17.320976 27224 PointCloudObject.cc:60] MapPoint Data: 442, 1, 2, 1, 1
+I20200921 13:53:17.320981 27224 PointCloudObject.cc:60] MapPoint Data: 444, 1, 4, 1, 1
+I20200921 13:53:17.320986 27224 PointCloudObject.cc:60] MapPoint Data: 445, 1, 4, 1, 1
+I20200921 13:53:17.320991 27224 PointCloudObject.cc:60] MapPoint Data: 447, 1, 4, 2, 2
+I20200921 13:53:17.320996 27224 PointCloudObject.cc:60] MapPoint Data: 448, 1, 3, 1, 1
+I20200921 13:53:17.321470 27224 FileIO.cc:32] PointCloud load succ
+I20200921 13:53:17.321687 27224 PointCloudObject.cc:60] MapPoint Data: 0, 1, 3, 17, 8
+I20200921 13:53:17.321696 27224 PointCloudObject.cc:60] MapPoint Data: 1, 1, 4, 17, 12
+I20200921 13:53:17.321702 27224 PointCloudObject.cc:60] MapPoint Data: 2, 1, 4, 15, 14
+I20200921 13:53:17.321707 27224 PointCloudObject.cc:60] MapPoint Data: 3, 1, 3, 14, 12
+I20200921 13:53:17.321712 27224 PointCloudObject.cc:60] MapPoint Data: 4, 1, 4, 17, 17
+I20200921 13:53:17.321717 27224 PointCloudObject.cc:60] MapPoint Data: 5, 1, 3, 15, 8
+I20200921 13:53:17.321722 27224 PointCloudObject.cc:60] MapPoint Data: 9, 1, 3, 13, 7
+I20200921 13:53:17.321728 27224 PointCloudObject.cc:60] MapPoint Data: 11, 1, 3, 17, 16
+I20200921 13:53:17.321733 27224 PointCloudObject.cc:60] MapPoint Data: 21, 1, 3, 16, 12
+I20200921 13:53:17.321738 27224 PointCloudObject.cc:60] MapPoint Data: 22, 1, 3, 11, 7
+I20200921 13:53:17.321743 27224 PointCloudObject.cc:60] MapPoint Data: 23, 1, 3, 14, 8
+I20200921 13:53:17.321774 27224 PointCloudObject.cc:60] MapPoint Data: 24, 1, 3, 15, 9
+I20200921 13:53:17.321780 27224 PointCloudObject.cc:60] MapPoint Data: 25, 1, 3, 16, 13
+I20200921 13:53:17.321785 27224 PointCloudObject.cc:60] MapPoint Data: 26, 1, 3, 17, 8
+I20200921 13:53:17.321791 27224 PointCloudObject.cc:60] MapPoint Data: 38, 1, 3, 14, 8
+I20200921 13:53:17.321810 27224 PointCloudObject.cc:60] MapPoint Data: 39, 1, 3, 14, 10
+I20200921 13:53:17.321815 27224 PointCloudObject.cc:60] MapPoint Data: 50, 1, 3, 15, 10
+I20200921 13:53:17.321820 27224 PointCloudObject.cc:60] MapPoint Data: 52, 1, 3, 17, 10
+I20200921 13:53:17.321825 27224 PointCloudObject.cc:60] MapPoint Data: 56, 1, 3, 12, 10
+I20200921 13:53:17.321830 27224 PointCloudObject.cc:60] MapPoint Data: 57, 1, 4, 17, 17
+I20200921 13:53:17.321835 27224 PointCloudObject.cc:60] MapPoint Data: 61, 1, 3, 16, 10
+I20200921 13:53:17.321841 27224 PointCloudObject.cc:60] MapPoint Data: 63, 1, 3, 16, 10
+I20200921 13:53:17.321846 27224 PointCloudObject.cc:60] MapPoint Data: 68, 1, 3, 16, 14
+I20200921 13:53:17.321851 27224 PointCloudObject.cc:60] MapPoint Data: 69, 1, 3, 16, 12
+I20200921 13:53:17.321856 27224 PointCloudObject.cc:60] MapPoint Data: 74, 1, 3, 17, 15
+I20200921 13:53:17.321861 27224 PointCloudObject.cc:60] MapPoint Data: 78, 1, 3, 15, 12
+I20200921 13:53:17.321866 27224 PointCloudObject.cc:60] MapPoint Data: 83, 1, 3, 16, 11
+I20200921 13:53:17.321871 27224 PointCloudObject.cc:60] MapPoint Data: 93, 1, 3, 25, 14
+I20200921 13:53:17.321877 27224 PointCloudObject.cc:60] MapPoint Data: 96, 1, 3, 15, 7
+I20200921 13:53:17.321882 27224 PointCloudObject.cc:60] MapPoint Data: 108, 1, 3, 12, 9
+I20200921 13:53:17.321887 27224 PointCloudObject.cc:60] MapPoint Data: 114, 1, 3, 14, 4
+I20200921 13:53:17.321892 27224 PointCloudObject.cc:60] MapPoint Data: 115, 1, 3, 15, 11
+I20200921 13:53:17.321897 27224 PointCloudObject.cc:60] MapPoint Data: 116, 1, 3, 16, 10
+I20200921 13:53:17.321902 27224 PointCloudObject.cc:60] MapPoint Data: 117, 1, 3, 14, 14
+I20200921 13:53:17.321907 27224 PointCloudObject.cc:60] MapPoint Data: 120, 1, 3, 17, 6
+I20200921 13:53:17.321913 27224 PointCloudObject.cc:60] MapPoint Data: 122, 1, 4, 17, 17
+I20200921 13:53:17.321918 27224 PointCloudObject.cc:60] MapPoint Data: 126, 1, 3, 16, 9
+I20200921 13:53:17.321923 27224 PointCloudObject.cc:60] MapPoint Data: 129, 1, 3, 16, 4
+I20200921 13:53:17.321928 27224 PointCloudObject.cc:60] MapPoint Data: 130, 1, 3, 14, 7
+I20200921 13:53:17.321933 27224 PointCloudObject.cc:60] MapPoint Data: 131, 1, 3, 14, 6
+I20200921 13:53:17.321938 27224 PointCloudObject.cc:60] MapPoint Data: 133, 1, 3, 16, 12
+I20200921 13:53:17.321943 27224 PointCloudObject.cc:60] MapPoint Data: 134, 1, 3, 14, 8
+I20200921 13:53:17.321947 27224 PointCloudObject.cc:60] MapPoint Data: 145, 1, 4, 17, 14
+I20200921 13:53:17.321954 27224 PointCloudObject.cc:60] MapPoint Data: 147, 1, 3, 15, 12
+I20200921 13:53:17.321959 27224 PointCloudObject.cc:60] MapPoint Data: 148, 1, 4, 17, 17
+I20200921 13:53:17.321964 27224 PointCloudObject.cc:60] MapPoint Data: 142, 1, 4, 16, 14
+I20200921 13:53:17.321969 27224 PointCloudObject.cc:60] MapPoint Data: 144, 1, 4, 16, 16
+I20200921 13:53:17.321974 27224 PointCloudObject.cc:60] MapPoint Data: 139, 1, 4, 17, 16
+I20200921 13:53:17.321979 27224 PointCloudObject.cc:60] MapPoint Data: 150, 1, 4, 15, 11
+I20200921 13:53:17.321985 27224 PointCloudObject.cc:60] MapPoint Data: 152, 1, 3, 15, 10
+I20200921 13:53:17.321990 27224 PointCloudObject.cc:60] MapPoint Data: 153, 1, 4, 17, 17
+I20200921 13:53:17.321995 27224 PointCloudObject.cc:60] MapPoint Data: 154, 1, 4, 17, 17
+I20200921 13:53:17.322000 27224 PointCloudObject.cc:60] MapPoint Data: 157, 1, 4, 16, 14
+I20200921 13:53:17.322005 27224 PointCloudObject.cc:60] MapPoint Data: 158, 1, 4, 17, 17
+I20200921 13:53:17.322010 27224 PointCloudObject.cc:60] MapPoint Data: 159, 1, 3, 17, 16
+I20200921 13:53:17.322016 27224 PointCloudObject.cc:60] MapPoint Data: 160, 1, 3, 15, 14
+I20200921 13:53:17.322021 27224 PointCloudObject.cc:60] MapPoint Data: 161, 1, 4, 14, 14
+I20200921 13:53:17.322052 27224 PointCloudObject.cc:60] MapPoint Data: 164, 1, 4, 17, 17
+I20200921 13:53:17.322057 27224 PointCloudObject.cc:60] MapPoint Data: 165, 1, 4, 16, 16
+I20200921 13:53:17.322062 27224 PointCloudObject.cc:60] MapPoint Data: 167, 1, 4, 17, 15
+I20200921 13:53:17.322068 27224 PointCloudObject.cc:60] MapPoint Data: 168, 1, 4, 16, 16
+I20200921 13:53:17.322086 27224 PointCloudObject.cc:60] MapPoint Data: 169, 1, 4, 18, 18
+I20200921 13:53:17.322091 27224 PointCloudObject.cc:60] MapPoint Data: 170, 1, 4, 17, 17
+I20200921 13:53:17.322096 27224 PointCloudObject.cc:60] MapPoint Data: 171, 1, 4, 15, 15
+I20200921 13:53:17.322101 27224 PointCloudObject.cc:60] MapPoint Data: 173, 1, 4, 15, 15
+I20200921 13:53:17.322106 27224 PointCloudObject.cc:60] MapPoint Data: 175, 1, 4, 17, 16
+I20200921 13:53:17.322111 27224 PointCloudObject.cc:60] MapPoint Data: 176, 1, 3, 17, 11
+I20200921 13:53:17.322116 27224 PointCloudObject.cc:60] MapPoint Data: 178, 1, 3, 15, 13
+I20200921 13:53:17.322121 27224 PointCloudObject.cc:60] MapPoint Data: 179, 1, 4, 16, 14
+I20200921 13:53:17.322126 27224 PointCloudObject.cc:60] MapPoint Data: 180, 1, 3, 16, 11
+I20200921 13:53:17.322131 27224 PointCloudObject.cc:60] MapPoint Data: 183, 1, 4, 16, 13
+I20200921 13:53:17.322137 27224 PointCloudObject.cc:60] MapPoint Data: 184, 1, 4, 17, 16
+I20200921 13:53:17.322142 27224 PointCloudObject.cc:60] MapPoint Data: 186, 1, 4, 17, 15
+I20200921 13:53:17.322147 27224 PointCloudObject.cc:60] MapPoint Data: 187, 1, 4, 15, 14
+I20200921 13:53:17.322152 27224 PointCloudObject.cc:60] MapPoint Data: 188, 1, 4, 16, 16
+I20200921 13:53:17.322157 27224 PointCloudObject.cc:60] MapPoint Data: 189, 1, 3, 15, 15
+I20200921 13:53:17.322162 27224 PointCloudObject.cc:60] MapPoint Data: 190, 1, 4, 17, 16
+I20200921 13:53:17.322168 27224 PointCloudObject.cc:60] MapPoint Data: 191, 1, 4, 16, 14
+I20200921 13:53:17.322173 27224 PointCloudObject.cc:60] MapPoint Data: 192, 1, 4, 18, 16
+I20200921 13:53:17.322178 27224 PointCloudObject.cc:60] MapPoint Data: 194, 1, 3, 13, 6
+I20200921 13:53:17.322183 27224 PointCloudObject.cc:60] MapPoint Data: 197, 1, 4, 17, 17
+I20200921 13:53:17.322188 27224 PointCloudObject.cc:60] MapPoint Data: 198, 1, 4, 15, 15
+I20200921 13:53:17.322193 27224 PointCloudObject.cc:60] MapPoint Data: 202, 1, 4, 17, 17
+I20200921 13:53:17.322198 27224 PointCloudObject.cc:60] MapPoint Data: 204, 1, 3, 17, 16
+I20200921 13:53:17.322203 27224 PointCloudObject.cc:60] MapPoint Data: 205, 1, 4, 16, 15
+I20200921 13:53:17.322208 27224 PointCloudObject.cc:60] MapPoint Data: 206, 1, 4, 18, 18
+I20200921 13:53:17.322213 27224 PointCloudObject.cc:60] MapPoint Data: 207, 1, 3, 17, 15
+I20200921 13:53:17.322218 27224 PointCloudObject.cc:60] MapPoint Data: 208, 1, 3, 15, 10
+I20200921 13:53:17.322223 27224 PointCloudObject.cc:60] MapPoint Data: 211, 1, 4, 17, 17
+I20200921 13:53:17.322228 27224 PointCloudObject.cc:60] MapPoint Data: 212, 1, 4, 16, 15
+I20200921 13:53:17.322233 27224 PointCloudObject.cc:60] MapPoint Data: 216, 1, 3, 17, 9
+I20200921 13:53:17.322238 27224 PointCloudObject.cc:60] MapPoint Data: 217, 1, 4, 17, 17
+I20200921 13:53:17.322243 27224 PointCloudObject.cc:60] MapPoint Data: 218, 1, 4, 17, 17
+I20200921 13:53:17.322248 27224 PointCloudObject.cc:60] MapPoint Data: 219, 1, 4, 16, 16
+I20200921 13:53:17.322253 27224 PointCloudObject.cc:60] MapPoint Data: 224, 1, 4, 17, 17
+I20200921 13:53:17.322259 27224 PointCloudObject.cc:60] MapPoint Data: 225, 1, 4, 15, 11
+I20200921 13:53:17.322264 27224 PointCloudObject.cc:60] MapPoint Data: 228, 1, 3, 14, 6
+I20200921 13:53:17.322269 27224 PointCloudObject.cc:60] MapPoint Data: 229, 1, 3, 16, 6
+I20200921 13:53:17.322274 27224 PointCloudObject.cc:60] MapPoint Data: 230, 1, 3, 16, 12
+I20200921 13:53:17.322279 27224 PointCloudObject.cc:60] MapPoint Data: 232, 1, 4, 17, 17
+I20200921 13:53:17.322284 27224 PointCloudObject.cc:60] MapPoint Data: 233, 1, 4, 17, 14
+I20200921 13:53:17.322289 27224 PointCloudObject.cc:60] MapPoint Data: 236, 1, 3, 16, 11
+I20200921 13:53:17.322294 27224 PointCloudObject.cc:60] MapPoint Data: 238, 1, 3, 14, 11
+I20200921 13:53:17.322322 27224 PointCloudObject.cc:60] MapPoint Data: 239, 1, 4, 14, 12
+I20200921 13:53:17.322329 27224 PointCloudObject.cc:60] MapPoint Data: 240, 1, 4, 15, 15
+I20200921 13:53:17.322335 27224 PointCloudObject.cc:60] MapPoint Data: 248, 1, 4, 17, 16
+I20200921 13:53:17.322340 27224 PointCloudObject.cc:60] MapPoint Data: 249, 1, 4, 16, 11
+I20200921 13:53:17.322345 27224 PointCloudObject.cc:60] MapPoint Data: 250, 1, 4, 17, 16
+I20200921 13:53:17.322350 27224 PointCloudObject.cc:60] MapPoint Data: 251, 1, 3, 16, 7
+I20200921 13:53:17.322355 27224 PointCloudObject.cc:60] MapPoint Data: 252, 1, 3, 17, 16
+I20200921 13:53:17.322360 27224 PointCloudObject.cc:60] MapPoint Data: 253, 1, 3, 16, 6
+I20200921 13:53:17.322365 27224 PointCloudObject.cc:60] MapPoint Data: 256, 1, 4, 16, 10
+I20200921 13:53:17.322371 27224 PointCloudObject.cc:60] MapPoint Data: 257, 1, 4, 17, 17
+I20200921 13:53:17.322376 27224 PointCloudObject.cc:60] MapPoint Data: 258, 1, 3, 15, 10
+I20200921 13:53:17.322381 27224 PointCloudObject.cc:60] MapPoint Data: 261, 1, 3, 15, 10
+I20200921 13:53:17.322386 27224 PointCloudObject.cc:60] MapPoint Data: 265, 1, 3, 17, 12
+I20200921 13:53:17.322391 27224 PointCloudObject.cc:60] MapPoint Data: 266, 1, 4, 14, 14
+I20200921 13:53:17.322397 27224 PointCloudObject.cc:60] MapPoint Data: 267, 1, 4, 17, 15
+I20200921 13:53:17.322402 27224 PointCloudObject.cc:60] MapPoint Data: 271, 1, 4, 16, 10
+I20200921 13:53:17.322407 27224 PointCloudObject.cc:60] MapPoint Data: 275, 1, 3, 17, 5
+I20200921 13:53:17.322412 27224 PointCloudObject.cc:60] MapPoint Data: 276, 1, 3, 17, 11
+I20200921 13:53:17.322417 27224 PointCloudObject.cc:60] MapPoint Data: 277, 1, 3, 16, 16
+I20200921 13:53:17.322422 27224 PointCloudObject.cc:60] MapPoint Data: 279, 1, 3, 16, 13
+I20200921 13:53:17.322428 27224 PointCloudObject.cc:60] MapPoint Data: 286, 1, 3, 17, 10
+I20200921 13:53:17.322433 27224 PointCloudObject.cc:60] MapPoint Data: 292, 1, 3, 16, 7
+I20200921 13:53:17.322438 27224 PointCloudObject.cc:60] MapPoint Data: 299, 1, 3, 17, 14
+I20200921 13:53:17.322443 27224 PointCloudObject.cc:60] MapPoint Data: 301, 1, 3, 13, 11
+I20200921 13:53:17.322448 27224 PointCloudObject.cc:60] MapPoint Data: 305, 1, 4, 16, 15
+I20200921 13:53:17.322453 27224 PointCloudObject.cc:60] MapPoint Data: 308, 1, 3, 15, 9
+I20200921 13:53:17.322459 27224 PointCloudObject.cc:60] MapPoint Data: 311, 1, 3, 9, 9
+I20200921 13:53:17.322464 27224 PointCloudObject.cc:60] MapPoint Data: 312, 1, 2, 7, 7
+I20200921 13:53:17.322482 27224 PointCloudObject.cc:60] MapPoint Data: 313, 1, 4, 9, 8
+I20200921 13:53:17.322487 27224 PointCloudObject.cc:60] MapPoint Data: 315, 1, 3, 8, 6
+I20200921 13:53:17.322492 27224 PointCloudObject.cc:60] MapPoint Data: 316, 1, 3, 7, 3
+I20200921 13:53:17.322497 27224 PointCloudObject.cc:60] MapPoint Data: 317, 1, 3, 9, 9
+I20200921 13:53:17.322502 27224 PointCloudObject.cc:60] MapPoint Data: 319, 1, 4, 8, 7
+I20200921 13:53:17.322507 27224 PointCloudObject.cc:60] MapPoint Data: 321, 1, 3, 7, 7
+I20200921 13:53:17.322512 27224 PointCloudObject.cc:60] MapPoint Data: 331, 1, 2, 9, 3
+I20200921 13:53:17.322517 27224 PointCloudObject.cc:60] MapPoint Data: 332, 1, 3, 7, 4
+I20200921 13:53:17.322522 27224 PointCloudObject.cc:60] MapPoint Data: 334, 1, 2, 6, 5
+I20200921 13:53:17.322527 27224 PointCloudObject.cc:60] MapPoint Data: 335, 1, 2, 6, 4
+I20200921 13:53:17.322532 27224 PointCloudObject.cc:60] MapPoint Data: 336, 1, 2, 4, 1
+I20200921 13:53:17.322537 27224 PointCloudObject.cc:60] MapPoint Data: 337, 1, 2, 3, 3
+I20200921 13:53:17.322542 27224 PointCloudObject.cc:60] MapPoint Data: 353, 1, 4, 9, 9
+I20200921 13:53:17.322547 27224 PointCloudObject.cc:60] MapPoint Data: 355, 1, 4, 9, 9
+I20200921 13:53:17.322552 27224 PointCloudObject.cc:60] MapPoint Data: 356, 1, 3, 8, 8
+I20200921 13:53:17.322557 27224 PointCloudObject.cc:60] MapPoint Data: 358, 1, 3, 8, 6
+I20200921 13:53:17.322562 27224 PointCloudObject.cc:60] MapPoint Data: 359, 1, 3, 7, 5
+I20200921 13:53:17.322568 27224 PointCloudObject.cc:60] MapPoint Data: 360, 1, 4, 8, 7
+I20200921 13:53:17.322573 27224 PointCloudObject.cc:60] MapPoint Data: 361, 1, 4, 8, 8
+I20200921 13:53:17.322600 27224 PointCloudObject.cc:60] MapPoint Data: 362, 1, 4, 8, 6
+I20200921 13:53:17.322607 27224 PointCloudObject.cc:60] MapPoint Data: 363, 1, 4, 9, 9
+I20200921 13:53:17.322611 27224 PointCloudObject.cc:60] MapPoint Data: 366, 1, 3, 8, 6
+I20200921 13:53:17.322616 27224 PointCloudObject.cc:60] MapPoint Data: 368, 1, 4, 9, 9
+I20200921 13:53:17.322621 27224 PointCloudObject.cc:60] MapPoint Data: 369, 1, 3, 9, 6
+I20200921 13:53:17.322641 27224 PointCloudObject.cc:60] MapPoint Data: 370, 1, 3, 9, 8
+I20200921 13:53:17.322646 27224 PointCloudObject.cc:60] MapPoint Data: 371, 1, 4, 9, 8
+I20200921 13:53:17.322651 27224 PointCloudObject.cc:60] MapPoint Data: 372, 1, 4, 9, 9
+I20200921 13:53:17.322656 27224 PointCloudObject.cc:60] MapPoint Data: 373, 1, 4, 7, 8
+I20200921 13:53:17.322661 27224 PointCloudObject.cc:60] MapPoint Data: 375, 1, 3, 7, 5
+I20200921 13:53:17.322666 27224 PointCloudObject.cc:60] MapPoint Data: 323, 1, 2, 9, 4
+I20200921 13:53:17.322671 27224 PointCloudObject.cc:60] MapPoint Data: 328, 1, 3, 8, 8
+I20200921 13:53:17.322675 27224 PointCloudObject.cc:60] MapPoint Data: 329, 1, 2, 8, 4
+I20200921 13:53:17.322680 27224 PointCloudObject.cc:60] MapPoint Data: 339, 1, 4, 10, 10
+I20200921 13:53:17.322685 27224 PointCloudObject.cc:60] MapPoint Data: 340, 1, 4, 9, 8
+I20200921 13:53:17.322691 27224 PointCloudObject.cc:60] MapPoint Data: 341, 1, 4, 9, 9
+I20200921 13:53:17.322696 27224 PointCloudObject.cc:60] MapPoint Data: 343, 1, 4, 9, 9
+I20200921 13:53:17.322701 27224 PointCloudObject.cc:60] MapPoint Data: 344, 1, 4, 9, 9
+I20200921 13:53:17.322706 27224 PointCloudObject.cc:60] MapPoint Data: 345, 1, 3, 9, 6
+I20200921 13:53:17.322726 27224 PointCloudObject.cc:60] MapPoint Data: 346, 1, 3, 8, 7
+I20200921 13:53:17.322731 27224 PointCloudObject.cc:60] MapPoint Data: 348, 1, 3, 7, 4
+I20200921 13:53:17.322736 27224 PointCloudObject.cc:60] MapPoint Data: 350, 1, 4, 10, 10
+I20200921 13:53:17.322741 27224 PointCloudObject.cc:60] MapPoint Data: 352, 1, 4, 9, 9
+I20200921 13:53:17.322759 27224 PointCloudObject.cc:60] MapPoint Data: 378, 1, 4, 9, 8
+I20200921 13:53:17.322764 27224 PointCloudObject.cc:60] MapPoint Data: 379, 1, 3, 8, 7
+I20200921 13:53:17.322769 27224 PointCloudObject.cc:60] MapPoint Data: 381, 1, 4, 7, 7
+I20200921 13:53:17.322774 27224 PointCloudObject.cc:60] MapPoint Data: 383, 1, 3, 9, 7
+I20200921 13:53:17.322779 27224 PointCloudObject.cc:60] MapPoint Data: 384, 1, 3, 8, 8
+I20200921 13:53:17.322784 27224 PointCloudObject.cc:60] MapPoint Data: 385, 1, 3, 9, 6
+I20200921 13:53:17.322789 27224 PointCloudObject.cc:60] MapPoint Data: 386, 1, 4, 9, 9
+I20200921 13:53:17.322794 27224 PointCloudObject.cc:60] MapPoint Data: 387, 1, 4, 7, 7
+I20200921 13:53:17.322799 27224 PointCloudObject.cc:60] MapPoint Data: 388, 1, 3, 8, 5
+I20200921 13:53:17.322805 27224 PointCloudObject.cc:60] MapPoint Data: 389, 1, 4, 10, 10
+I20200921 13:53:17.322810 27224 PointCloudObject.cc:60] MapPoint Data: 390, 1, 3, 8, 5
+I20200921 13:53:17.322815 27224 PointCloudObject.cc:60] MapPoint Data: 391, 1, 3, 8, 5
+I20200921 13:53:17.322820 27224 PointCloudObject.cc:60] MapPoint Data: 392, 1, 3, 8, 4
+I20200921 13:53:17.322825 27224 PointCloudObject.cc:60] MapPoint Data: 394, 1, 4, 8, 6
+I20200921 13:53:17.322830 27224 PointCloudObject.cc:60] MapPoint Data: 395, 1, 4, 8, 7
+I20200921 13:53:17.322835 27224 PointCloudObject.cc:60] MapPoint Data: 396, 1, 4, 8, 4
+I20200921 13:53:17.322840 27224 PointCloudObject.cc:60] MapPoint Data: 397, 1, 4, 9, 9
+I20200921 13:53:17.322845 27224 PointCloudObject.cc:60] MapPoint Data: 398, 1, 4, 9, 9
+I20200921 13:53:17.322850 27224 PointCloudObject.cc:60] MapPoint Data: 399, 1, 3, 14, 10
+I20200921 13:53:17.322855 27224 PointCloudObject.cc:60] MapPoint Data: 400, 1, 3, 6, 5
+I20200921 13:53:17.322861 27224 PointCloudObject.cc:60] MapPoint Data: 401, 1, 3, 6, 3
+I20200921 13:53:17.322866 27224 PointCloudObject.cc:60] MapPoint Data: 402, 1, 3, 8, 2
+I20200921 13:53:17.322870 27224 PointCloudObject.cc:60] MapPoint Data: 404, 1, 2, 4, 1
+I20200921 13:53:17.322875 27224 PointCloudObject.cc:60] MapPoint Data: 405, 1, 3, 8, 3
+I20200921 13:53:17.322902 27224 PointCloudObject.cc:60] MapPoint Data: 449, 1, 2, 1, 1
+I20200921 13:53:17.322908 27224 PointCloudObject.cc:60] MapPoint Data: 450, 1, 2, 1, 1
+I20200921 13:53:17.322913 27224 PointCloudObject.cc:60] MapPoint Data: 451, 1, 3, 2, 2
+I20200921 13:53:17.322918 27224 PointCloudObject.cc:60] MapPoint Data: 452, 1, 4, 1, 1
+I20200921 13:53:17.322923 27224 PointCloudObject.cc:60] MapPoint Data: 453, 1, 3, 1, 1
+I20200921 13:53:17.322942 27224 PointCloudObject.cc:60] MapPoint Data: 454, 1, 3, 1, 1
+I20200921 13:53:17.322947 27224 PointCloudObject.cc:60] MapPoint Data: 455, 1, 2, 1, 1
+I20200921 13:53:17.322952 27224 PointCloudObject.cc:60] MapPoint Data: 457, 1, 2, 1, 1
+I20200921 13:53:17.322957 27224 PointCloudObject.cc:60] MapPoint Data: 458, 1, 2, 1, 1
+I20200921 13:53:17.322962 27224 PointCloudObject.cc:60] MapPoint Data: 459, 1, 4, 1, 1
+I20200921 13:53:17.322966 27224 PointCloudObject.cc:60] MapPoint Data: 460, 1, 4, 1, 1
+I20200921 13:53:17.322971 27224 PointCloudObject.cc:60] MapPoint Data: 461, 1, 4, 1, 1
+I20200921 13:53:17.322976 27224 PointCloudObject.cc:60] MapPoint Data: 462, 1, 3, 1, 1
+I20200921 13:53:17.322981 27224 PointCloudObject.cc:60] MapPoint Data: 463, 1, 3, 1, 1
+I20200921 13:53:17.322988 27224 PointCloudObject.cc:60] MapPoint Data: 464, 1, 4, 2, 2
+I20200921 13:53:17.322993 27224 PointCloudObject.cc:60] MapPoint Data: 466, 1, 4, 1, 1
+I20200921 13:53:17.322997 27224 PointCloudObject.cc:60] MapPoint Data: 469, 1, 2, 1, 1
+I20200921 13:53:17.323001 27224 PointCloudObject.cc:60] MapPoint Data: 470, 1, 2, 1, 1
+I20200921 13:53:17.323007 27224 PointCloudObject.cc:60] MapPoint Data: 471, 1, 4, 1, 1
+I20200921 13:53:17.323011 27224 PointCloudObject.cc:60] MapPoint Data: 472, 1, 2, 1, 1
+I20200921 13:53:17.323017 27224 PointCloudObject.cc:60] MapPoint Data: 474, 1, 3, 1, 1
+I20200921 13:53:17.323022 27224 PointCloudObject.cc:60] MapPoint Data: 475, 1, 2, 1, 1
+I20200921 13:53:17.323027 27224 PointCloudObject.cc:60] MapPoint Data: 476, 1, 4, 1, 1
+I20200921 13:53:17.323032 27224 PointCloudObject.cc:60] MapPoint Data: 477, 1, 3, 1, 1
+I20200921 13:53:17.323037 27224 PointCloudObject.cc:60] MapPoint Data: 478, 1, 4, 9, 3
+I20200921 13:53:17.323042 27224 PointCloudObject.cc:60] MapPoint Data: 479, 1, 4, 1, 1
+I20200921 13:53:17.323047 27224 PointCloudObject.cc:60] MapPoint Data: 407, 1, 3, 2, 2
+I20200921 13:53:17.323052 27224 PointCloudObject.cc:60] MapPoint Data: 408, 1, 3, 2, 2
+I20200921 13:53:17.323057 27224 PointCloudObject.cc:60] MapPoint Data: 409, 1, 4, 1, 1
+I20200921 13:53:17.323062 27224 PointCloudObject.cc:60] MapPoint Data: 410, 1, 2, 1, 1
+I20200921 13:53:17.323067 27224 PointCloudObject.cc:60] MapPoint Data: 411, 1, 2, 1, 1
+I20200921 13:53:17.323072 27224 PointCloudObject.cc:60] MapPoint Data: 412, 1, 4, 1, 1
+I20200921 13:53:17.323077 27224 PointCloudObject.cc:60] MapPoint Data: 413, 1, 3, 1, 1
+I20200921 13:53:17.323082 27224 PointCloudObject.cc:60] MapPoint Data: 419, 1, 3, 1, 1
+I20200921 13:53:17.323087 27224 PointCloudObject.cc:60] MapPoint Data: 421, 1, 3, 1, 1
+I20200921 13:53:17.323093 27224 PointCloudObject.cc:60] MapPoint Data: 422, 1, 3, 1, 1
+I20200921 13:53:17.323098 27224 PointCloudObject.cc:60] MapPoint Data: 423, 1, 2, 1, 1
+I20200921 13:53:17.323103 27224 PointCloudObject.cc:60] MapPoint Data: 424, 1, 4, 3, 3
+I20200921 13:53:17.323108 27224 PointCloudObject.cc:60] MapPoint Data: 516, 1, 4, 2, 2
+I20200921 13:53:17.323113 27224 PointCloudObject.cc:60] MapPoint Data: 517, 1, 2, 1, 1
+I20200921 13:53:17.323118 27224 PointCloudObject.cc:60] MapPoint Data: 518, 1, 2, 1, 1
+I20200921 13:53:17.323123 27224 PointCloudObject.cc:60] MapPoint Data: 519, 1, 2, 1, 1
+I20200921 13:53:17.323128 27224 PointCloudObject.cc:60] MapPoint Data: 520, 1, 2, 1, 1
+I20200921 13:53:17.323133 27224 PointCloudObject.cc:60] MapPoint Data: 521, 1, 2, 1, 1
+I20200921 13:53:17.323137 27224 PointCloudObject.cc:60] MapPoint Data: 522, 1, 2, 1, 1
+I20200921 13:53:17.323143 27224 PointCloudObject.cc:60] MapPoint Data: 523, 1, 2, 1, 1
+I20200921 13:53:17.323148 27224 PointCloudObject.cc:60] MapPoint Data: 525, 1, 2, 1, 1
+I20200921 13:53:17.323174 27224 PointCloudObject.cc:60] MapPoint Data: 526, 1, 2, 1, 1
+I20200921 13:53:17.323180 27224 PointCloudObject.cc:60] MapPoint Data: 528, 1, 2, 1, 1
+I20200921 13:53:17.323185 27224 PointCloudObject.cc:60] MapPoint Data: 529, 1, 2, 1, 1
+I20200921 13:53:17.323190 27224 PointCloudObject.cc:60] MapPoint Data: 530, 1, 2, 1, 1
+I20200921 13:53:17.323195 27224 PointCloudObject.cc:60] MapPoint Data: 531, 1, 2, 1, 1
+I20200921 13:53:17.323200 27224 PointCloudObject.cc:60] MapPoint Data: 532, 1, 2, 1, 1
+I20200921 13:53:17.323218 27224 PointCloudObject.cc:60] MapPoint Data: 533, 1, 2, 1, 1
+I20200921 13:53:17.323223 27224 PointCloudObject.cc:60] MapPoint Data: 534, 1, 2, 1, 1
+I20200921 13:53:17.323228 27224 PointCloudObject.cc:60] MapPoint Data: 535, 1, 2, 1, 1
+I20200921 13:53:17.323233 27224 PointCloudObject.cc:60] MapPoint Data: 536, 1, 2, 1, 1
+I20200921 13:53:17.323238 27224 PointCloudObject.cc:60] MapPoint Data: 537, 1, 2, 1, 1
+I20200921 13:53:17.323242 27224 PointCloudObject.cc:60] MapPoint Data: 538, 1, 2, 1, 1
+I20200921 13:53:17.323248 27224 PointCloudObject.cc:60] MapPoint Data: 540, 1, 4, 1, 1
+I20200921 13:53:17.323252 27224 PointCloudObject.cc:60] MapPoint Data: 541, 1, 2, 1, 1
+I20200921 13:53:17.323257 27224 PointCloudObject.cc:60] MapPoint Data: 542, 1, 2, 1, 1
+I20200921 13:53:17.323262 27224 PointCloudObject.cc:60] MapPoint Data: 543, 1, 2, 1, 1
+I20200921 13:53:17.323267 27224 PointCloudObject.cc:60] MapPoint Data: 544, 1, 2, 1, 1
+I20200921 13:53:17.323272 27224 PointCloudObject.cc:60] MapPoint Data: 545, 1, 2, 1, 1
+I20200921 13:53:17.323277 27224 PointCloudObject.cc:60] MapPoint Data: 546, 1, 2, 1, 1
+I20200921 13:53:17.323282 27224 PointCloudObject.cc:60] MapPoint Data: 547, 1, 3, 1, 1
+I20200921 13:53:17.323287 27224 PointCloudObject.cc:60] MapPoint Data: 548, 1, 2, 1, 1
+I20200921 13:53:17.323292 27224 PointCloudObject.cc:60] MapPoint Data: 549, 1, 2, 1, 1
+I20200921 13:53:17.323297 27224 PointCloudObject.cc:60] MapPoint Data: 550, 1, 2, 1, 1
+I20200921 13:53:17.323302 27224 PointCloudObject.cc:60] MapPoint Data: 551, 1, 2, 1, 1
+I20200921 13:53:17.323307 27224 PointCloudObject.cc:60] MapPoint Data: 552, 1, 2, 1, 1
+I20200921 13:53:17.323312 27224 PointCloudObject.cc:60] MapPoint Data: 553, 1, 2, 1, 1
+I20200921 13:53:17.323316 27224 PointCloudObject.cc:60] MapPoint Data: 554, 1, 2, 1, 1
+I20200921 13:53:17.323321 27224 PointCloudObject.cc:60] MapPoint Data: 555, 1, 2, 1, 1
+I20200921 13:53:17.323326 27224 PointCloudObject.cc:60] MapPoint Data: 414, 1, 2, 1, 1
+I20200921 13:53:17.323331 27224 PointCloudObject.cc:60] MapPoint Data: 415, 1, 4, 2, 2
+I20200921 13:53:17.323336 27224 PointCloudObject.cc:60] MapPoint Data: 417, 1, 2, 1, 1
+I20200921 13:53:17.323341 27224 PointCloudObject.cc:60] MapPoint Data: 418, 1, 3, 1, 1
+I20200921 13:53:17.323346 27224 PointCloudObject.cc:60] MapPoint Data: 556, 1, 2, 1, 1
+I20200921 13:53:17.323351 27224 PointCloudObject.cc:60] MapPoint Data: 557, 1, 3, 1, 1
+I20200921 13:53:17.323356 27224 PointCloudObject.cc:60] MapPoint Data: 558, 1, 2, 1, 1
+I20200921 13:53:17.323361 27224 PointCloudObject.cc:60] MapPoint Data: 559, 1, 2, 1, 1
+I20200921 13:53:17.323366 27224 PointCloudObject.cc:60] MapPoint Data: 560, 1, 2, 1, 1
+I20200921 13:53:17.323371 27224 PointCloudObject.cc:60] MapPoint Data: 561, 1, 3, 3, 3
+I20200921 13:53:17.323376 27224 PointCloudObject.cc:60] MapPoint Data: 562, 1, 3, 1, 1
+I20200921 13:53:17.323381 27224 PointCloudObject.cc:60] MapPoint Data: 563, 1, 2, 1, 1
+I20200921 13:53:17.323386 27224 PointCloudObject.cc:60] MapPoint Data: 564, 1, 2, 1, 1
+I20200921 13:53:17.323391 27224 PointCloudObject.cc:60] MapPoint Data: 565, 1, 4, 1, 1
+I20200921 13:53:17.323396 27224 PointCloudObject.cc:60] MapPoint Data: 566, 1, 2, 1, 1
+I20200921 13:53:17.323401 27224 PointCloudObject.cc:60] MapPoint Data: 567, 1, 2, 1, 1
+I20200921 13:53:17.323406 27224 PointCloudObject.cc:60] MapPoint Data: 568, 1, 2, 1, 1
+I20200921 13:53:17.323411 27224 PointCloudObject.cc:60] MapPoint Data: 570, 1, 2, 1, 1
+I20200921 13:53:17.323415 27224 PointCloudObject.cc:60] MapPoint Data: 571, 1, 2, 1, 1
+I20200921 13:53:17.323442 27224 PointCloudObject.cc:60] MapPoint Data: 572, 1, 2, 1, 1
+I20200921 13:53:17.323448 27224 PointCloudObject.cc:60] MapPoint Data: 573, 1, 2, 1, 1
+I20200921 13:53:17.323453 27224 PointCloudObject.cc:60] MapPoint Data: 574, 1, 4, 1, 1
+I20200921 13:53:17.323463 27224 PointCloudObject.cc:60] MapPoint Data: 575, 1, 2, 1, 1
+I20200921 13:53:17.323469 27224 PointCloudObject.cc:60] MapPoint Data: 576, 1, 2, 1, 1
+I20200921 13:53:17.323474 27224 PointCloudObject.cc:60] MapPoint Data: 577, 1, 2, 1, 1
+I20200921 13:53:17.323504 27224 PointCloudObject.cc:60] MapPoint Data: 578, 1, 2, 1, 1
+I20200921 13:53:17.323510 27224 PointCloudObject.cc:60] MapPoint Data: 579, 1, 2, 1, 1
+I20200921 13:53:17.323515 27224 PointCloudObject.cc:60] MapPoint Data: 580, 1, 2, 1, 1
+I20200921 13:53:17.323534 27224 PointCloudObject.cc:60] MapPoint Data: 581, 1, 2, 1, 1
+I20200921 13:53:17.323537 27224 PointCloudObject.cc:60] MapPoint Data: 582, 1, 2, 1, 1
+I20200921 13:53:17.323542 27224 PointCloudObject.cc:60] MapPoint Data: 583, 1, 2, 1, 1
+I20200921 13:53:17.323547 27224 PointCloudObject.cc:60] MapPoint Data: 584, 1, 2, 1, 1
+I20200921 13:53:17.323552 27224 PointCloudObject.cc:60] MapPoint Data: 585, 1, 2, 1, 1
+I20200921 13:53:17.323557 27224 PointCloudObject.cc:60] MapPoint Data: 586, 1, 2, 1, 1
+I20200921 13:53:17.323562 27224 PointCloudObject.cc:60] MapPoint Data: 587, 1, 2, 1, 1
+I20200921 13:53:17.323567 27224 PointCloudObject.cc:60] MapPoint Data: 588, 1, 2, 1, 1
+I20200921 13:53:17.323572 27224 PointCloudObject.cc:60] MapPoint Data: 589, 1, 2, 1, 1
+I20200921 13:53:17.323577 27224 PointCloudObject.cc:60] MapPoint Data: 590, 1, 2, 1, 1
+I20200921 13:53:17.323582 27224 PointCloudObject.cc:60] MapPoint Data: 591, 1, 2, 1, 1
+I20200921 13:53:17.323587 27224 PointCloudObject.cc:60] MapPoint Data: 592, 1, 2, 1, 1
+I20200921 13:53:17.323592 27224 PointCloudObject.cc:60] MapPoint Data: 593, 1, 2, 1, 1
+I20200921 13:53:17.323597 27224 PointCloudObject.cc:60] MapPoint Data: 594, 1, 2, 1, 1
+I20200921 13:53:17.323602 27224 PointCloudObject.cc:60] MapPoint Data: 595, 1, 2, 1, 1
+I20200921 13:53:17.323607 27224 PointCloudObject.cc:60] MapPoint Data: 596, 1, 2, 1, 1
+I20200921 13:53:17.323612 27224 PointCloudObject.cc:60] MapPoint Data: 597, 1, 2, 1, 1
+I20200921 13:53:17.323617 27224 PointCloudObject.cc:60] MapPoint Data: 480, 1, 2, 1, 1
+I20200921 13:53:17.323621 27224 PointCloudObject.cc:60] MapPoint Data: 481, 1, 2, 1, 1
+I20200921 13:53:17.323626 27224 PointCloudObject.cc:60] MapPoint Data: 483, 1, 2, 1, 1
+I20200921 13:53:17.323632 27224 PointCloudObject.cc:60] MapPoint Data: 484, 1, 2, 1, 1
+I20200921 13:53:17.323637 27224 PointCloudObject.cc:60] MapPoint Data: 485, 1, 2, 1, 1
+I20200921 13:53:17.323642 27224 PointCloudObject.cc:60] MapPoint Data: 486, 1, 3, 1, 1
+I20200921 13:53:17.323647 27224 PointCloudObject.cc:60] MapPoint Data: 487, 1, 3, 1, 1
+I20200921 13:53:17.323652 27224 PointCloudObject.cc:60] MapPoint Data: 488, 1, 3, 1, 1
+I20200921 13:53:17.323657 27224 PointCloudObject.cc:60] MapPoint Data: 489, 1, 3, 1, 1
+I20200921 13:53:17.323662 27224 PointCloudObject.cc:60] MapPoint Data: 490, 1, 4, 1, 1
+I20200921 13:53:17.323668 27224 PointCloudObject.cc:60] MapPoint Data: 491, 1, 4, 1, 1
+I20200921 13:53:17.323673 27224 PointCloudObject.cc:60] MapPoint Data: 492, 1, 4, 1, 1
+I20200921 13:53:17.323678 27224 PointCloudObject.cc:60] MapPoint Data: 493, 1, 3, 1, 1
+I20200921 13:53:17.323683 27224 PointCloudObject.cc:60] MapPoint Data: 494, 1, 4, 1, 1
+I20200921 13:53:17.323688 27224 PointCloudObject.cc:60] MapPoint Data: 495, 1, 3, 1, 1
+I20200921 13:53:17.323693 27224 PointCloudObject.cc:60] MapPoint Data: 497, 1, 2, 1, 1
+I20200921 13:53:17.323698 27224 PointCloudObject.cc:60] MapPoint Data: 498, 1, 3, 1, 1
+I20200921 13:53:17.323704 27224 PointCloudObject.cc:60] MapPoint Data: 499, 1, 3, 1, 1
+I20200921 13:53:17.323709 27224 PointCloudObject.cc:60] MapPoint Data: 500, 1, 3, 1, 1
+I20200921 13:53:17.323714 27224 PointCloudObject.cc:60] MapPoint Data: 501, 1, 4, 1, 1
+I20200921 13:53:17.323719 27224 PointCloudObject.cc:60] MapPoint Data: 502, 1, 2, 1, 1
+I20200921 13:53:17.323746 27224 PointCloudObject.cc:60] MapPoint Data: 503, 1, 3, 1, 1
+I20200921 13:53:17.323752 27224 PointCloudObject.cc:60] MapPoint Data: 505, 1, 3, 1, 1
+I20200921 13:53:17.323758 27224 PointCloudObject.cc:60] MapPoint Data: 507, 1, 4, 1, 1
+I20200921 13:53:17.323763 27224 PointCloudObject.cc:60] MapPoint Data: 508, 1, 3, 1, 1
+I20200921 13:53:17.323768 27224 PointCloudObject.cc:60] MapPoint Data: 509, 1, 4, 1, 1
+I20200921 13:53:17.323773 27224 PointCloudObject.cc:60] MapPoint Data: 510, 1, 2, 1, 1
+I20200921 13:53:17.323778 27224 PointCloudObject.cc:60] MapPoint Data: 511, 1, 2, 1, 1
+I20200921 13:53:17.323784 27224 PointCloudObject.cc:60] MapPoint Data: 512, 1, 3, 1, 1
+I20200921 13:53:17.323802 27224 PointCloudObject.cc:60] MapPoint Data: 513, 1, 4, 1, 1
+I20200921 13:53:17.323807 27224 PointCloudObject.cc:60] MapPoint Data: 514, 1, 2, 1, 1
+I20200921 13:53:17.323812 27224 PointCloudObject.cc:60] MapPoint Data: 426, 1, 3, 1, 1
+I20200921 13:53:17.323817 27224 PointCloudObject.cc:60] MapPoint Data: 428, 1, 4, 1, 1
+I20200921 13:53:17.323822 27224 PointCloudObject.cc:60] MapPoint Data: 430, 1, 3, 1, 1
+I20200921 13:53:17.323827 27224 PointCloudObject.cc:60] MapPoint Data: 431, 1, 4, 1, 1
+I20200921 13:53:17.323832 27224 PointCloudObject.cc:60] MapPoint Data: 433, 1, 2, 1, 1
+I20200921 13:53:17.323837 27224 PointCloudObject.cc:60] MapPoint Data: 434, 1, 4, 1, 1
+I20200921 13:53:17.323843 27224 PointCloudObject.cc:60] MapPoint Data: 436, 1, 3, 1, 1
+I20200921 13:53:17.323848 27224 PointCloudObject.cc:60] MapPoint Data: 437, 1, 2, 1, 1
+I20200921 13:53:17.323853 27224 PointCloudObject.cc:60] MapPoint Data: 438, 1, 2, 1, 1
+I20200921 13:53:17.323858 27224 PointCloudObject.cc:60] MapPoint Data: 440, 1, 2, 1, 1
+I20200921 13:53:17.323863 27224 PointCloudObject.cc:60] MapPoint Data: 441, 1, 2, 1, 1
+I20200921 13:53:17.323868 27224 PointCloudObject.cc:60] MapPoint Data: 442, 1, 2, 1, 1
+I20200921 13:53:17.323873 27224 PointCloudObject.cc:60] MapPoint Data: 444, 1, 4, 1, 1
+I20200921 13:53:17.323879 27224 PointCloudObject.cc:60] MapPoint Data: 445, 1, 4, 1, 1
+I20200921 13:53:17.323884 27224 PointCloudObject.cc:60] MapPoint Data: 447, 1, 4, 2, 2
+I20200921 13:53:17.323889 27224 PointCloudObject.cc:60] MapPoint Data: 448, 1, 3, 1, 1
+I20200921 13:53:17.324285 27224 ObjectRecognitionSystem.cc:52] PointCloud detector database create success 
+I20200921 13:53:17.324307 27224 PointCloudDetector.cc:23] PointCloud detector set obj begin
+I20200921 13:53:17.324311 27224 PointCloudDetector.cc:27] PointCloud detector set obj success
+I20200921 13:53:17.324328 27224 ObjectRecognitionSystem.cc:62] tracker and detector thread load object 0
+I20200921 13:53:17.324357 27224 FileIO.cc:68] /2020-09-21-13-53-17 is not existing and create it
+I20200921 13:53:17.324362 27224 FileIO.cc:72] can't create folder
+I20200921 13:53:17.324364 27224 mono_inertial_objectRecognition_test.cc:74] can't create the result dir/2020-09-21-13-53-17
+W20200921 13:53:17.324369 27224 mono_inertial_objectRecognition_test.cc:84] camera pose result can't open /2020-09-21-13-53-17/camera_pose_result.txt
+E20200921 13:53:17.794539 27245 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:53:17.903789 27245 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:53:17.903803 27245 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 406
+I20200921 13:53:17.903805 27245 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 14
+E20200921 13:53:17.904958 27245 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:53:18.011934 27245 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:53:18.011945 27245 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 395
+I20200921 13:53:18.011946 27245 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 17
+E20200921 13:53:19.959906 27245 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:53:20.065892 27245 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:53:20.065904 27245 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 405
+I20200921 13:53:20.065927 27245 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 14
+E20200921 13:53:22.012928 27245 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:53:22.105881 27245 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:53:22.105891 27245 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 332
+I20200921 13:53:22.105893 27245 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 9
+I20200921 13:53:22.109505 27246 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 130
+I20200921 13:53:22.109513 27246 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 11
+I20200921 13:53:22.109514 27246 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:53:22.109516 27246 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0-0.997409 -0.0495536 -0.0521418
+000.047165 0-0.997823 00.0460848
+0-0.054312 00.0435061 000.997576
+I20200921 13:53:22.109549 27246 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 71.1171
+174.961
+934.606
+I20200921 13:53:22.109619 27246 PointCloudTracker.cc:586] test: inlierNum:11 130
+E20200921 13:53:23.683612 27245 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:53:23.746534 27245 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:53:23.746547 27245 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 163
+I20200921 13:53:23.746549 27245 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 6
+I20200921 13:53:23.746568 27245 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:53:23.798398 27246 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 166
+I20200921 13:53:23.798409 27246 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 13
+I20200921 13:53:23.798411 27246 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:53:23.798413 27246 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0-0.952496 0-0.301776 -0.0410098
+000.301127 0-0.953346 00.0213292
+-0.0455332 0.00796685 000.998931
+I20200921 13:53:23.798434 27246 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 63.5408
+158.273
+1023.47
+I20200921 13:53:23.798491 27246 PointCloudTracker.cc:586] test: inlierNum:13 166
+E20200921 13:53:25.198770 27245 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:53:25.248571 27245 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:53:25.248584 27245 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 84
+I20200921 13:53:25.248586 27245 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 7
+I20200921 13:53:25.248602 27245 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:53:25.310154 27246 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 121
+I20200921 13:53:25.310165 27246 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 9
+I20200921 13:53:25.310168 27246 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:53:25.310168 27246 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: -0.992164 -0.118041 0.0409497
+00.122846 0-0.98142 00.147388
+00.022791 00.151263 00.988231
+I20200921 13:53:25.310189 27246 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 165.619
+272.476
+1216.42
+I20200921 13:53:25.310243 27246 PointCloudTracker.cc:586] test: inlierNum:9 121
+E20200921 13:53:26.563169 27245 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:53:26.602875 27245 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:53:26.602888 27245 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 45
+I20200921 13:53:26.602890 27245 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:53:26.602903 27245 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:53:26.697976 27246 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 191
+I20200921 13:53:26.698011 27246 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 16
+I20200921 13:53:26.698014 27246 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:53:26.698016 27246 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 00.912641 -0.396553 0.0991601
+00.360814 00.895524 00.260481
+-0.192095 -0.201947 00.960373
+I20200921 13:53:26.698036 27246 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -102.656
+-190.926
+0935.289
+I20200921 13:53:26.698101 27246 PointCloudTracker.cc:586] test: inlierNum:16 191
+E20200921 13:53:28.410396 27245 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:53:28.449513 27245 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:53:28.449525 27245 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 42
+I20200921 13:53:28.449527 27245 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:53:28.449540 27245 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:53:28.526872 27246 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 187
+I20200921 13:53:28.526881 27246 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 14
+I20200921 13:53:28.526885 27246 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:53:28.526885 27246 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 00.923456 -0.366496 00.113621
+00.304956 00.880734 00.362367
+-0.232876 0-0.29998 00.925084
+I20200921 13:53:28.526906 27246 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -115.149
+-85.6023
+0836.537
+I20200921 13:53:28.526962 27246 PointCloudTracker.cc:586] test: inlierNum:14 187
+E20200921 13:53:30.113891 27245 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:53:30.154973 27245 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:53:30.154983 27245 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 42
+I20200921 13:53:30.154985 27245 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 5
+I20200921 13:53:30.154999 27245 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:53:30.233675 27246 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 167
+I20200921 13:53:30.233686 27246 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 13
+I20200921 13:53:30.233690 27246 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:53:30.233690 27246 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 00.947491 -0.299349 00.112476
+00.216679 00.859658 00.462644
+-0.235182 0-0.41398 00.879381
+I20200921 13:53:30.233711 27246 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -178.247
+0057.003
+0832.031
+I20200921 13:53:30.233770 27246 PointCloudTracker.cc:586] test: inlierNum:13 167
+E20200921 13:53:32.061448 27245 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:53:32.095144 27245 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:53:32.095155 27245 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 26
+I20200921 13:53:32.095157 27245 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:53:32.095170 27245 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:53:32.167505 27246 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 122
+I20200921 13:53:32.167515 27246 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 11
+I20200921 13:53:32.167517 27246 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:53:32.167520 27246 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 00.569556 00.785339 00.242587
+-0.740631 000.36235 00.565834
+000.35647 -0.501942 00.788025
+I20200921 13:53:32.167538 27246 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -192.08
+201.796
+625.186
+I20200921 13:53:32.167595 27246 PointCloudTracker.cc:586] test: inlierNum:11 122
+E20200921 13:53:36.537834 27245 PointCloud

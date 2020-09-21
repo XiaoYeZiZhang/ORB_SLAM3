@@ -14,7 +14,7 @@ ObjRecongManager &ObjRecongManager::Instance() {
 }
 
 ObjRecongManager::ObjRecongManager() {
-    // voc_ = std::make_shared<DBoW3::Vocabulary>();
+    voc_ = std::make_shared<DBoW3::Vocabulary>();
     version_buffer = new char[version_.size() + 1];
     memcpy(version_buffer, version_.data(), version_.size());
     *(version_buffer + version_.size()) = '\0';
@@ -95,7 +95,7 @@ int ObjRecongManager::CreateWithConfig() {
 
     return 0;
 }
-/*
+
 int read_compressed_voc(
     const char *zip_buffer, uint64_t len, DBoW3::Vocabulary *voc) {
     const char *ptr = zip_buffer;
@@ -121,10 +121,18 @@ int read_compressed_voc(
     inflate(&infstream, Z_NO_FLUSH);
     inflateEnd(&infstream);
 
-    // DBoW3::Vocabulary voc;
     int res = voc->LoadFromMemory(voc_buf, uncompressed_len);
     delete[] voc_buf;
     return res;
+}
+
+bool ObjRecongManager::LoadORBVoc(std::string &voc_path) {
+    if (voc_.get()) {
+        voc_.get()->load("/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/"
+                         "Vocabulary/ORBvoc.txt");
+        return true;
+    }
+    return false;
 }
 
 int ObjRecongManager::LoadDic(char const *buffer, int buffer_len) {
@@ -138,7 +146,7 @@ int ObjRecongManager::LoadDic(char const *buffer, int buffer_len) {
     }
 
     int voc_ok = read_compressed_voc(buffer, buffer_len, voc_.get());
-    VLOG(10) << "after load voc, cost " << timer.Stop();
+    // VLOG(10) << "after load voc, cost " << timer.Stop();
     if (voc_ok == -1) {
         VLOG(0) << "BackEndSystem: voc parse failed.";
     } else if (voc_ok == -2) {
@@ -157,7 +165,6 @@ int ObjRecongManager::LoadDic(char const *buffer, int buffer_len) {
 
     return res;
 }
-*/
 
 int ObjRecongManager::LoadModel(
     const int id, const char *buffer, int buffer_len) {
@@ -180,15 +187,14 @@ int ObjRecongManager::LoadModel(
         return -1;
     }
 
-    // object_->SetVocabulary(voc_);
-
+    object_->SetVocabulary(voc_);
     objrecog_thread_.SetModel(object_);
 
     return 0;
 }
 
 int ObjRecongManager::Init() {
-    // objrecog_thread_.SetVocabulary(voc_);
+    objrecog_thread_.SetVocabulary(voc_);
     objrecog_thread_.Init();
     objrecog_thread_.StartThread("ObjRecongManager", 0x10);
 

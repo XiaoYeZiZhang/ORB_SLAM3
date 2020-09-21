@@ -1,0 +1,1368 @@
+Log file created at: 2020/09/21 13:47:11
+Running on machine: zhangye-Z390-UD
+Log line format: [IWEF]yyyymmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I20200921 13:47:11.933177 26994 PointCloudObject.cc:60] MapPoint Data: 0, 1, 3, 17, 8
+I20200921 13:47:11.933321 26994 PointCloudObject.cc:60] MapPoint Data: 1, 1, 4, 17, 12
+I20200921 13:47:11.933331 26994 PointCloudObject.cc:60] MapPoint Data: 2, 1, 4, 15, 14
+I20200921 13:47:11.933336 26994 PointCloudObject.cc:60] MapPoint Data: 3, 1, 3, 14, 12
+I20200921 13:47:11.933356 26994 PointCloudObject.cc:60] MapPoint Data: 4, 1, 4, 17, 17
+I20200921 13:47:11.933360 26994 PointCloudObject.cc:60] MapPoint Data: 5, 1, 3, 15, 8
+I20200921 13:47:11.933365 26994 PointCloudObject.cc:60] MapPoint Data: 9, 1, 3, 13, 7
+I20200921 13:47:11.933370 26994 PointCloudObject.cc:60] MapPoint Data: 11, 1, 3, 17, 16
+I20200921 13:47:11.933375 26994 PointCloudObject.cc:60] MapPoint Data: 21, 1, 3, 16, 12
+I20200921 13:47:11.933380 26994 PointCloudObject.cc:60] MapPoint Data: 22, 1, 3, 11, 7
+I20200921 13:47:11.933385 26994 PointCloudObject.cc:60] MapPoint Data: 23, 1, 3, 14, 8
+I20200921 13:47:11.933389 26994 PointCloudObject.cc:60] MapPoint Data: 24, 1, 3, 15, 9
+I20200921 13:47:11.933394 26994 PointCloudObject.cc:60] MapPoint Data: 25, 1, 3, 16, 13
+I20200921 13:47:11.933399 26994 PointCloudObject.cc:60] MapPoint Data: 26, 1, 3, 17, 8
+I20200921 13:47:11.933404 26994 PointCloudObject.cc:60] MapPoint Data: 38, 1, 3, 14, 8
+I20200921 13:47:11.933409 26994 PointCloudObject.cc:60] MapPoint Data: 39, 1, 3, 14, 10
+I20200921 13:47:11.933414 26994 PointCloudObject.cc:60] MapPoint Data: 50, 1, 3, 15, 10
+I20200921 13:47:11.933419 26994 PointCloudObject.cc:60] MapPoint Data: 52, 1, 3, 17, 10
+I20200921 13:47:11.933423 26994 PointCloudObject.cc:60] MapPoint Data: 56, 1, 3, 12, 10
+I20200921 13:47:11.933429 26994 PointCloudObject.cc:60] MapPoint Data: 57, 1, 4, 17, 17
+I20200921 13:47:11.933434 26994 PointCloudObject.cc:60] MapPoint Data: 61, 1, 3, 16, 10
+I20200921 13:47:11.933439 26994 PointCloudObject.cc:60] MapPoint Data: 63, 1, 3, 16, 10
+I20200921 13:47:11.933444 26994 PointCloudObject.cc:60] MapPoint Data: 68, 1, 3, 16, 14
+I20200921 13:47:11.933447 26994 PointCloudObject.cc:60] MapPoint Data: 69, 1, 3, 16, 12
+I20200921 13:47:11.933452 26994 PointCloudObject.cc:60] MapPoint Data: 74, 1, 3, 17, 15
+I20200921 13:47:11.933457 26994 PointCloudObject.cc:60] MapPoint Data: 78, 1, 3, 15, 12
+I20200921 13:47:11.933462 26994 PointCloudObject.cc:60] MapPoint Data: 83, 1, 3, 16, 11
+I20200921 13:47:11.933467 26994 PointCloudObject.cc:60] MapPoint Data: 93, 1, 3, 25, 14
+I20200921 13:47:11.933471 26994 PointCloudObject.cc:60] MapPoint Data: 96, 1, 3, 15, 7
+I20200921 13:47:11.933476 26994 PointCloudObject.cc:60] MapPoint Data: 108, 1, 3, 12, 9
+I20200921 13:47:11.933481 26994 PointCloudObject.cc:60] MapPoint Data: 114, 1, 3, 14, 4
+I20200921 13:47:11.933486 26994 PointCloudObject.cc:60] MapPoint Data: 115, 1, 3, 15, 11
+I20200921 13:47:11.933490 26994 PointCloudObject.cc:60] MapPoint Data: 116, 1, 3, 16, 10
+I20200921 13:47:11.933495 26994 PointCloudObject.cc:60] MapPoint Data: 117, 1, 3, 14, 14
+I20200921 13:47:11.933501 26994 PointCloudObject.cc:60] MapPoint Data: 120, 1, 3, 17, 6
+I20200921 13:47:11.933506 26994 PointCloudObject.cc:60] MapPoint Data: 122, 1, 4, 17, 17
+I20200921 13:47:11.933511 26994 PointCloudObject.cc:60] MapPoint Data: 126, 1, 3, 16, 9
+I20200921 13:47:11.933516 26994 PointCloudObject.cc:60] MapPoint Data: 129, 1, 3, 16, 4
+I20200921 13:47:11.933521 26994 PointCloudObject.cc:60] MapPoint Data: 130, 1, 3, 14, 7
+I20200921 13:47:11.933526 26994 PointCloudObject.cc:60] MapPoint Data: 131, 1, 3, 14, 6
+I20200921 13:47:11.933529 26994 PointCloudObject.cc:60] MapPoint Data: 133, 1, 3, 16, 12
+I20200921 13:47:11.933534 26994 PointCloudObject.cc:60] MapPoint Data: 134, 1, 3, 14, 8
+I20200921 13:47:11.933539 26994 PointCloudObject.cc:60] MapPoint Data: 145, 1, 4, 17, 14
+I20200921 13:47:11.933544 26994 PointCloudObject.cc:60] MapPoint Data: 147, 1, 3, 15, 12
+I20200921 13:47:11.933548 26994 PointCloudObject.cc:60] MapPoint Data: 148, 1, 4, 17, 17
+I20200921 13:47:11.933553 26994 PointCloudObject.cc:60] MapPoint Data: 142, 1, 4, 16, 14
+I20200921 13:47:11.933558 26994 PointCloudObject.cc:60] MapPoint Data: 144, 1, 4, 16, 16
+I20200921 13:47:11.933563 26994 PointCloudObject.cc:60] MapPoint Data: 139, 1, 4, 17, 16
+I20200921 13:47:11.933596 26994 PointCloudObject.cc:60] MapPoint Data: 150, 1, 4, 15, 11
+I20200921 13:47:11.933604 26994 PointCloudObject.cc:60] MapPoint Data: 152, 1, 3, 15, 10
+I20200921 13:47:11.933624 26994 PointCloudObject.cc:60] MapPoint Data: 153, 1, 4, 17, 17
+I20200921 13:47:11.933627 26994 PointCloudObject.cc:60] MapPoint Data: 154, 1, 4, 17, 17
+I20200921 13:47:11.933632 26994 PointCloudObject.cc:60] MapPoint Data: 157, 1, 4, 16, 14
+I20200921 13:47:11.933637 26994 PointCloudObject.cc:60] MapPoint Data: 158, 1, 4, 17, 17
+I20200921 13:47:11.933642 26994 PointCloudObject.cc:60] MapPoint Data: 159, 1, 3, 17, 16
+I20200921 13:47:11.933646 26994 PointCloudObject.cc:60] MapPoint Data: 160, 1, 3, 15, 14
+I20200921 13:47:11.933651 26994 PointCloudObject.cc:60] MapPoint Data: 161, 1, 4, 14, 14
+I20200921 13:47:11.933656 26994 PointCloudObject.cc:60] MapPoint Data: 164, 1, 4, 17, 17
+I20200921 13:47:11.933661 26994 PointCloudObject.cc:60] MapPoint Data: 165, 1, 4, 16, 16
+I20200921 13:47:11.933665 26994 PointCloudObject.cc:60] MapPoint Data: 167, 1, 4, 17, 15
+I20200921 13:47:11.933670 26994 PointCloudObject.cc:60] MapPoint Data: 168, 1, 4, 16, 16
+I20200921 13:47:11.933676 26994 PointCloudObject.cc:60] MapPoint Data: 169, 1, 4, 18, 18
+I20200921 13:47:11.933681 26994 PointCloudObject.cc:60] MapPoint Data: 170, 1, 4, 17, 17
+I20200921 13:47:11.933686 26994 PointCloudObject.cc:60] MapPoint Data: 171, 1, 4, 15, 15
+I20200921 13:47:11.933691 26994 PointCloudObject.cc:60] MapPoint Data: 173, 1, 4, 15, 15
+I20200921 13:47:11.933696 26994 PointCloudObject.cc:60] MapPoint Data: 175, 1, 4, 17, 16
+I20200921 13:47:11.933701 26994 PointCloudObject.cc:60] MapPoint Data: 176, 1, 3, 17, 11
+I20200921 13:47:11.933704 26994 PointCloudObject.cc:60] MapPoint Data: 178, 1, 3, 15, 13
+I20200921 13:47:11.933709 26994 PointCloudObject.cc:60] MapPoint Data: 179, 1, 4, 16, 14
+I20200921 13:47:11.933714 26994 PointCloudObject.cc:60] MapPoint Data: 180, 1, 3, 16, 11
+I20200921 13:47:11.933719 26994 PointCloudObject.cc:60] MapPoint Data: 183, 1, 4, 16, 13
+I20200921 13:47:11.933723 26994 PointCloudObject.cc:60] MapPoint Data: 184, 1, 4, 17, 16
+I20200921 13:47:11.933728 26994 PointCloudObject.cc:60] MapPoint Data: 186, 1, 4, 17, 15
+I20200921 13:47:11.933733 26994 PointCloudObject.cc:60] MapPoint Data: 187, 1, 4, 15, 14
+I20200921 13:47:11.933738 26994 PointCloudObject.cc:60] MapPoint Data: 188, 1, 4, 16, 16
+I20200921 13:47:11.933743 26994 PointCloudObject.cc:60] MapPoint Data: 189, 1, 3, 15, 15
+I20200921 13:47:11.933748 26994 PointCloudObject.cc:60] MapPoint Data: 190, 1, 4, 17, 16
+I20200921 13:47:11.933753 26994 PointCloudObject.cc:60] MapPoint Data: 191, 1, 4, 16, 14
+I20200921 13:47:11.933756 26994 PointCloudObject.cc:60] MapPoint Data: 192, 1, 4, 18, 16
+I20200921 13:47:11.933761 26994 PointCloudObject.cc:60] MapPoint Data: 194, 1, 3, 13, 6
+I20200921 13:47:11.933766 26994 PointCloudObject.cc:60] MapPoint Data: 197, 1, 4, 17, 17
+I20200921 13:47:11.933771 26994 PointCloudObject.cc:60] MapPoint Data: 198, 1, 4, 15, 15
+I20200921 13:47:11.933775 26994 PointCloudObject.cc:60] MapPoint Data: 202, 1, 4, 17, 17
+I20200921 13:47:11.933780 26994 PointCloudObject.cc:60] MapPoint Data: 204, 1, 3, 17, 16
+I20200921 13:47:11.933785 26994 PointCloudObject.cc:60] MapPoint Data: 205, 1, 4, 16, 15
+I20200921 13:47:11.933790 26994 PointCloudObject.cc:60] MapPoint Data: 206, 1, 4, 18, 18
+I20200921 13:47:11.933795 26994 PointCloudObject.cc:60] MapPoint Data: 207, 1, 3, 17, 15
+I20200921 13:47:11.933799 26994 PointCloudObject.cc:60] MapPoint Data: 208, 1, 3, 15, 10
+I20200921 13:47:11.933804 26994 PointCloudObject.cc:60] MapPoint Data: 211, 1, 4, 17, 17
+I20200921 13:47:11.933809 26994 PointCloudObject.cc:60] MapPoint Data: 212, 1, 4, 16, 15
+I20200921 13:47:11.933815 26994 PointCloudObject.cc:60] MapPoint Data: 216, 1, 3, 17, 9
+I20200921 13:47:11.933818 26994 PointCloudObject.cc:60] MapPoint Data: 217, 1, 4, 17, 17
+I20200921 13:47:11.933823 26994 PointCloudObject.cc:60] MapPoint Data: 218, 1, 4, 17, 17
+I20200921 13:47:11.933828 26994 PointCloudObject.cc:60] MapPoint Data: 219, 1, 4, 16, 16
+I20200921 13:47:11.933840 26994 PointCloudObject.cc:60] MapPoint Data: 224, 1, 4, 17, 17
+I20200921 13:47:11.933867 26994 PointCloudObject.cc:60] MapPoint Data: 225, 1, 4, 15, 11
+I20200921 13:47:11.933872 26994 PointCloudObject.cc:60] MapPoint Data: 228, 1, 3, 14, 6
+I20200921 13:47:11.933890 26994 PointCloudObject.cc:60] MapPoint Data: 229, 1, 3, 16, 6
+I20200921 13:47:11.933895 26994 PointCloudObject.cc:60] MapPoint Data: 230, 1, 3, 16, 12
+I20200921 13:47:11.933900 26994 PointCloudObject.cc:60] MapPoint Data: 232, 1, 4, 17, 17
+I20200921 13:47:11.933905 26994 PointCloudObject.cc:60] MapPoint Data: 233, 1, 4, 17, 14
+I20200921 13:47:11.933910 26994 PointCloudObject.cc:60] MapPoint Data: 236, 1, 3, 16, 11
+I20200921 13:47:11.933914 26994 PointCloudObject.cc:60] MapPoint Data: 238, 1, 3, 14, 11
+I20200921 13:47:11.933919 26994 PointCloudObject.cc:60] MapPoint Data: 239, 1, 4, 14, 12
+I20200921 13:47:11.933924 26994 PointCloudObject.cc:60] MapPoint Data: 240, 1, 4, 15, 15
+I20200921 13:47:11.933928 26994 PointCloudObject.cc:60] MapPoint Data: 248, 1, 4, 17, 16
+I20200921 13:47:11.933933 26994 PointCloudObject.cc:60] MapPoint Data: 249, 1, 4, 16, 11
+I20200921 13:47:11.933938 26994 PointCloudObject.cc:60] MapPoint Data: 250, 1, 4, 17, 16
+I20200921 13:47:11.933943 26994 PointCloudObject.cc:60] MapPoint Data: 251, 1, 3, 16, 7
+I20200921 13:47:11.933948 26994 PointCloudObject.cc:60] MapPoint Data: 252, 1, 3, 17, 16
+I20200921 13:47:11.933952 26994 PointCloudObject.cc:60] MapPoint Data: 253, 1, 3, 16, 6
+I20200921 13:47:11.933956 26994 PointCloudObject.cc:60] MapPoint Data: 256, 1, 4, 16, 10
+I20200921 13:47:11.933961 26994 PointCloudObject.cc:60] MapPoint Data: 257, 1, 4, 17, 17
+I20200921 13:47:11.933966 26994 PointCloudObject.cc:60] MapPoint Data: 258, 1, 3, 15, 10
+I20200921 13:47:11.933970 26994 PointCloudObject.cc:60] MapPoint Data: 261, 1, 3, 15, 10
+I20200921 13:47:11.933975 26994 PointCloudObject.cc:60] MapPoint Data: 265, 1, 3, 17, 12
+I20200921 13:47:11.933980 26994 PointCloudObject.cc:60] MapPoint Data: 266, 1, 4, 14, 14
+I20200921 13:47:11.933984 26994 PointCloudObject.cc:60] MapPoint Data: 267, 1, 4, 17, 15
+I20200921 13:47:11.933990 26994 PointCloudObject.cc:60] MapPoint Data: 271, 1, 4, 16, 10
+I20200921 13:47:11.933995 26994 PointCloudObject.cc:60] MapPoint Data: 275, 1, 3, 17, 5
+I20200921 13:47:11.933998 26994 PointCloudObject.cc:60] MapPoint Data: 276, 1, 3, 17, 11
+I20200921 13:47:11.934003 26994 PointCloudObject.cc:60] MapPoint Data: 277, 1, 3, 16, 16
+I20200921 13:47:11.934008 26994 PointCloudObject.cc:60] MapPoint Data: 279, 1, 3, 16, 13
+I20200921 13:47:11.934012 26994 PointCloudObject.cc:60] MapPoint Data: 286, 1, 3, 17, 10
+I20200921 13:47:11.934017 26994 PointCloudObject.cc:60] MapPoint Data: 292, 1, 3, 16, 7
+I20200921 13:47:11.934022 26994 PointCloudObject.cc:60] MapPoint Data: 299, 1, 3, 17, 14
+I20200921 13:47:11.934027 26994 PointCloudObject.cc:60] MapPoint Data: 301, 1, 3, 13, 11
+I20200921 13:47:11.934031 26994 PointCloudObject.cc:60] MapPoint Data: 305, 1, 4, 16, 15
+I20200921 13:47:11.934036 26994 PointCloudObject.cc:60] MapPoint Data: 308, 1, 3, 15, 9
+I20200921 13:47:11.934041 26994 PointCloudObject.cc:60] MapPoint Data: 311, 1, 3, 9, 9
+I20200921 13:47:11.934046 26994 PointCloudObject.cc:60] MapPoint Data: 312, 1, 2, 7, 7
+I20200921 13:47:11.934051 26994 PointCloudObject.cc:60] MapPoint Data: 313, 1, 4, 9, 8
+I20200921 13:47:11.934056 26994 PointCloudObject.cc:60] MapPoint Data: 315, 1, 3, 8, 6
+I20200921 13:47:11.934060 26994 PointCloudObject.cc:60] MapPoint Data: 316, 1, 3, 7, 3
+I20200921 13:47:11.934064 26994 PointCloudObject.cc:60] MapPoint Data: 317, 1, 3, 9, 9
+I20200921 13:47:11.934069 26994 PointCloudObject.cc:60] MapPoint Data: 319, 1, 4, 8, 7
+I20200921 13:47:11.934074 26994 PointCloudObject.cc:60] MapPoint Data: 321, 1, 3, 7, 7
+I20200921 13:47:11.934078 26994 PointCloudObject.cc:60] MapPoint Data: 331, 1, 2, 9, 3
+I20200921 13:47:11.934083 26994 PointCloudObject.cc:60] MapPoint Data: 332, 1, 3, 7, 4
+I20200921 13:47:11.934087 26994 PointCloudObject.cc:60] MapPoint Data: 334, 1, 2, 6, 5
+I20200921 13:47:11.934113 26994 PointCloudObject.cc:60] MapPoint Data: 335, 1, 2, 6, 4
+I20200921 13:47:11.934118 26994 PointCloudObject.cc:60] MapPoint Data: 336, 1, 2, 4, 1
+I20200921 13:47:11.934123 26994 PointCloudObject.cc:60] MapPoint Data: 337, 1, 2, 3, 3
+I20200921 13:47:11.934128 26994 PointCloudObject.cc:60] MapPoint Data: 353, 1, 4, 9, 9
+I20200921 13:47:11.934146 26994 PointCloudObject.cc:60] MapPoint Data: 355, 1, 4, 9, 9
+I20200921 13:47:11.934151 26994 PointCloudObject.cc:60] MapPoint Data: 356, 1, 3, 8, 8
+I20200921 13:47:11.934156 26994 PointCloudObject.cc:60] MapPoint Data: 358, 1, 3, 8, 6
+I20200921 13:47:11.934161 26994 PointCloudObject.cc:60] MapPoint Data: 359, 1, 3, 7, 5
+I20200921 13:47:11.934166 26994 PointCloudObject.cc:60] MapPoint Data: 360, 1, 4, 8, 7
+I20200921 13:47:11.934170 26994 PointCloudObject.cc:60] MapPoint Data: 361, 1, 4, 8, 8
+I20200921 13:47:11.934175 26994 PointCloudObject.cc:60] MapPoint Data: 362, 1, 4, 8, 6
+I20200921 13:47:11.934180 26994 PointCloudObject.cc:60] MapPoint Data: 363, 1, 4, 9, 9
+I20200921 13:47:11.934185 26994 PointCloudObject.cc:60] MapPoint Data: 366, 1, 3, 8, 6
+I20200921 13:47:11.934190 26994 PointCloudObject.cc:60] MapPoint Data: 368, 1, 4, 9, 9
+I20200921 13:47:11.934195 26994 PointCloudObject.cc:60] MapPoint Data: 369, 1, 3, 9, 6
+I20200921 13:47:11.934199 26994 PointCloudObject.cc:60] MapPoint Data: 370, 1, 3, 9, 8
+I20200921 13:47:11.934204 26994 PointCloudObject.cc:60] MapPoint Data: 371, 1, 4, 9, 8
+I20200921 13:47:11.934208 26994 PointCloudObject.cc:60] MapPoint Data: 372, 1, 4, 9, 9
+I20200921 13:47:11.934213 26994 PointCloudObject.cc:60] MapPoint Data: 373, 1, 4, 7, 8
+I20200921 13:47:11.934218 26994 PointCloudObject.cc:60] MapPoint Data: 375, 1, 3, 7, 5
+I20200921 13:47:11.934222 26994 PointCloudObject.cc:60] MapPoint Data: 323, 1, 2, 9, 4
+I20200921 13:47:11.934227 26994 PointCloudObject.cc:60] MapPoint Data: 328, 1, 3, 8, 8
+I20200921 13:47:11.934232 26994 PointCloudObject.cc:60] MapPoint Data: 329, 1, 2, 8, 4
+I20200921 13:47:11.934237 26994 PointCloudObject.cc:60] MapPoint Data: 339, 1, 4, 10, 10
+I20200921 13:47:11.934242 26994 PointCloudObject.cc:60] MapPoint Data: 340, 1, 4, 9, 8
+I20200921 13:47:11.934247 26994 PointCloudObject.cc:60] MapPoint Data: 341, 1, 4, 9, 9
+I20200921 13:47:11.934252 26994 PointCloudObject.cc:60] MapPoint Data: 343, 1, 4, 9, 9
+I20200921 13:47:11.934257 26994 PointCloudObject.cc:60] MapPoint Data: 344, 1, 4, 9, 9
+I20200921 13:47:11.934260 26994 PointCloudObject.cc:60] MapPoint Data: 345, 1, 3, 9, 6
+I20200921 13:47:11.934265 26994 PointCloudObject.cc:60] MapPoint Data: 346, 1, 3, 8, 7
+I20200921 13:47:11.934270 26994 PointCloudObject.cc:60] MapPoint Data: 348, 1, 3, 7, 4
+I20200921 13:47:11.934275 26994 PointCloudObject.cc:60] MapPoint Data: 350, 1, 4, 10, 10
+I20200921 13:47:11.934279 26994 PointCloudObject.cc:60] MapPoint Data: 352, 1, 4, 9, 9
+I20200921 13:47:11.934284 26994 PointCloudObject.cc:60] MapPoint Data: 378, 1, 4, 9, 8
+I20200921 13:47:11.934289 26994 PointCloudObject.cc:60] MapPoint Data: 379, 1, 3, 8, 7
+I20200921 13:47:11.934294 26994 PointCloudObject.cc:60] MapPoint Data: 381, 1, 4, 7, 7
+I20200921 13:47:11.934298 26994 PointCloudObject.cc:60] MapPoint Data: 383, 1, 3, 9, 7
+I20200921 13:47:11.934303 26994 PointCloudObject.cc:60] MapPoint Data: 384, 1, 3, 8, 8
+I20200921 13:47:11.934309 26994 PointCloudObject.cc:60] MapPoint Data: 385, 1, 3, 9, 6
+I20200921 13:47:11.934314 26994 PointCloudObject.cc:60] MapPoint Data: 386, 1, 4, 9, 9
+I20200921 13:47:11.934317 26994 PointCloudObject.cc:60] MapPoint Data: 387, 1, 4, 7, 7
+I20200921 13:47:11.934322 26994 PointCloudObject.cc:60] MapPoint Data: 388, 1, 3, 8, 5
+I20200921 13:47:11.934327 26994 PointCloudObject.cc:60] MapPoint Data: 389, 1, 4, 10, 10
+I20200921 13:47:11.934332 26994 PointCloudObject.cc:60] MapPoint Data: 390, 1, 3, 8, 5
+I20200921 13:47:11.934336 26994 PointCloudObject.cc:60] MapPoint Data: 391, 1, 3, 8, 5
+I20200921 13:47:11.934341 26994 PointCloudObject.cc:60] MapPoint Data: 392, 1, 3, 8, 4
+I20200921 13:47:11.934346 26994 PointCloudObject.cc:60] MapPoint Data: 394, 1, 4, 8, 6
+I20200921 13:47:11.934371 26994 PointCloudObject.cc:60] MapPoint Data: 395, 1, 4, 8, 7
+I20200921 13:47:11.934377 26994 PointCloudObject.cc:60] MapPoint Data: 396, 1, 4, 8, 4
+I20200921 13:47:11.934382 26994 PointCloudObject.cc:60] MapPoint Data: 397, 1, 4, 9, 9
+I20200921 13:47:11.934387 26994 PointCloudObject.cc:60] MapPoint Data: 398, 1, 4, 9, 9
+I20200921 13:47:11.934392 26994 PointCloudObject.cc:60] MapPoint Data: 399, 1, 3, 14, 10
+I20200921 13:47:11.934397 26994 PointCloudObject.cc:60] MapPoint Data: 400, 1, 3, 6, 5
+I20200921 13:47:11.934401 26994 PointCloudObject.cc:60] MapPoint Data: 401, 1, 3, 6, 3
+I20200921 13:47:11.934406 26994 PointCloudObject.cc:60] MapPoint Data: 402, 1, 3, 8, 2
+I20200921 13:47:11.934412 26994 PointCloudObject.cc:60] MapPoint Data: 404, 1, 2, 4, 1
+I20200921 13:47:11.934415 26994 PointCloudObject.cc:60] MapPoint Data: 405, 1, 3, 8, 3
+I20200921 13:47:11.934420 26994 PointCloudObject.cc:60] MapPoint Data: 449, 1, 2, 1, 1
+I20200921 13:47:11.934424 26994 PointCloudObject.cc:60] MapPoint Data: 450, 1, 2, 1, 1
+I20200921 13:47:11.934429 26994 PointCloudObject.cc:60] MapPoint Data: 451, 1, 3, 2, 2
+I20200921 13:47:11.934434 26994 PointCloudObject.cc:60] MapPoint Data: 452, 1, 4, 1, 1
+I20200921 13:47:11.934439 26994 PointCloudObject.cc:60] MapPoint Data: 453, 1, 3, 1, 1
+I20200921 13:47:11.934443 26994 PointCloudObject.cc:60] MapPoint Data: 454, 1, 3, 1, 1
+I20200921 13:47:11.934448 26994 PointCloudObject.cc:60] MapPoint Data: 455, 1, 2, 1, 1
+I20200921 13:47:11.934453 26994 PointCloudObject.cc:60] MapPoint Data: 457, 1, 2, 1, 1
+I20200921 13:47:11.934458 26994 PointCloudObject.cc:60] MapPoint Data: 458, 1, 2, 1, 1
+I20200921 13:47:11.934463 26994 PointCloudObject.cc:60] MapPoint Data: 459, 1, 4, 1, 1
+I20200921 13:47:11.934468 26994 PointCloudObject.cc:60] MapPoint Data: 460, 1, 4, 1, 1
+I20200921 13:47:11.934471 26994 PointCloudObject.cc:60] MapPoint Data: 461, 1, 4, 1, 1
+I20200921 13:47:11.934476 26994 PointCloudObject.cc:60] MapPoint Data: 462, 1, 3, 1, 1
+I20200921 13:47:11.934481 26994 PointCloudObject.cc:60] MapPoint Data: 463, 1, 3, 1, 1
+I20200921 13:47:11.934486 26994 PointCloudObject.cc:60] MapPoint Data: 464, 1, 4, 2, 2
+I20200921 13:47:11.934490 26994 PointCloudObject.cc:60] MapPoint Data: 466, 1, 4, 1, 1
+I20200921 13:47:11.934495 26994 PointCloudObject.cc:60] MapPoint Data: 469, 1, 2, 1, 1
+I20200921 13:47:11.934500 26994 PointCloudObject.cc:60] MapPoint Data: 470, 1, 2, 1, 1
+I20200921 13:47:11.934504 26994 PointCloudObject.cc:60] MapPoint Data: 471, 1, 4, 1, 1
+I20200921 13:47:11.934509 26994 PointCloudObject.cc:60] MapPoint Data: 472, 1, 2, 1, 1
+I20200921 13:47:11.934514 26994 PointCloudObject.cc:60] MapPoint Data: 474, 1, 3, 1, 1
+I20200921 13:47:11.934518 26994 PointCloudObject.cc:60] MapPoint Data: 475, 1, 2, 1, 1
+I20200921 13:47:11.934523 26994 PointCloudObject.cc:60] MapPoint Data: 476, 1, 4, 1, 1
+I20200921 13:47:11.934528 26994 PointCloudObject.cc:60] MapPoint Data: 477, 1, 3, 1, 1
+I20200921 13:47:11.934533 26994 PointCloudObject.cc:60] MapPoint Data: 478, 1, 4, 9, 3
+I20200921 13:47:11.934537 26994 PointCloudObject.cc:60] MapPoint Data: 479, 1, 4, 1, 1
+I20200921 13:47:11.934542 26994 PointCloudObject.cc:60] MapPoint Data: 407, 1, 3, 2, 2
+I20200921 13:47:11.934547 26994 PointCloudObject.cc:60] MapPoint Data: 408, 1, 3, 2, 2
+I20200921 13:47:11.934552 26994 PointCloudObject.cc:60] MapPoint Data: 409, 1, 4, 1, 1
+I20200921 13:47:11.934557 26994 PointCloudObject.cc:60] MapPoint Data: 410, 1, 2, 1, 1
+I20200921 13:47:11.934561 26994 PointCloudObject.cc:60] MapPoint Data: 411, 1, 2, 1, 1
+I20200921 13:47:11.934566 26994 PointCloudObject.cc:60] MapPoint Data: 412, 1, 4, 1, 1
+I20200921 13:47:11.934571 26994 PointCloudObject.cc:60] MapPoint Data: 413, 1, 3, 1, 1
+I20200921 13:47:11.934576 26994 PointCloudObject.cc:60] MapPoint Data: 419, 1, 3, 1, 1
+I20200921 13:47:11.934581 26994 PointCloudObject.cc:60] MapPoint Data: 421, 1, 3, 1, 1
+I20200921 13:47:11.934585 26994 PointCloudObject.cc:60] MapPoint Data: 422, 1, 3, 1, 1
+I20200921 13:47:11.934590 26994 PointCloudObject.cc:60] MapPoint Data: 423, 1, 2, 1, 1
+I20200921 13:47:11.934595 26994 PointCloudObject.cc:60] MapPoint Data: 424, 1, 4, 3, 3
+I20200921 13:47:11.934607 26994 PointCloudObject.cc:60] MapPoint Data: 516, 1, 4, 2, 2
+I20200921 13:47:11.934625 26994 PointCloudObject.cc:60] MapPoint Data: 517, 1, 2, 1, 1
+I20200921 13:47:11.934630 26994 PointCloudObject.cc:60] MapPoint Data: 518, 1, 2, 1, 1
+I20200921 13:47:11.934634 26994 PointCloudObject.cc:60] MapPoint Data: 519, 1, 2, 1, 1
+I20200921 13:47:11.934639 26994 PointCloudObject.cc:60] MapPoint Data: 520, 1, 2, 1, 1
+I20200921 13:47:11.934644 26994 PointCloudObject.cc:60] MapPoint Data: 521, 1, 2, 1, 1
+I20200921 13:47:11.934648 26994 PointCloudObject.cc:60] MapPoint Data: 522, 1, 2, 1, 1
+I20200921 13:47:11.934653 26994 PointCloudObject.cc:60] MapPoint Data: 523, 1, 2, 1, 1
+I20200921 13:47:11.934657 26994 PointCloudObject.cc:60] MapPoint Data: 525, 1, 2, 1, 1
+I20200921 13:47:11.934662 26994 PointCloudObject.cc:60] MapPoint Data: 526, 1, 2, 1, 1
+I20200921 13:47:11.934666 26994 PointCloudObject.cc:60] MapPoint Data: 528, 1, 2, 1, 1
+I20200921 13:47:11.934671 26994 PointCloudObject.cc:60] MapPoint Data: 529, 1, 2, 1, 1
+I20200921 13:47:11.934675 26994 PointCloudObject.cc:60] MapPoint Data: 530, 1, 2, 1, 1
+I20200921 13:47:11.934680 26994 PointCloudObject.cc:60] MapPoint Data: 531, 1, 2, 1, 1
+I20200921 13:47:11.934684 26994 PointCloudObject.cc:60] MapPoint Data: 532, 1, 2, 1, 1
+I20200921 13:47:11.934689 26994 PointCloudObject.cc:60] MapPoint Data: 533, 1, 2, 1, 1
+I20200921 13:47:11.934693 26994 PointCloudObject.cc:60] MapPoint Data: 534, 1, 2, 1, 1
+I20200921 13:47:11.934698 26994 PointCloudObject.cc:60] MapPoint Data: 535, 1, 2, 1, 1
+I20200921 13:47:11.934702 26994 PointCloudObject.cc:60] MapPoint Data: 536, 1, 2, 1, 1
+I20200921 13:47:11.934707 26994 PointCloudObject.cc:60] MapPoint Data: 537, 1, 2, 1, 1
+I20200921 13:47:11.934711 26994 PointCloudObject.cc:60] MapPoint Data: 538, 1, 2, 1, 1
+I20200921 13:47:11.934716 26994 PointCloudObject.cc:60] MapPoint Data: 540, 1, 4, 1, 1
+I20200921 13:47:11.934721 26994 PointCloudObject.cc:60] MapPoint Data: 541, 1, 2, 1, 1
+I20200921 13:47:11.934725 26994 PointCloudObject.cc:60] MapPoint Data: 542, 1, 2, 1, 1
+I20200921 13:47:11.934731 26994 PointCloudObject.cc:60] MapPoint Data: 543, 1, 2, 1, 1
+I20200921 13:47:11.934734 26994 PointCloudObject.cc:60] MapPoint Data: 544, 1, 2, 1, 1
+I20200921 13:47:11.934739 26994 PointCloudObject.cc:60] MapPoint Data: 545, 1, 2, 1, 1
+I20200921 13:47:11.934743 26994 PointCloudObject.cc:60] MapPoint Data: 546, 1, 2, 1, 1
+I20200921 13:47:11.934748 26994 PointCloudObject.cc:60] MapPoint Data: 547, 1, 3, 1, 1
+I20200921 13:47:11.934753 26994 PointCloudObject.cc:60] MapPoint Data: 548, 1, 2, 1, 1
+I20200921 13:47:11.934757 26994 PointCloudObject.cc:60] MapPoint Data: 549, 1, 2, 1, 1
+I20200921 13:47:11.934762 26994 PointCloudObject.cc:60] MapPoint Data: 550, 1, 2, 1, 1
+I20200921 13:47:11.934767 26994 PointCloudObject.cc:60] MapPoint Data: 551, 1, 2, 1, 1
+I20200921 13:47:11.934772 26994 PointCloudObject.cc:60] MapPoint Data: 552, 1, 2, 1, 1
+I20200921 13:47:11.934778 26994 PointCloudObject.cc:60] MapPoint Data: 553, 1, 2, 1, 1
+I20200921 13:47:11.934800 26994 PointCloudObject.cc:60] MapPoint Data: 554, 1, 2, 1, 1
+I20200921 13:47:11.934805 26994 PointCloudObject.cc:60] MapPoint Data: 555, 1, 2, 1, 1
+I20200921 13:47:11.934809 26994 PointCloudObject.cc:60] MapPoint Data: 414, 1, 2, 1, 1
+I20200921 13:47:11.934814 26994 PointCloudObject.cc:60] MapPoint Data: 415, 1, 4, 2, 2
+I20200921 13:47:11.934832 26994 PointCloudObject.cc:60] MapPoint Data: 417, 1, 2, 1, 1
+I20200921 13:47:11.934837 26994 PointCloudObject.cc:60] MapPoint Data: 418, 1, 3, 1, 1
+I20200921 13:47:11.934841 26994 PointCloudObject.cc:60] MapPoint Data: 556, 1, 2, 1, 1
+I20200921 13:47:11.934846 26994 PointCloudObject.cc:60] MapPoint Data: 557, 1, 3, 1, 1
+I20200921 13:47:11.934851 26994 PointCloudObject.cc:60] MapPoint Data: 558, 1, 2, 1, 1
+I20200921 13:47:11.934855 26994 PointCloudObject.cc:60] MapPoint Data: 559, 1, 2, 1, 1
+I20200921 13:47:11.934860 26994 PointCloudObject.cc:60] MapPoint Data: 560, 1, 2, 1, 1
+I20200921 13:47:11.934865 26994 PointCloudObject.cc:60] MapPoint Data: 561, 1, 3, 3, 3
+I20200921 13:47:11.934892 26994 PointCloudObject.cc:60] MapPoint Data: 562, 1, 3, 1, 1
+I20200921 13:47:11.934897 26994 PointCloudObject.cc:60] MapPoint Data: 563, 1, 2, 1, 1
+I20200921 13:47:11.934902 26994 PointCloudObject.cc:60] MapPoint Data: 564, 1, 2, 1, 1
+I20200921 13:47:11.934921 26994 PointCloudObject.cc:60] MapPoint Data: 565, 1, 4, 1, 1
+I20200921 13:47:11.934926 26994 PointCloudObject.cc:60] MapPoint Data: 566, 1, 2, 1, 1
+I20200921 13:47:11.934931 26994 PointCloudObject.cc:60] MapPoint Data: 567, 1, 2, 1, 1
+I20200921 13:47:11.934936 26994 PointCloudObject.cc:60] MapPoint Data: 568, 1, 2, 1, 1
+I20200921 13:47:11.934940 26994 PointCloudObject.cc:60] MapPoint Data: 570, 1, 2, 1, 1
+I20200921 13:47:11.934944 26994 PointCloudObject.cc:60] MapPoint Data: 571, 1, 2, 1, 1
+I20200921 13:47:11.934949 26994 PointCloudObject.cc:60] MapPoint Data: 572, 1, 2, 1, 1
+I20200921 13:47:11.934953 26994 PointCloudObject.cc:60] MapPoint Data: 573, 1, 2, 1, 1
+I20200921 13:47:11.934958 26994 PointCloudObject.cc:60] MapPoint Data: 574, 1, 4, 1, 1
+I20200921 13:47:11.934963 26994 PointCloudObject.cc:60] MapPoint Data: 575, 1, 2, 1, 1
+I20200921 13:47:11.934967 26994 PointCloudObject.cc:60] MapPoint Data: 576, 1, 2, 1, 1
+I20200921 13:47:11.934973 26994 PointCloudObject.cc:60] MapPoint Data: 577, 1, 2, 1, 1
+I20200921 13:47:11.934976 26994 PointCloudObject.cc:60] MapPoint Data: 578, 1, 2, 1, 1
+I20200921 13:47:11.934981 26994 PointCloudObject.cc:60] MapPoint Data: 579, 1, 2, 1, 1
+I20200921 13:47:11.934985 26994 PointCloudObject.cc:60] MapPoint Data: 580, 1, 2, 1, 1
+I20200921 13:47:11.934990 26994 PointCloudObject.cc:60] MapPoint Data: 581, 1, 2, 1, 1
+I20200921 13:47:11.934996 26994 PointCloudObject.cc:60] MapPoint Data: 582, 1, 2, 1, 1
+I20200921 13:47:11.935003 26994 PointCloudObject.cc:60] MapPoint Data: 583, 1, 2, 1, 1
+I20200921 13:47:11.935009 26994 PointCloudObject.cc:60] MapPoint Data: 584, 1, 2, 1, 1
+I20200921 13:47:11.935014 26994 PointCloudObject.cc:60] MapPoint Data: 585, 1, 2, 1, 1
+I20200921 13:47:11.935019 26994 PointCloudObject.cc:60] MapPoint Data: 586, 1, 2, 1, 1
+I20200921 13:47:11.935025 26994 PointCloudObject.cc:60] MapPoint Data: 587, 1, 2, 1, 1
+I20200921 13:47:11.935030 26994 PointCloudObject.cc:60] MapPoint Data: 588, 1, 2, 1, 1
+I20200921 13:47:11.935035 26994 PointCloudObject.cc:60] MapPoint Data: 589, 1, 2, 1, 1
+I20200921 13:47:11.935039 26994 PointCloudObject.cc:60] MapPoint Data: 590, 1, 2, 1, 1
+I20200921 13:47:11.935045 26994 PointCloudObject.cc:60] MapPoint Data: 591, 1, 2, 1, 1
+I20200921 13:47:11.935050 26994 PointCloudObject.cc:60] MapPoint Data: 592, 1, 2, 1, 1
+I20200921 13:47:11.935055 26994 PointCloudObject.cc:60] MapPoint Data: 593, 1, 2, 1, 1
+I20200921 13:47:11.935060 26994 PointCloudObject.cc:60] MapPoint Data: 594, 1, 2, 1, 1
+I20200921 13:47:11.935065 26994 PointCloudObject.cc:60] MapPoint Data: 595, 1, 2, 1, 1
+I20200921 13:47:11.935070 26994 PointCloudObject.cc:60] MapPoint Data: 596, 1, 2, 1, 1
+I20200921 13:47:11.935075 26994 PointCloudObject.cc:60] MapPoint Data: 597, 1, 2, 1, 1
+I20200921 13:47:11.935079 26994 PointCloudObject.cc:60] MapPoint Data: 480, 1, 2, 1, 1
+I20200921 13:47:11.935083 26994 PointCloudObject.cc:60] MapPoint Data: 481, 1, 2, 1, 1
+I20200921 13:47:11.935088 26994 PointCloudObject.cc:60] MapPoint Data: 483, 1, 2, 1, 1
+I20200921 13:47:11.935092 26994 PointCloudObject.cc:60] MapPoint Data: 484, 1, 2, 1, 1
+I20200921 13:47:11.935097 26994 PointCloudObject.cc:60] MapPoint Data: 485, 1, 2, 1, 1
+I20200921 13:47:11.935101 26994 PointCloudObject.cc:60] MapPoint Data: 486, 1, 3, 1, 1
+I20200921 13:47:11.935106 26994 PointCloudObject.cc:60] MapPoint Data: 487, 1, 3, 1, 1
+I20200921 13:47:11.935111 26994 PointCloudObject.cc:60] MapPoint Data: 488, 1, 3, 1, 1
+I20200921 13:47:11.935117 26994 PointCloudObject.cc:60] MapPoint Data: 489, 1, 3, 1, 1
+I20200921 13:47:11.935120 26994 PointCloudObject.cc:60] MapPoint Data: 490, 1, 4, 1, 1
+I20200921 13:47:11.935125 26994 PointCloudObject.cc:60] MapPoint Data: 491, 1, 4, 1, 1
+I20200921 13:47:11.935130 26994 PointCloudObject.cc:60] MapPoint Data: 492, 1, 4, 1, 1
+I20200921 13:47:11.935158 26994 PointCloudObject.cc:60] MapPoint Data: 493, 1, 3, 1, 1
+I20200921 13:47:11.935163 26994 PointCloudObject.cc:60] MapPoint Data: 494, 1, 4, 1, 1
+I20200921 13:47:11.935168 26994 PointCloudObject.cc:60] MapPoint Data: 495, 1, 3, 1, 1
+I20200921 13:47:11.935173 26994 PointCloudObject.cc:60] MapPoint Data: 497, 1, 2, 1, 1
+I20200921 13:47:11.935178 26994 PointCloudObject.cc:60] MapPoint Data: 498, 1, 3, 1, 1
+I20200921 13:47:11.935182 26994 PointCloudObject.cc:60] MapPoint Data: 499, 1, 3, 1, 1
+I20200921 13:47:11.935187 26994 PointCloudObject.cc:60] MapPoint Data: 500, 1, 3, 1, 1
+I20200921 13:47:11.935191 26994 PointCloudObject.cc:60] MapPoint Data: 501, 1, 4, 1, 1
+I20200921 13:47:11.935196 26994 PointCloudObject.cc:60] MapPoint Data: 502, 1, 2, 1, 1
+I20200921 13:47:11.935201 26994 PointCloudObject.cc:60] MapPoint Data: 503, 1, 3, 1, 1
+I20200921 13:47:11.935206 26994 PointCloudObject.cc:60] MapPoint Data: 505, 1, 3, 1, 1
+I20200921 13:47:11.935211 26994 PointCloudObject.cc:60] MapPoint Data: 507, 1, 4, 1, 1
+I20200921 13:47:11.935216 26994 PointCloudObject.cc:60] MapPoint Data: 508, 1, 3, 1, 1
+I20200921 13:47:11.935221 26994 PointCloudObject.cc:60] MapPoint Data: 509, 1, 4, 1, 1
+I20200921 13:47:11.935225 26994 PointCloudObject.cc:60] MapPoint Data: 510, 1, 2, 1, 1
+I20200921 13:47:11.935230 26994 PointCloudObject.cc:60] MapPoint Data: 511, 1, 2, 1, 1
+I20200921 13:47:11.935235 26994 PointCloudObject.cc:60] MapPoint Data: 512, 1, 3, 1, 1
+I20200921 13:47:11.935240 26994 PointCloudObject.cc:60] MapPoint Data: 513, 1, 4, 1, 1
+I20200921 13:47:11.935245 26994 PointCloudObject.cc:60] MapPoint Data: 514, 1, 2, 1, 1
+I20200921 13:47:11.935250 26994 PointCloudObject.cc:60] MapPoint Data: 426, 1, 3, 1, 1
+I20200921 13:47:11.935254 26994 PointCloudObject.cc:60] MapPoint Data: 428, 1, 4, 1, 1
+I20200921 13:47:11.935259 26994 PointCloudObject.cc:60] MapPoint Data: 430, 1, 3, 1, 1
+I20200921 13:47:11.935264 26994 PointCloudObject.cc:60] MapPoint Data: 431, 1, 4, 1, 1
+I20200921 13:47:11.935269 26994 PointCloudObject.cc:60] MapPoint Data: 433, 1, 2, 1, 1
+I20200921 13:47:11.935274 26994 PointCloudObject.cc:60] MapPoint Data: 434, 1, 4, 1, 1
+I20200921 13:47:11.935279 26994 PointCloudObject.cc:60] MapPoint Data: 436, 1, 3, 1, 1
+I20200921 13:47:11.935283 26994 PointCloudObject.cc:60] MapPoint Data: 437, 1, 2, 1, 1
+I20200921 13:47:11.935288 26994 PointCloudObject.cc:60] MapPoint Data: 438, 1, 2, 1, 1
+I20200921 13:47:11.935293 26994 PointCloudObject.cc:60] MapPoint Data: 440, 1, 2, 1, 1
+I20200921 13:47:11.935298 26994 PointCloudObject.cc:60] MapPoint Data: 441, 1, 2, 1, 1
+I20200921 13:47:11.935302 26994 PointCloudObject.cc:60] MapPoint Data: 442, 1, 2, 1, 1
+I20200921 13:47:11.935307 26994 PointCloudObject.cc:60] MapPoint Data: 444, 1, 4, 1, 1
+I20200921 13:47:11.935312 26994 PointCloudObject.cc:60] MapPoint Data: 445, 1, 4, 1, 1
+I20200921 13:47:11.935317 26994 PointCloudObject.cc:60] MapPoint Data: 447, 1, 4, 2, 2
+I20200921 13:47:11.935322 26994 PointCloudObject.cc:60] MapPoint Data: 448, 1, 3, 1, 1
+I20200921 13:47:11.935858 26994 FileIO.cc:32] PointCloud load succ
+I20200921 13:47:11.936058 26994 PointCloudObject.cc:60] MapPoint Data: 0, 1, 3, 17, 8
+I20200921 13:47:11.936066 26994 PointCloudObject.cc:60] MapPoint Data: 1, 1, 4, 17, 12
+I20200921 13:47:11.936072 26994 PointCloudObject.cc:60] MapPoint Data: 2, 1, 4, 15, 14
+I20200921 13:47:11.936077 26994 PointCloudObject.cc:60] MapPoint Data: 3, 1, 3, 14, 12
+I20200921 13:47:11.936081 26994 PointCloudObject.cc:60] MapPoint Data: 4, 1, 4, 17, 17
+I20200921 13:47:11.936087 26994 PointCloudObject.cc:60] MapPoint Data: 5, 1, 3, 15, 8
+I20200921 13:47:11.936091 26994 PointCloudObject.cc:60] MapPoint Data: 9, 1, 3, 13, 7
+I20200921 13:47:11.936096 26994 PointCloudObject.cc:60] MapPoint Data: 11, 1, 3, 17, 16
+I20200921 13:47:11.936101 26994 PointCloudObject.cc:60] MapPoint Data: 21, 1, 3, 16, 12
+I20200921 13:47:11.936106 26994 PointCloudObject.cc:60] MapPoint Data: 22, 1, 3, 11, 7
+I20200921 13:47:11.936111 26994 PointCloudObject.cc:60] MapPoint Data: 23, 1, 3, 14, 8
+I20200921 13:47:11.936142 26994 PointCloudObject.cc:60] MapPoint Data: 24, 1, 3, 15, 9
+I20200921 13:47:11.936148 26994 PointCloudObject.cc:60] MapPoint Data: 25, 1, 3, 16, 13
+I20200921 13:47:11.936153 26994 PointCloudObject.cc:60] MapPoint Data: 26, 1, 3, 17, 8
+I20200921 13:47:11.936158 26994 PointCloudObject.cc:60] MapPoint Data: 38, 1, 3, 14, 8
+I20200921 13:47:11.936163 26994 PointCloudObject.cc:60] MapPoint Data: 39, 1, 3, 14, 10
+I20200921 13:47:11.936182 26994 PointCloudObject.cc:60] MapPoint Data: 50, 1, 3, 15, 10
+I20200921 13:47:11.936187 26994 PointCloudObject.cc:60] MapPoint Data: 52, 1, 3, 17, 10
+I20200921 13:47:11.936192 26994 PointCloudObject.cc:60] MapPoint Data: 56, 1, 3, 12, 10
+I20200921 13:47:11.936197 26994 PointCloudObject.cc:60] MapPoint Data: 57, 1, 4, 17, 17
+I20200921 13:47:11.936201 26994 PointCloudObject.cc:60] MapPoint Data: 61, 1, 3, 16, 10
+I20200921 13:47:11.936206 26994 PointCloudObject.cc:60] MapPoint Data: 63, 1, 3, 16, 10
+I20200921 13:47:11.936211 26994 PointCloudObject.cc:60] MapPoint Data: 68, 1, 3, 16, 14
+I20200921 13:47:11.936216 26994 PointCloudObject.cc:60] MapPoint Data: 69, 1, 3, 16, 12
+I20200921 13:47:11.936220 26994 PointCloudObject.cc:60] MapPoint Data: 74, 1, 3, 17, 15
+I20200921 13:47:11.936225 26994 PointCloudObject.cc:60] MapPoint Data: 78, 1, 3, 15, 12
+I20200921 13:47:11.936230 26994 PointCloudObject.cc:60] MapPoint Data: 83, 1, 3, 16, 11
+I20200921 13:47:11.936235 26994 PointCloudObject.cc:60] MapPoint Data: 93, 1, 3, 25, 14
+I20200921 13:47:11.936240 26994 PointCloudObject.cc:60] MapPoint Data: 96, 1, 3, 15, 7
+I20200921 13:47:11.936245 26994 PointCloudObject.cc:60] MapPoint Data: 108, 1, 3, 12, 9
+I20200921 13:47:11.936249 26994 PointCloudObject.cc:60] MapPoint Data: 114, 1, 3, 14, 4
+I20200921 13:47:11.936254 26994 PointCloudObject.cc:60] MapPoint Data: 115, 1, 3, 15, 11
+I20200921 13:47:11.936259 26994 PointCloudObject.cc:60] MapPoint Data: 116, 1, 3, 16, 10
+I20200921 13:47:11.936264 26994 PointCloudObject.cc:60] MapPoint Data: 117, 1, 3, 14, 14
+I20200921 13:47:11.936269 26994 PointCloudObject.cc:60] MapPoint Data: 120, 1, 3, 17, 6
+I20200921 13:47:11.936273 26994 PointCloudObject.cc:60] MapPoint Data: 122, 1, 4, 17, 17
+I20200921 13:47:11.936278 26994 PointCloudObject.cc:60] MapPoint Data: 126, 1, 3, 16, 9
+I20200921 13:47:11.936283 26994 PointCloudObject.cc:60] MapPoint Data: 129, 1, 3, 16, 4
+I20200921 13:47:11.936288 26994 PointCloudObject.cc:60] MapPoint Data: 130, 1, 3, 14, 7
+I20200921 13:47:11.936293 26994 PointCloudObject.cc:60] MapPoint Data: 131, 1, 3, 14, 6
+I20200921 13:47:11.936297 26994 PointCloudObject.cc:60] MapPoint Data: 133, 1, 3, 16, 12
+I20200921 13:47:11.936302 26994 PointCloudObject.cc:60] MapPoint Data: 134, 1, 3, 14, 8
+I20200921 13:47:11.936307 26994 PointCloudObject.cc:60] MapPoint Data: 145, 1, 4, 17, 14
+I20200921 13:47:11.936312 26994 PointCloudObject.cc:60] MapPoint Data: 147, 1, 3, 15, 12
+I20200921 13:47:11.936316 26994 PointCloudObject.cc:60] MapPoint Data: 148, 1, 4, 17, 17
+I20200921 13:47:11.936321 26994 PointCloudObject.cc:60] MapPoint Data: 142, 1, 4, 16, 14
+I20200921 13:47:11.936327 26994 PointCloudObject.cc:60] MapPoint Data: 144, 1, 4, 16, 16
+I20200921 13:47:11.936331 26994 PointCloudObject.cc:60] MapPoint Data: 139, 1, 4, 17, 16
+I20200921 13:47:11.936336 26994 PointCloudObject.cc:60] MapPoint Data: 150, 1, 4, 15, 11
+I20200921 13:47:11.936342 26994 PointCloudObject.cc:60] MapPoint Data: 152, 1, 3, 15, 10
+I20200921 13:47:11.936347 26994 PointCloudObject.cc:60] MapPoint Data: 153, 1, 4, 17, 17
+I20200921 13:47:11.936352 26994 PointCloudObject.cc:60] MapPoint Data: 154, 1, 4, 17, 17
+I20200921 13:47:11.936355 26994 PointCloudObject.cc:60] MapPoint Data: 157, 1, 4, 16, 14
+I20200921 13:47:11.936360 26994 PointCloudObject.cc:60] MapPoint Data: 158, 1, 4, 17, 17
+I20200921 13:47:11.936365 26994 PointCloudObject.cc:60] MapPoint Data: 159, 1, 3, 17, 16
+I20200921 13:47:11.936370 26994 PointCloudObject.cc:60] MapPoint Data: 160, 1, 3, 15, 14
+I20200921 13:47:11.936375 26994 PointCloudObject.cc:60] MapPoint Data: 161, 1, 4, 14, 14
+I20200921 13:47:11.936401 26994 PointCloudObject.cc:60] MapPoint Data: 164, 1, 4, 17, 17
+I20200921 13:47:11.936408 26994 PointCloudObject.cc:60] MapPoint Data: 165, 1, 4, 16, 16
+I20200921 13:47:11.936412 26994 PointCloudObject.cc:60] MapPoint Data: 167, 1, 4, 17, 15
+I20200921 13:47:11.936417 26994 PointCloudObject.cc:60] MapPoint Data: 168, 1, 4, 16, 16
+I20200921 13:47:11.936422 26994 PointCloudObject.cc:60] MapPoint Data: 169, 1, 4, 18, 18
+I20200921 13:47:11.936440 26994 PointCloudObject.cc:60] MapPoint Data: 170, 1, 4, 17, 17
+I20200921 13:47:11.936445 26994 PointCloudObject.cc:60] MapPoint Data: 171, 1, 4, 15, 15
+I20200921 13:47:11.936450 26994 PointCloudObject.cc:60] MapPoint Data: 173, 1, 4, 15, 15
+I20200921 13:47:11.936455 26994 PointCloudObject.cc:60] MapPoint Data: 175, 1, 4, 17, 16
+I20200921 13:47:11.936460 26994 PointCloudObject.cc:60] MapPoint Data: 176, 1, 3, 17, 11
+I20200921 13:47:11.936465 26994 PointCloudObject.cc:60] MapPoint Data: 178, 1, 3, 15, 13
+I20200921 13:47:11.936468 26994 PointCloudObject.cc:60] MapPoint Data: 179, 1, 4, 16, 14
+I20200921 13:47:11.936473 26994 PointCloudObject.cc:60] MapPoint Data: 180, 1, 3, 16, 11
+I20200921 13:47:11.936478 26994 PointCloudObject.cc:60] MapPoint Data: 183, 1, 4, 16, 13
+I20200921 13:47:11.936483 26994 PointCloudObject.cc:60] MapPoint Data: 184, 1, 4, 17, 16
+I20200921 13:47:11.936488 26994 PointCloudObject.cc:60] MapPoint Data: 186, 1, 4, 17, 15
+I20200921 13:47:11.936492 26994 PointCloudObject.cc:60] MapPoint Data: 187, 1, 4, 15, 14
+I20200921 13:47:11.936497 26994 PointCloudObject.cc:60] MapPoint Data: 188, 1, 4, 16, 16
+I20200921 13:47:11.936502 26994 PointCloudObject.cc:60] MapPoint Data: 189, 1, 3, 15, 15
+I20200921 13:47:11.936507 26994 PointCloudObject.cc:60] MapPoint Data: 190, 1, 4, 17, 16
+I20200921 13:47:11.936512 26994 PointCloudObject.cc:60] MapPoint Data: 191, 1, 4, 16, 14
+I20200921 13:47:11.936517 26994 PointCloudObject.cc:60] MapPoint Data: 192, 1, 4, 18, 16
+I20200921 13:47:11.936522 26994 PointCloudObject.cc:60] MapPoint Data: 194, 1, 3, 13, 6
+I20200921 13:47:11.936527 26994 PointCloudObject.cc:60] MapPoint Data: 197, 1, 4, 17, 17
+I20200921 13:47:11.936532 26994 PointCloudObject.cc:60] MapPoint Data: 198, 1, 4, 15, 15
+I20200921 13:47:11.936537 26994 PointCloudObject.cc:60] MapPoint Data: 202, 1, 4, 17, 17
+I20200921 13:47:11.936540 26994 PointCloudObject.cc:60] MapPoint Data: 204, 1, 3, 17, 16
+I20200921 13:47:11.936545 26994 PointCloudObject.cc:60] MapPoint Data: 205, 1, 4, 16, 15
+I20200921 13:47:11.936550 26994 PointCloudObject.cc:60] MapPoint Data: 206, 1, 4, 18, 18
+I20200921 13:47:11.936555 26994 PointCloudObject.cc:60] MapPoint Data: 207, 1, 3, 17, 15
+I20200921 13:47:11.936560 26994 PointCloudObject.cc:60] MapPoint Data: 208, 1, 3, 15, 10
+I20200921 13:47:11.936565 26994 PointCloudObject.cc:60] MapPoint Data: 211, 1, 4, 17, 17
+I20200921 13:47:11.936569 26994 PointCloudObject.cc:60] MapPoint Data: 212, 1, 4, 16, 15
+I20200921 13:47:11.936574 26994 PointCloudObject.cc:60] MapPoint Data: 216, 1, 3, 17, 9
+I20200921 13:47:11.936579 26994 PointCloudObject.cc:60] MapPoint Data: 217, 1, 4, 17, 17
+I20200921 13:47:11.936584 26994 PointCloudObject.cc:60] MapPoint Data: 218, 1, 4, 17, 17
+I20200921 13:47:11.936589 26994 PointCloudObject.cc:60] MapPoint Data: 219, 1, 4, 16, 16
+I20200921 13:47:11.936594 26994 PointCloudObject.cc:60] MapPoint Data: 224, 1, 4, 17, 17
+I20200921 13:47:11.936599 26994 PointCloudObject.cc:60] MapPoint Data: 225, 1, 4, 15, 11
+I20200921 13:47:11.936604 26994 PointCloudObject.cc:60] MapPoint Data: 228, 1, 3, 14, 6
+I20200921 13:47:11.936609 26994 PointCloudObject.cc:60] MapPoint Data: 229, 1, 3, 16, 6
+I20200921 13:47:11.936612 26994 PointCloudObject.cc:60] MapPoint Data: 230, 1, 3, 16, 12
+I20200921 13:47:11.936617 26994 PointCloudObject.cc:60] MapPoint Data: 232, 1, 4, 17, 17
+I20200921 13:47:11.936622 26994 PointCloudObject.cc:60] MapPoint Data: 233, 1, 4, 17, 14
+I20200921 13:47:11.936627 26994 PointCloudObject.cc:60] MapPoint Data: 236, 1, 3, 16, 11
+I20200921 13:47:11.936632 26994 PointCloudObject.cc:60] MapPoint Data: 238, 1, 3, 14, 11
+I20200921 13:47:11.936656 26994 PointCloudObject.cc:60] MapPoint Data: 239, 1, 4, 14, 12
+I20200921 13:47:11.936662 26994 PointCloudObject.cc:60] MapPoint Data: 240, 1, 4, 15, 15
+I20200921 13:47:11.936666 26994 PointCloudObject.cc:60] MapPoint Data: 248, 1, 4, 17, 16
+I20200921 13:47:11.936671 26994 PointCloudObject.cc:60] MapPoint Data: 249, 1, 4, 16, 11
+I20200921 13:47:11.936689 26994 PointCloudObject.cc:60] MapPoint Data: 250, 1, 4, 17, 16
+I20200921 13:47:11.936694 26994 PointCloudObject.cc:60] MapPoint Data: 251, 1, 3, 16, 7
+I20200921 13:47:11.936699 26994 PointCloudObject.cc:60] MapPoint Data: 252, 1, 3, 17, 16
+I20200921 13:47:11.936704 26994 PointCloudObject.cc:60] MapPoint Data: 253, 1, 3, 16, 6
+I20200921 13:47:11.936709 26994 PointCloudObject.cc:60] MapPoint Data: 256, 1, 4, 16, 10
+I20200921 13:47:11.936714 26994 PointCloudObject.cc:60] MapPoint Data: 257, 1, 4, 17, 17
+I20200921 13:47:11.936718 26994 PointCloudObject.cc:60] MapPoint Data: 258, 1, 3, 15, 10
+I20200921 13:47:11.936723 26994 PointCloudObject.cc:60] MapPoint Data: 261, 1, 3, 15, 10
+I20200921 13:47:11.936728 26994 PointCloudObject.cc:60] MapPoint Data: 265, 1, 3, 17, 12
+I20200921 13:47:11.936733 26994 PointCloudObject.cc:60] MapPoint Data: 266, 1, 4, 14, 14
+I20200921 13:47:11.936738 26994 PointCloudObject.cc:60] MapPoint Data: 267, 1, 4, 17, 15
+I20200921 13:47:11.936743 26994 PointCloudObject.cc:60] MapPoint Data: 271, 1, 4, 16, 10
+I20200921 13:47:11.936748 26994 PointCloudObject.cc:60] MapPoint Data: 275, 1, 3, 17, 5
+I20200921 13:47:11.936753 26994 PointCloudObject.cc:60] MapPoint Data: 276, 1, 3, 17, 11
+I20200921 13:47:11.936758 26994 PointCloudObject.cc:60] MapPoint Data: 277, 1, 3, 16, 16
+I20200921 13:47:11.936761 26994 PointCloudObject.cc:60] MapPoint Data: 279, 1, 3, 16, 13
+I20200921 13:47:11.936766 26994 PointCloudObject.cc:60] MapPoint Data: 286, 1, 3, 17, 10
+I20200921 13:47:11.936771 26994 PointCloudObject.cc:60] MapPoint Data: 292, 1, 3, 16, 7
+I20200921 13:47:11.936775 26994 PointCloudObject.cc:60] MapPoint Data: 299, 1, 3, 17, 14
+I20200921 13:47:11.936780 26994 PointCloudObject.cc:60] MapPoint Data: 301, 1, 3, 13, 11
+I20200921 13:47:11.936785 26994 PointCloudObject.cc:60] MapPoint Data: 305, 1, 4, 16, 15
+I20200921 13:47:11.936790 26994 PointCloudObject.cc:60] MapPoint Data: 308, 1, 3, 15, 9
+I20200921 13:47:11.936794 26994 PointCloudObject.cc:60] MapPoint Data: 311, 1, 3, 9, 9
+I20200921 13:47:11.936800 26994 PointCloudObject.cc:60] MapPoint Data: 312, 1, 2, 7, 7
+I20200921 13:47:11.936805 26994 PointCloudObject.cc:60] MapPoint Data: 313, 1, 4, 9, 8
+I20200921 13:47:11.936810 26994 PointCloudObject.cc:60] MapPoint Data: 315, 1, 3, 8, 6
+I20200921 13:47:11.936813 26994 PointCloudObject.cc:60] MapPoint Data: 316, 1, 3, 7, 3
+I20200921 13:47:11.936818 26994 PointCloudObject.cc:60] MapPoint Data: 317, 1, 3, 9, 9
+I20200921 13:47:11.936823 26994 PointCloudObject.cc:60] MapPoint Data: 319, 1, 4, 8, 7
+I20200921 13:47:11.936828 26994 PointCloudObject.cc:60] MapPoint Data: 321, 1, 3, 7, 7
+I20200921 13:47:11.936832 26994 PointCloudObject.cc:60] MapPoint Data: 331, 1, 2, 9, 3
+I20200921 13:47:11.936852 26994 PointCloudObject.cc:60] MapPoint Data: 332, 1, 3, 7, 4
+I20200921 13:47:11.936857 26994 PointCloudObject.cc:60] MapPoint Data: 334, 1, 2, 6, 5
+I20200921 13:47:11.936862 26994 PointCloudObject.cc:60] MapPoint Data: 335, 1, 2, 6, 4
+I20200921 13:47:11.936866 26994 PointCloudObject.cc:60] MapPoint Data: 336, 1, 2, 4, 1
+I20200921 13:47:11.936872 26994 PointCloudObject.cc:60] MapPoint Data: 337, 1, 2, 3, 3
+I20200921 13:47:11.936877 26994 PointCloudObject.cc:60] MapPoint Data: 353, 1, 4, 9, 9
+I20200921 13:47:11.936894 26994 PointCloudObject.cc:60] MapPoint Data: 355, 1, 4, 9, 9
+I20200921 13:47:11.936899 26994 PointCloudObject.cc:60] MapPoint Data: 356, 1, 3, 8, 8
+I20200921 13:47:11.936904 26994 PointCloudObject.cc:60] MapPoint Data: 358, 1, 3, 8, 6
+I20200921 13:47:11.936908 26994 PointCloudObject.cc:60] MapPoint Data: 359, 1, 3, 7, 5
+I20200921 13:47:11.936913 26994 PointCloudObject.cc:60] MapPoint Data: 360, 1, 4, 8, 7
+I20200921 13:47:11.936918 26994 PointCloudObject.cc:60] MapPoint Data: 361, 1, 4, 8, 8
+I20200921 13:47:11.936942 26994 PointCloudObject.cc:60] MapPoint Data: 362, 1, 4, 8, 6
+I20200921 13:47:11.936949 26994 PointCloudObject.cc:60] MapPoint Data: 363, 1, 4, 9, 9
+I20200921 13:47:11.936954 26994 PointCloudObject.cc:60] MapPoint Data: 366, 1, 3, 8, 6
+I20200921 13:47:11.936959 26994 PointCloudObject.cc:60] MapPoint Data: 368, 1, 4, 9, 9
+I20200921 13:47:11.936976 26994 PointCloudObject.cc:60] MapPoint Data: 369, 1, 3, 9, 6
+I20200921 13:47:11.936981 26994 PointCloudObject.cc:60] MapPoint Data: 370, 1, 3, 9, 8
+I20200921 13:47:11.936985 26994 PointCloudObject.cc:60] MapPoint Data: 371, 1, 4, 9, 8
+I20200921 13:47:11.936990 26994 PointCloudObject.cc:60] MapPoint Data: 372, 1, 4, 9, 9
+I20200921 13:47:11.936995 26994 PointCloudObject.cc:60] MapPoint Data: 373, 1, 4, 7, 8
+I20200921 13:47:11.937000 26994 PointCloudObject.cc:60] MapPoint Data: 375, 1, 3, 7, 5
+I20200921 13:47:11.937005 26994 PointCloudObject.cc:60] MapPoint Data: 323, 1, 2, 9, 4
+I20200921 13:47:11.937011 26994 PointCloudObject.cc:60] MapPoint Data: 328, 1, 3, 8, 8
+I20200921 13:47:11.937014 26994 PointCloudObject.cc:60] MapPoint Data: 329, 1, 2, 8, 4
+I20200921 13:47:11.937019 26994 PointCloudObject.cc:60] MapPoint Data: 339, 1, 4, 10, 10
+I20200921 13:47:11.937024 26994 PointCloudObject.cc:60] MapPoint Data: 340, 1, 4, 9, 8
+I20200921 13:47:11.937029 26994 PointCloudObject.cc:60] MapPoint Data: 341, 1, 4, 9, 9
+I20200921 13:47:11.937033 26994 PointCloudObject.cc:60] MapPoint Data: 343, 1, 4, 9, 9
+I20200921 13:47:11.937038 26994 PointCloudObject.cc:60] MapPoint Data: 344, 1, 4, 9, 9
+I20200921 13:47:11.937043 26994 PointCloudObject.cc:60] MapPoint Data: 345, 1, 3, 9, 6
+I20200921 13:47:11.937048 26994 PointCloudObject.cc:60] MapPoint Data: 346, 1, 3, 8, 7
+I20200921 13:47:11.937052 26994 PointCloudObject.cc:60] MapPoint Data: 348, 1, 3, 7, 4
+I20200921 13:47:11.937057 26994 PointCloudObject.cc:60] MapPoint Data: 350, 1, 4, 10, 10
+I20200921 13:47:11.937062 26994 PointCloudObject.cc:60] MapPoint Data: 352, 1, 4, 9, 9
+I20200921 13:47:11.937067 26994 PointCloudObject.cc:60] MapPoint Data: 378, 1, 4, 9, 8
+I20200921 13:47:11.937072 26994 PointCloudObject.cc:60] MapPoint Data: 379, 1, 3, 8, 7
+I20200921 13:47:11.937077 26994 PointCloudObject.cc:60] MapPoint Data: 381, 1, 4, 7, 7
+I20200921 13:47:11.937081 26994 PointCloudObject.cc:60] MapPoint Data: 383, 1, 3, 9, 7
+I20200921 13:47:11.937086 26994 PointCloudObject.cc:60] MapPoint Data: 384, 1, 3, 8, 8
+I20200921 13:47:11.937091 26994 PointCloudObject.cc:60] MapPoint Data: 385, 1, 3, 9, 6
+I20200921 13:47:11.937096 26994 PointCloudObject.cc:60] MapPoint Data: 386, 1, 4, 9, 9
+I20200921 13:47:11.937100 26994 PointCloudObject.cc:60] MapPoint Data: 387, 1, 4, 7, 7
+I20200921 13:47:11.937105 26994 PointCloudObject.cc:60] MapPoint Data: 388, 1, 3, 8, 5
+I20200921 13:47:11.937110 26994 PointCloudObject.cc:60] MapPoint Data: 389, 1, 4, 10, 10
+I20200921 13:47:11.937115 26994 PointCloudObject.cc:60] MapPoint Data: 390, 1, 3, 8, 5
+I20200921 13:47:11.937119 26994 PointCloudObject.cc:60] MapPoint Data: 391, 1, 3, 8, 5
+I20200921 13:47:11.937124 26994 PointCloudObject.cc:60] MapPoint Data: 392, 1, 3, 8, 4
+I20200921 13:47:11.937129 26994 PointCloudObject.cc:60] MapPoint Data: 394, 1, 4, 8, 6
+I20200921 13:47:11.937134 26994 PointCloudObject.cc:60] MapPoint Data: 395, 1, 4, 8, 7
+I20200921 13:47:11.937139 26994 PointCloudObject.cc:60] MapPoint Data: 396, 1, 4, 8, 4
+I20200921 13:47:11.937160 26994 PointCloudObject.cc:60] MapPoint Data: 397, 1, 4, 9, 9
+I20200921 13:47:11.937165 26994 PointCloudObject.cc:60] MapPoint Data: 398, 1, 4, 9, 9
+I20200921 13:47:11.937170 26994 PointCloudObject.cc:60] MapPoint Data: 399, 1, 3, 14, 10
+I20200921 13:47:11.937173 26994 PointCloudObject.cc:60] MapPoint Data: 400, 1, 3, 6, 5
+I20200921 13:47:11.937178 26994 PointCloudObject.cc:60] MapPoint Data: 401, 1, 3, 6, 3
+I20200921 13:47:11.937183 26994 PointCloudObject.cc:60] MapPoint Data: 402, 1, 3, 8, 2
+I20200921 13:47:11.937188 26994 PointCloudObject.cc:60] MapPoint Data: 404, 1, 2, 4, 1
+I20200921 13:47:11.937193 26994 PointCloudObject.cc:60] MapPoint Data: 405, 1, 3, 8, 3
+I20200921 13:47:11.937217 26994 PointCloudObject.cc:60] MapPoint Data: 449, 1, 2, 1, 1
+I20200921 13:47:11.937222 26994 PointCloudObject.cc:60] MapPoint Data: 450, 1, 2, 1, 1
+I20200921 13:47:11.937243 26994 PointCloudObject.cc:60] MapPoint Data: 451, 1, 3, 2, 2
+I20200921 13:47:11.937248 26994 PointCloudObject.cc:60] MapPoint Data: 452, 1, 4, 1, 1
+I20200921 13:47:11.937253 26994 PointCloudObject.cc:60] MapPoint Data: 453, 1, 3, 1, 1
+I20200921 13:47:11.937258 26994 PointCloudObject.cc:60] MapPoint Data: 454, 1, 3, 1, 1
+I20200921 13:47:11.937263 26994 PointCloudObject.cc:60] MapPoint Data: 455, 1, 2, 1, 1
+I20200921 13:47:11.937281 26994 PointCloudObject.cc:60] MapPoint Data: 457, 1, 2, 1, 1
+I20200921 13:47:11.937285 26994 PointCloudObject.cc:60] MapPoint Data: 458, 1, 2, 1, 1
+I20200921 13:47:11.937290 26994 PointCloudObject.cc:60] MapPoint Data: 459, 1, 4, 1, 1
+I20200921 13:47:11.937295 26994 PointCloudObject.cc:60] MapPoint Data: 460, 1, 4, 1, 1
+I20200921 13:47:11.937300 26994 PointCloudObject.cc:60] MapPoint Data: 461, 1, 4, 1, 1
+I20200921 13:47:11.937305 26994 PointCloudObject.cc:60] MapPoint Data: 462, 1, 3, 1, 1
+I20200921 13:47:11.937310 26994 PointCloudObject.cc:60] MapPoint Data: 463, 1, 3, 1, 1
+I20200921 13:47:11.937314 26994 PointCloudObject.cc:60] MapPoint Data: 464, 1, 4, 2, 2
+I20200921 13:47:11.937319 26994 PointCloudObject.cc:60] MapPoint Data: 466, 1, 4, 1, 1
+I20200921 13:47:11.937325 26994 PointCloudObject.cc:60] MapPoint Data: 469, 1, 2, 1, 1
+I20200921 13:47:11.937330 26994 PointCloudObject.cc:60] MapPoint Data: 470, 1, 2, 1, 1
+I20200921 13:47:11.937335 26994 PointCloudObject.cc:60] MapPoint Data: 471, 1, 4, 1, 1
+I20200921 13:47:11.937338 26994 PointCloudObject.cc:60] MapPoint Data: 472, 1, 2, 1, 1
+I20200921 13:47:11.937343 26994 PointCloudObject.cc:60] MapPoint Data: 474, 1, 3, 1, 1
+I20200921 13:47:11.937348 26994 PointCloudObject.cc:60] MapPoint Data: 475, 1, 2, 1, 1
+I20200921 13:47:11.937352 26994 PointCloudObject.cc:60] MapPoint Data: 476, 1, 4, 1, 1
+I20200921 13:47:11.937357 26994 PointCloudObject.cc:60] MapPoint Data: 477, 1, 3, 1, 1
+I20200921 13:47:11.937362 26994 PointCloudObject.cc:60] MapPoint Data: 478, 1, 4, 9, 3
+I20200921 13:47:11.937367 26994 PointCloudObject.cc:60] MapPoint Data: 479, 1, 4, 1, 1
+I20200921 13:47:11.937371 26994 PointCloudObject.cc:60] MapPoint Data: 407, 1, 3, 2, 2
+I20200921 13:47:11.937376 26994 PointCloudObject.cc:60] MapPoint Data: 408, 1, 3, 2, 2
+I20200921 13:47:11.937381 26994 PointCloudObject.cc:60] MapPoint Data: 409, 1, 4, 1, 1
+I20200921 13:47:11.937386 26994 PointCloudObject.cc:60] MapPoint Data: 410, 1, 2, 1, 1
+I20200921 13:47:11.937391 26994 PointCloudObject.cc:60] MapPoint Data: 411, 1, 2, 1, 1
+I20200921 13:47:11.937395 26994 PointCloudObject.cc:60] MapPoint Data: 412, 1, 4, 1, 1
+I20200921 13:47:11.937400 26994 PointCloudObject.cc:60] MapPoint Data: 413, 1, 3, 1, 1
+I20200921 13:47:11.937405 26994 PointCloudObject.cc:60] MapPoint Data: 419, 1, 3, 1, 1
+I20200921 13:47:11.937409 26994 PointCloudObject.cc:60] MapPoint Data: 421, 1, 3, 1, 1
+I20200921 13:47:11.937414 26994 PointCloudObject.cc:60] MapPoint Data: 422, 1, 3, 1, 1
+I20200921 13:47:11.937419 26994 PointCloudObject.cc:60] MapPoint Data: 423, 1, 2, 1, 1
+I20200921 13:47:11.937424 26994 PointCloudObject.cc:60] MapPoint Data: 424, 1, 4, 3, 3
+I20200921 13:47:11.937428 26994 PointCloudObject.cc:60] MapPoint Data: 516, 1, 4, 2, 2
+I20200921 13:47:11.937433 26994 PointCloudObject.cc:60] MapPoint Data: 517, 1, 2, 1, 1
+I20200921 13:47:11.937438 26994 PointCloudObject.cc:60] MapPoint Data: 518, 1, 2, 1, 1
+I20200921 13:47:11.937443 26994 PointCloudObject.cc:60] MapPoint Data: 519, 1, 2, 1, 1
+I20200921 13:47:11.937448 26994 PointCloudObject.cc:60] MapPoint Data: 520, 1, 2, 1, 1
+I20200921 13:47:11.937451 26994 PointCloudObject.cc:60] MapPoint Data: 521, 1, 2, 1, 1
+I20200921 13:47:11.937456 26994 PointCloudObject.cc:60] MapPoint Data: 522, 1, 2, 1, 1
+I20200921 13:47:11.937460 26994 PointCloudObject.cc:60] MapPoint Data: 523, 1, 2, 1, 1
+I20200921 13:47:11.937465 26994 PointCloudObject.cc:60] MapPoint Data: 525, 1, 2, 1, 1
+I20200921 13:47:11.937494 26994 PointCloudObject.cc:60] MapPoint Data: 526, 1, 2, 1, 1
+I20200921 13:47:11.937499 26994 PointCloudObject.cc:60] MapPoint Data: 528, 1, 2, 1, 1
+I20200921 13:47:11.937503 26994 PointCloudObject.cc:60] MapPoint Data: 529, 1, 2, 1, 1
+I20200921 13:47:11.937508 26994 PointCloudObject.cc:60] MapPoint Data: 530, 1, 2, 1, 1
+I20200921 13:47:11.937526 26994 PointCloudObject.cc:60] MapPoint Data: 531, 1, 2, 1, 1
+I20200921 13:47:11.937531 26994 PointCloudObject.cc:60] MapPoint Data: 532, 1, 2, 1, 1
+I20200921 13:47:11.937536 26994 PointCloudObject.cc:60] MapPoint Data: 533, 1, 2, 1, 1
+I20200921 13:47:11.937541 26994 PointCloudObject.cc:60] MapPoint Data: 534, 1, 2, 1, 1
+I20200921 13:47:11.937546 26994 PointCloudObject.cc:60] MapPoint Data: 535, 1, 2, 1, 1
+I20200921 13:47:11.937551 26994 PointCloudObject.cc:60] MapPoint Data: 536, 1, 2, 1, 1
+I20200921 13:47:11.937554 26994 PointCloudObject.cc:60] MapPoint Data: 537, 1, 2, 1, 1
+I20200921 13:47:11.937559 26994 PointCloudObject.cc:60] MapPoint Data: 538, 1, 2, 1, 1
+I20200921 13:47:11.937563 26994 PointCloudObject.cc:60] MapPoint Data: 540, 1, 4, 1, 1
+I20200921 13:47:11.937568 26994 PointCloudObject.cc:60] MapPoint Data: 541, 1, 2, 1, 1
+I20200921 13:47:11.937573 26994 PointCloudObject.cc:60] MapPoint Data: 542, 1, 2, 1, 1
+I20200921 13:47:11.937577 26994 PointCloudObject.cc:60] MapPoint Data: 543, 1, 2, 1, 1
+I20200921 13:47:11.937582 26994 PointCloudObject.cc:60] MapPoint Data: 544, 1, 2, 1, 1
+I20200921 13:47:11.937587 26994 PointCloudObject.cc:60] MapPoint Data: 545, 1, 2, 1, 1
+I20200921 13:47:11.937592 26994 PointCloudObject.cc:60] MapPoint Data: 546, 1, 2, 1, 1
+I20200921 13:47:11.937597 26994 PointCloudObject.cc:60] MapPoint Data: 547, 1, 3, 1, 1
+I20200921 13:47:11.937602 26994 PointCloudObject.cc:60] MapPoint Data: 548, 1, 2, 1, 1
+I20200921 13:47:11.937605 26994 PointCloudObject.cc:60] MapPoint Data: 549, 1, 2, 1, 1
+I20200921 13:47:11.937610 26994 PointCloudObject.cc:60] MapPoint Data: 550, 1, 2, 1, 1
+I20200921 13:47:11.937614 26994 PointCloudObject.cc:60] MapPoint Data: 551, 1, 2, 1, 1
+I20200921 13:47:11.937619 26994 PointCloudObject.cc:60] MapPoint Data: 552, 1, 2, 1, 1
+I20200921 13:47:11.937624 26994 PointCloudObject.cc:60] MapPoint Data: 553, 1, 2, 1, 1
+I20200921 13:47:11.937628 26994 PointCloudObject.cc:60] MapPoint Data: 554, 1, 2, 1, 1
+I20200921 13:47:11.937633 26994 PointCloudObject.cc:60] MapPoint Data: 555, 1, 2, 1, 1
+I20200921 13:47:11.937638 26994 PointCloudObject.cc:60] MapPoint Data: 414, 1, 2, 1, 1
+I20200921 13:47:11.937644 26994 PointCloudObject.cc:60] MapPoint Data: 415, 1, 4, 2, 2
+I20200921 13:47:11.937647 26994 PointCloudObject.cc:60] MapPoint Data: 417, 1, 2, 1, 1
+I20200921 13:47:11.937652 26994 PointCloudObject.cc:60] MapPoint Data: 418, 1, 3, 1, 1
+I20200921 13:47:11.937657 26994 PointCloudObject.cc:60] MapPoint Data: 556, 1, 2, 1, 1
+I20200921 13:47:11.937662 26994 PointCloudObject.cc:60] MapPoint Data: 557, 1, 3, 1, 1
+I20200921 13:47:11.937666 26994 PointCloudObject.cc:60] MapPoint Data: 558, 1, 2, 1, 1
+I20200921 13:47:11.937671 26994 PointCloudObject.cc:60] MapPoint Data: 559, 1, 2, 1, 1
+I20200921 13:47:11.937675 26994 PointCloudObject.cc:60] MapPoint Data: 560, 1, 2, 1, 1
+I20200921 13:47:11.937680 26994 PointCloudObject.cc:60] MapPoint Data: 561, 1, 3, 3, 3
+I20200921 13:47:11.937685 26994 PointCloudObject.cc:60] MapPoint Data: 562, 1, 3, 1, 1
+I20200921 13:47:11.937690 26994 PointCloudObject.cc:60] MapPoint Data: 563, 1, 2, 1, 1
+I20200921 13:47:11.937695 26994 PointCloudObject.cc:60] MapPoint Data: 564, 1, 2, 1, 1
+I20200921 13:47:11.937700 26994 PointCloudObject.cc:60] MapPoint Data: 565, 1, 4, 1, 1
+I20200921 13:47:11.937703 26994 PointCloudObject.cc:60] MapPoint Data: 566, 1, 2, 1, 1
+I20200921 13:47:11.937708 26994 PointCloudObject.cc:60] MapPoint Data: 567, 1, 2, 1, 1
+I20200921 13:47:11.937713 26994 PointCloudObject.cc:60] MapPoint Data: 568, 1, 2, 1, 1
+I20200921 13:47:11.937717 26994 PointCloudObject.cc:60] MapPoint Data: 570, 1, 2, 1, 1
+I20200921 13:47:11.937722 26994 PointCloudObject.cc:60] MapPoint Data: 571, 1, 2, 1, 1
+I20200921 13:47:11.937748 26994 PointCloudObject.cc:60] MapPoint Data: 572, 1, 2, 1, 1
+I20200921 13:47:11.937753 26994 PointCloudObject.cc:60] MapPoint Data: 573, 1, 2, 1, 1
+I20200921 13:47:11.937758 26994 PointCloudObject.cc:60] MapPoint Data: 574, 1, 4, 1, 1
+I20200921 13:47:11.937763 26994 PointCloudObject.cc:60] MapPoint Data: 575, 1, 2, 1, 1
+I20200921 13:47:11.937767 26994 PointCloudObject.cc:60] MapPoint Data: 576, 1, 2, 1, 1
+I20200921 13:47:11.937772 26994 PointCloudObject.cc:60] MapPoint Data: 577, 1, 2, 1, 1
+I20200921 13:47:11.937777 26994 PointCloudObject.cc:60] MapPoint Data: 578, 1, 2, 1, 1
+I20200921 13:47:11.937781 26994 PointCloudObject.cc:60] MapPoint Data: 579, 1, 2, 1, 1
+I20200921 13:47:11.937786 26994 PointCloudObject.cc:60] MapPoint Data: 580, 1, 2, 1, 1
+I20200921 13:47:11.937791 26994 PointCloudObject.cc:60] MapPoint Data: 581, 1, 2, 1, 1
+I20200921 13:47:11.937795 26994 PointCloudObject.cc:60] MapPoint Data: 582, 1, 2, 1, 1
+I20200921 13:47:11.937800 26994 PointCloudObject.cc:60] MapPoint Data: 583, 1, 2, 1, 1
+I20200921 13:47:11.937805 26994 PointCloudObject.cc:60] MapPoint Data: 584, 1, 2, 1, 1
+I20200921 13:47:11.937809 26994 PointCloudObject.cc:60] MapPoint Data: 585, 1, 2, 1, 1
+I20200921 13:47:11.937814 26994 PointCloudObject.cc:60] MapPoint Data: 586, 1, 2, 1, 1
+I20200921 13:47:11.937819 26994 PointCloudObject.cc:60] MapPoint Data: 587, 1, 2, 1, 1
+I20200921 13:47:11.937824 26994 PointCloudObject.cc:60] MapPoint Data: 588, 1, 2, 1, 1
+I20200921 13:47:11.937829 26994 PointCloudObject.cc:60] MapPoint Data: 589, 1, 2, 1, 1
+I20200921 13:47:11.937834 26994 PointCloudObject.cc:60] MapPoint Data: 590, 1, 2, 1, 1
+I20200921 13:47:11.937839 26994 PointCloudObject.cc:60] MapPoint Data: 591, 1, 2, 1, 1
+I20200921 13:47:11.937842 26994 PointCloudObject.cc:60] MapPoint Data: 592, 1, 2, 1, 1
+I20200921 13:47:11.937847 26994 PointCloudObject.cc:60] MapPoint Data: 593, 1, 2, 1, 1
+I20200921 13:47:11.937851 26994 PointCloudObject.cc:60] MapPoint Data: 594, 1, 2, 1, 1
+I20200921 13:47:11.937856 26994 PointCloudObject.cc:60] MapPoint Data: 595, 1, 2, 1, 1
+I20200921 13:47:11.937861 26994 PointCloudObject.cc:60] MapPoint Data: 596, 1, 2, 1, 1
+I20200921 13:47:11.937865 26994 PointCloudObject.cc:60] MapPoint Data: 597, 1, 2, 1, 1
+I20200921 13:47:11.937870 26994 PointCloudObject.cc:60] MapPoint Data: 480, 1, 2, 1, 1
+I20200921 13:47:11.937889 26994 PointCloudObject.cc:60] MapPoint Data: 481, 1, 2, 1, 1
+I20200921 13:47:11.937894 26994 PointCloudObject.cc:60] MapPoint Data: 483, 1, 2, 1, 1
+I20200921 13:47:11.937898 26994 PointCloudObject.cc:60] MapPoint Data: 484, 1, 2, 1, 1
+I20200921 13:47:11.937903 26994 PointCloudObject.cc:60] MapPoint Data: 485, 1, 2, 1, 1
+I20200921 13:47:11.937908 26994 PointCloudObject.cc:60] MapPoint Data: 486, 1, 3, 1, 1
+I20200921 13:47:11.937913 26994 PointCloudObject.cc:60] MapPoint Data: 487, 1, 3, 1, 1
+I20200921 13:47:11.937917 26994 PointCloudObject.cc:60] MapPoint Data: 488, 1, 3, 1, 1
+I20200921 13:47:11.937922 26994 PointCloudObject.cc:60] MapPoint Data: 489, 1, 3, 1, 1
+I20200921 13:47:11.937927 26994 PointCloudObject.cc:60] MapPoint Data: 490, 1, 4, 1, 1
+I20200921 13:47:11.937932 26994 PointCloudObject.cc:60] MapPoint Data: 491, 1, 4, 1, 1
+I20200921 13:47:11.937937 26994 PointCloudObject.cc:60] MapPoint Data: 492, 1, 4, 1, 1
+I20200921 13:47:11.937942 26994 PointCloudObject.cc:60] MapPoint Data: 493, 1, 3, 1, 1
+I20200921 13:47:11.937947 26994 PointCloudObject.cc:60] MapPoint Data: 494, 1, 4, 1, 1
+I20200921 13:47:11.937952 26994 PointCloudObject.cc:60] MapPoint Data: 495, 1, 3, 1, 1
+I20200921 13:47:11.937955 26994 PointCloudObject.cc:60] MapPoint Data: 497, 1, 2, 1, 1
+I20200921 13:47:11.937960 26994 PointCloudObject.cc:60] MapPoint Data: 498, 1, 3, 1, 1
+I20200921 13:47:11.937965 26994 PointCloudObject.cc:60] MapPoint Data: 499, 1, 3, 1, 1
+I20200921 13:47:11.937969 26994 PointCloudObject.cc:60] MapPoint Data: 500, 1, 3, 1, 1
+I20200921 13:47:11.937974 26994 PointCloudObject.cc:60] MapPoint Data: 501, 1, 4, 1, 1
+I20200921 13:47:11.937979 26994 PointCloudObject.cc:60] MapPoint Data: 502, 1, 2, 1, 1
+I20200921 13:47:11.938007 26994 PointCloudObject.cc:60] MapPoint Data: 503, 1, 3, 1, 1
+I20200921 13:47:11.938014 26994 PointCloudObject.cc:60] MapPoint Data: 505, 1, 3, 1, 1
+I20200921 13:47:11.938019 26994 PointCloudObject.cc:60] MapPoint Data: 507, 1, 4, 1, 1
+I20200921 13:47:11.938022 26994 PointCloudObject.cc:60] MapPoint Data: 508, 1, 3, 1, 1
+I20200921 13:47:11.938027 26994 PointCloudObject.cc:60] MapPoint Data: 509, 1, 4, 1, 1
+I20200921 13:47:11.938050 26994 PointCloudObject.cc:60] MapPoint Data: 510, 1, 2, 1, 1
+I20200921 13:47:11.938072 26994 PointCloudObject.cc:60] MapPoint Data: 511, 1, 2, 1, 1
+I20200921 13:47:11.938076 26994 PointCloudObject.cc:60] MapPoint Data: 512, 1, 3, 1, 1
+I20200921 13:47:11.938081 26994 PointCloudObject.cc:60] MapPoint Data: 513, 1, 4, 1, 1
+I20200921 13:47:11.938086 26994 PointCloudObject.cc:60] MapPoint Data: 514, 1, 2, 1, 1
+I20200921 13:47:11.938091 26994 PointCloudObject.cc:60] MapPoint Data: 426, 1, 3, 1, 1
+I20200921 13:47:11.938097 26994 PointCloudObject.cc:60] MapPoint Data: 428, 1, 4, 1, 1
+I20200921 13:47:11.938102 26994 PointCloudObject.cc:60] MapPoint Data: 430, 1, 3, 1, 1
+I20200921 13:47:11.938107 26994 PointCloudObject.cc:60] MapPoint Data: 431, 1, 4, 1, 1
+I20200921 13:47:11.938110 26994 PointCloudObject.cc:60] MapPoint Data: 433, 1, 2, 1, 1
+I20200921 13:47:11.938129 26994 PointCloudObject.cc:60] MapPoint Data: 434, 1, 4, 1, 1
+I20200921 13:47:11.938134 26994 PointCloudObject.cc:60] MapPoint Data: 436, 1, 3, 1, 1
+I20200921 13:47:11.938139 26994 PointCloudObject.cc:60] MapPoint Data: 437, 1, 2, 1, 1
+I20200921 13:47:11.938143 26994 PointCloudObject.cc:60] MapPoint Data: 438, 1, 2, 1, 1
+I20200921 13:47:11.938148 26994 PointCloudObject.cc:60] MapPoint Data: 440, 1, 2, 1, 1
+I20200921 13:47:11.938153 26994 PointCloudObject.cc:60] MapPoint Data: 441, 1, 2, 1, 1
+I20200921 13:47:11.938158 26994 PointCloudObject.cc:60] MapPoint Data: 442, 1, 2, 1, 1
+I20200921 13:47:11.938163 26994 PointCloudObject.cc:60] MapPoint Data: 444, 1, 4, 1, 1
+I20200921 13:47:11.938167 26994 PointCloudObject.cc:60] MapPoint Data: 445, 1, 4, 1, 1
+I20200921 13:47:11.938172 26994 PointCloudObject.cc:60] MapPoint Data: 447, 1, 4, 2, 2
+I20200921 13:47:11.938177 26994 PointCloudObject.cc:60] MapPoint Data: 448, 1, 3, 1, 1
+I20200921 13:47:11.938520 26994 ObjectRecognitionSystem.cc:52] PointCloud detector database create success 
+I20200921 13:47:11.938540 26994 PointCloudDetector.cc:23] PointCloud detector set obj begin
+I20200921 13:47:11.938544 26994 PointCloudDetector.cc:27] PointCloud detector set obj success
+I20200921 13:47:11.938549 26994 ObjectRecognitionSystem.cc:62] tracker and detector thread load object 0
+I20200921 13:47:11.938573 26994 FileIO.cc:68] /2020-09-21-13-47-11 is not existing and create it
+I20200921 13:47:11.938578 26994 FileIO.cc:72] can't create folder
+I20200921 13:47:11.938580 26994 mono_inertial_objectRecognition_test.cc:74] can't create the result dir/2020-09-21-13-47-11
+W20200921 13:47:11.938585 26994 mono_inertial_objectRecognition_test.cc:84] camera pose result can't open /2020-09-21-13-47-11/camera_pose_result.txt
+E20200921 13:47:12.416450 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:12.532603 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:12.532619 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 406
+I20200921 13:47:12.532621 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 14
+E20200921 13:47:12.533893 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:12.648334 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:12.648346 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 395
+I20200921 13:47:12.648350 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 17
+E20200921 13:47:14.181949 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:14.288619 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:14.288638 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 405
+I20200921 13:47:14.288674 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 14
+E20200921 13:47:15.926527 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:16.019465 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:16.019477 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 332
+I20200921 13:47:16.019479 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 9
+I20200921 13:47:16.029925 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 143
+I20200921 13:47:16.029938 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 12
+I20200921 13:47:16.029940 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:16.029942 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0-0.950342 000.305462 -0.0595231
+00-0.30635 0-0.951899 0.00618685
+-0.0547702 00.0241146 000.998208
+I20200921 13:47:16.029976 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -207.814
+0201.961
+02275.31
+I20200921 13:47:16.030056 27015 PointCloudTracker.cc:586] test: inlierNum:12 143
+E20200921 13:47:17.230899 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:17.293973 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:17.293984 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 163
+I20200921 13:47:17.293987 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 6
+I20200921 13:47:17.294003 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:17.350212 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 196
+I20200921 13:47:17.350224 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 14
+I20200921 13:47:17.350225 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:17.350226 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0-0.990259 000.118836 -0.0725675
+00-0.11448 00-0.99152 -0.0615021
+-0.0792607 -0.0525955 000.995465
+I20200921 13:47:17.350245 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 7.95175
+112.192
+869.631
+I20200921 13:47:17.350301 27015 PointCloudTracker.cc:586] test: inlierNum:14 196
+E20200921 13:47:17.748311 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:17.801028 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:17.801040 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 84
+I20200921 13:47:17.801043 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 7
+I20200921 13:47:17.801057 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:17.865016 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 174
+I20200921 13:47:17.865027 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 12
+I20200921 13:47:17.865029 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:17.865031 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0-0.952489 0-0.303002 -0.0308932
+000.301619 0-0.952479 00.0425423
+-0.0423155 00.0312031 000.998617
+I20200921 13:47:17.865049 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -24.704
+184.158
+1614.54
+I20200921 13:47:17.865101 27015 PointCloudTracker.cc:586] test: inlierNum:12 174
+E20200921 13:47:18.457108 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:18.499330 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:18.499344 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 45
+I20200921 13:47:18.499346 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:47:18.499359 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:18.583920 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 170
+I20200921 13:47:18.583953 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 12
+I20200921 13:47:18.583956 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:18.583958 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 000.837183 0-0.539892 00.0874148
+000.525657 000.838422 000.143989
+0-0.151029 -0.0745954 000.985711
+I20200921 13:47:18.583976 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -46.9606
+-225.436
+0780.318
+I20200921 13:47:18.584029 27015 PointCloudTracker.cc:586] test: inlierNum:12 170
+E20200921 13:47:19.195925 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:19.239176 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:19.239187 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 42
+I20200921 13:47:19.239188 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 3
+I20200921 13:47:19.239202 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:19.306047 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 155
+I20200921 13:47:19.306059 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 12
+I20200921 13:47:19.306061 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:19.306063 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 000.97168 -0.126565 00.199549
+0.0939609 00.981779 00.165168
+-0.216818 0-0.14174 00.965867
+I20200921 13:47:19.306082 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -81.9075
+-136.131
+0869.406
+I20200921 13:47:19.306136 27015 PointCloudTracker.cc:586] test: inlierNum:12 155
+E20200921 13:47:19.814357 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:19.856196 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:19.856211 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 42
+I20200921 13:47:19.856214 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 5
+I20200921 13:47:19.856228 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:19.930150 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 162
+I20200921 13:47:19.930161 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 13
+I20200921 13:47:19.930163 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:19.930166 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 00.964481 -0.111989 00.239236
+0.0663241 00.979336 00.191054
+-0.255689 -0.168401 00.951979
+I20200921 13:47:19.930184 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -101.216
+-131.835
+0972.091
+I20200921 13:47:19.930240 27015 PointCloudTracker.cc:586] test: inlierNum:13 162
+E20200921 13:47:20.421608 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:20.458889 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:20.458899 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 26
+I20200921 13:47:20.458901 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:47:20.458914 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:20.538022 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 149
+I20200921 13:47:20.538033 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 10
+I20200921 13:47:20.538035 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:20.538036 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 00.532296 00.785234 00.316337
+0-0.84553 00.474727 00.244361
+00.041707 -0.397545 00.916634
+I20200921 13:47:20.538055 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -164.639
+099.3166
+0681.835
+I20200921 13:47:20.538112 27015 PointCloudTracker.cc:586] test: inlierNum:10 149
+E20200921 13:47:21.154933 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:21.195044 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:21.195056 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 25
+I20200921 13:47:21.195060 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 5
+I20200921 13:47:21.195071 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:47:21.195500 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:21.237712 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:21.237725 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 34
+I20200921 13:47:21.237726 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 5
+I20200921 13:47:21.237740 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:47:23.406343 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:23.447737 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:23.447748 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 32
+I20200921 13:47:23.447751 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:47:23.447763 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:23.476605 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 55
+I20200921 13:47:23.476617 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 7
+I20200921 13:47:23.476619 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:23.476621 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 000.997553 -0.0698393 0.00327491
+00.0691478 000.992433 000.101464
+-0.0103363 00-0.10099 000.994834
+I20200921 13:47:23.476639 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 0102.954
+-66.0719
+0539.972
+I20200921 13:47:23.476691 27015 PointCloudTracker.cc:586] test: inlierNum:7 55
+E20200921 13:47:24.718528 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:24.758139 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:24.758152 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 32
+I20200921 13:47:24.758153 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 5
+I20200921 13:47:24.758167 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:24.789113 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 46
+I20200921 13:47:24.789124 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 5
+I20200921 13:47:24.789125 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:24.789127 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0000.99942 00.0106885 00.0323476
+-0.0143276 000.993326 0000.11445
+-0.0309084 0-0.114847 000.992902
+I20200921 13:47:24.789146 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 072.4834
+-73.1437
+0469.217
+I20200921 13:47:24.789193 27015 PointCloudTracker.cc:586] test: inlierNum:5 46
+E20200921 13:47:26.311709 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:26.351809 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:26.351822 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 36
+I20200921 13:47:26.351824 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 5
+I20200921 13:47:26.351840 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:26.383724 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 44
+I20200921 13:47:26.383734 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 5
+I20200921 13:47:26.383736 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:26.383738 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 00.988467 00.138436 0.0613825
+-0.144503 00.983492 00.108911
+-0.045292 -0.116525 00.992155
+I20200921 13:47:26.383778 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 069.9915
+-70.0607
+0524.029
+I20200921 13:47:26.383828 27015 PointCloudTracker.cc:586] test: inlierNum:5 44
+E20200921 13:47:27.683145 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:27.748764 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:27.748775 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 30
+I20200921 13:47:27.748777 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 3
+I20200921 13:47:27.748790 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:27.822297 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 138
+I20200921 13:47:27.822309 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 12
+I20200921 13:47:27.822310 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:27.822312 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0000.96368 0-0.266942 0.00791965
+0000.26484 000.959067 000.100247
+-0.0343555 -0.0945082 000.994931
+I20200921 13:47:27.822331 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -198.941
+05.94981
+0888.079
+I20200921 13:47:27.822387 27015 PointCloudTracker.cc:586] test: inlierNum:12 138
+E20200921 13:47:29.241528 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:29.278076 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:29.278086 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 35
+I20200921 13:47:29.278089 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 7
+I20200921 13:47:29.278102 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:29.354701 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 122
+I20200921 13:47:29.354712 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 12
+I20200921 13:47:29.354714 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:29.354717 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0000.918602 000-0.39518 -0.00174738
+00000.39316 00000.91344 0000.105129
+0-0.0399489 00-0.097259 0000.994457
+I20200921 13:47:29.354737 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -168.706
+04.96943
+0866.846
+I20200921 13:47:29.354790 27015 PointCloudTracker.cc:586] test: inlierNum:12 122
+E20200921 13:47:30.609323 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:30.648939 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:30.648949 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 28
+I20200921 13:47:30.648952 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:47:30.648962 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:30.718144 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 114
+I20200921 13:47:30.718155 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 10
+I20200921 13:47:30.718158 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:30.718159 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 000.893805 0-0.447351 -0.0314658
+000.447177 000.883761 000.137834
+0-0.033852 0-0.137268 000.989955
+I20200921 13:47:30.718179 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -183.01
+-1.5193
+771.923
+I20200921 13:47:30.718228 27015 PointCloudTracker.cc:586] test: inlierNum:10 114
+E20200921 13:47:31.738278 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:31.777686 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:31.777699 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 33
+I20200921 13:47:31.777742 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 5
+I20200921 13:47:31.777760 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:47:32.806875 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:32.844102 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:32.844113 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 24
+I20200921 13:47:32.844115 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 3
+I20200921 13:47:32.844127 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:47:32.844560 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:32.881829 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:32.881842 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 26
+I20200921 13:47:32.881844 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:47:32.881857 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:47:34.495118 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:34.534497 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:34.534508 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 32
+I20200921 13:47:34.534510 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 3
+I20200921 13:47:34.534523 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:34.582077 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 71
+I20200921 13:47:34.582087 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 7
+I20200921 13:47:34.582089 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:34.582092 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 000.771924 000.635702 0.00391665
+0-0.631521 000.766112 000.119391
+00.0728966 -0.0946344 0000.99284
+I20200921 13:47:34.582113 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -351.87
+81.1847
+474.526
+I20200921 13:47:34.582162 27015 PointCloudTracker.cc:586] test: inlierNum:7 71
+E20200921 13:47:35.998098 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:36.040362 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:36.040374 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 53
+I20200921 13:47:36.040376 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 6
+I20200921 13:47:36.040391 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:36.067970 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 61
+I20200921 13:47:36.067986 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 7
+I20200921 13:47:36.067988 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:36.067991 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 000.656619 000.754211 0.00409125
+0-0.749755 000.652131 000.112216
+00.0819662 -0.0767503 000.993675
+I20200921 13:47:36.068014 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -348.108
+098.4485
+0475.249
+I20200921 13:47:36.068078 27015 PointCloudTracker.cc:586] test: inlierNum:7 61
+E20200921 13:47:37.250469 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:37.291908 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:37.291920 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 40
+I20200921 13:47:37.291923 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 7
+I20200921 13:47:37.291935 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:37.318181 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 54
+I20200921 13:47:37.318193 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 8
+I20200921 13:47:37.318218 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:37.318222 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 00.366496 00.929994 0.0281272
+-0.908471 00.351159 00.226645
+00.200902 -0.108617 00.973571
+I20200921 13:47:37.318240 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -368.49
+299.398
+647.573
+I20200921 13:47:37.318292 27015 PointCloudTracker.cc:586] test: inlierNum:8 54
+E20200921 13:47:38.996701 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:39.041182 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:39.041194 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 47
+I20200921 13:47:39.041196 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 11
+I20200921 13:47:39.088240 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 88
+I20200921 13:47:39.088253 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 9
+I20200921 13:47:39.088254 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:39.088255 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: -0.618239 00.781474 0.0841373
+-0.757188 -0.620875 00.202932
+00.210825 0.0617529 00.975571
+I20200921 13:47:39.088274 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -66.6344
+00208.62
+0354.636
+I20200921 13:47:39.088327 27015 PointCloudTracker.cc:586] test: inlierNum:9 88
+E20200921 13:47:41.309970 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:41.349711 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:41.349723 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 36
+I20200921 13:47:41.349725 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 6
+I20200921 13:47:41.349738 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:41.395879 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 85
+I20200921 13:47:41.395889 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 7
+I20200921 13:47:41.395891 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:41.395893 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0-0.870257 000.491675 -0.0301365
+0-0.488216 0-0.852758 000.185604
+00.0655578 000.176236 000.982162
+I20200921 13:47:41.395912 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -35.0267
+0209.904
+0377.622
+I20200921 13:47:41.395961 27015 PointCloudTracker.cc:586] test: inlierNum:7 85
+E20200921 13:47:43.956915 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:44.000653 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:44.000665 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 37
+I20200921 13:47:44.000669 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 5
+I20200921 13:47:44.000682 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:44.042999 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 84
+I20200921 13:47:44.043012 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 8
+I20200921 13:47:44.043015 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:44.043015 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0-0.784029 000.619635 -0.0367606
+0-0.613547 0-0.764622 000.197265
+00.0941243 000.177216 000.979661
+I20200921 13:47:44.043036 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -58.3717
+0228.106
+0364.266
+I20200921 13:47:44.043088 27015 PointCloudTracker.cc:586] test: inlierNum:8 84
+E20200921 13:47:46.353797 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:46.394062 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:46.394078 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 30
+I20200921 13:47:46.394079 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:47:46.394091 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:46.444777 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 99
+I20200921 13:47:46.444794 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 7
+I20200921 13:47:46.444797 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:46.444798 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 000.690445 0-0.718431 -0.0845171
+000.720891 000.673659 000.162787
+-0.0600153 0-0.173323 000.983035
+I20200921 13:47:46.444820 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -525.623
+-170.845
+01313.91
+I20200921 13:47:46.444880 27015 PointCloudTracker.cc:586] test: inlierNum:7 99
+E20200921 13:47:49.288400 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:49.324100 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:49.324110 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 35
+I20200921 13:47:49.324112 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:47:49.324126 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:49.368824 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 49
+I20200921 13:47:49.368836 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 7
+I20200921 13:47:49.368839 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:49.368840 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0.0839471 -0.758926 -0.645743
+-0.989139 0.0149983 -0.146216
+00.120652 00.651004 -0.749424
+I20200921 13:47:49.368860 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 136.772
+473.952
+660.595
+I20200921 13:47:49.368912 27015 PointCloudTracker.cc:586] test: inlierNum:7 49
+E20200921 13:47:50.272053 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:50.306499 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:50.306512 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 21
+I20200921 13:47:50.306514 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 3
+I20200921 13:47:50.306526 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:50.345047 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 58
+I20200921 13:47:50.345059 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 5
+I20200921 13:47:50.345062 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:50.345103 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0.0883866 -0.765557 -0.637268
+-0.984202 0.0314104 -0.174239
+00.153406 00.642601 -0.750687
+I20200921 13:47:50.345124 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 05650.6
+6672.43
+17155.9
+I20200921 13:47:50.345176 27015 PointCloudTracker.cc:586] test: inlierNum:5 58
+E20200921 13:47:52.031570 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:52.066874 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:52.066885 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 16
+I20200921 13:47:52.066887 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 2
+I20200921 13:47:52.066900 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:52.135092 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 115
+I20200921 13:47:52.135104 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 9
+I20200921 13:47:52.135107 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:52.135108 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: -0.535674 0-0.57799 -0.615614
+-0.619192 00.764555 -0.179042
+00.574156 00.285276 -0.767439
+I20200921 13:47:52.135126 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 23.8463
+29.5096
+132.473
+I20200921 13:47:52.135177 27015 PointCloudTracker.cc:586] test: inlierNum:9 115
+E20200921 13:47:53.703006 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:53.741286 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:53.741298 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 27
+I20200921 13:47:53.741302 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 5
+I20200921 13:47:53.741328 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:53.776566 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 72
+I20200921 13:47:53.776578 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 7
+I20200921 13:47:53.776580 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:53.776582 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: -0.651551 -0.422838 -0.629833
+-0.373001 00.901524 -0.219374
+00.660569 0.0919948 -0.745108
+I20200921 13:47:53.776602 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 46.8255
+57.1683
+0176.28
+I20200921 13:47:53.776655 27015 PointCloudTracker.cc:586] test: inlierNum:7 72
+E20200921 13:47:54.215484 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:54.256983 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:54.256994 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 28
+I20200921 13:47:54.256996 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 5
+I20200921 13:47:54.257009 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:47:54.257426 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:54.296181 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:54.296192 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 20
+I20200921 13:47:54.296195 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:47:54.296207 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:47:55.053167 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:55.091910 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:55.091920 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 26
+I20200921 13:47:55.091922 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 5
+I20200921 13:47:55.091936 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:47:55.092423 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:55.131764 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:55.131776 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 24
+I20200921 13:47:55.131778 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 2
+I20200921 13:47:55.131791 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:47:55.154533 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 124
+I20200921 13:47:55.154549 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 16
+I20200921 13:47:55.154551 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:55.154553 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 00.578429 -0.815732 000000000
+00.815732 00.578429 000000000
+000000000 000000000 000000001
+I20200921 13:47:55.154577 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 736.732
+169.319
+1917.42
+I20200921 13:47:55.154649 27015 PointCloudTracker.cc:586] test: inlierNum:16 124
+E20200921 13:47:56.003074 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:56.044569 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:56.044585 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 27
+I20200921 13:47:56.044587 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:47:56.044603 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:47:56.045158 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:56.086987 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:56.086998 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 29
+I20200921 13:47:56.087000 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:47:56.087013 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:47:57.206828 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:57.248914 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:57.248924 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 42
+I20200921 13:47:57.248926 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 9
+E20200921 13:47:57.249385 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:57.289714 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:57.289726 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 27
+I20200921 13:47:57.289727 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:47:57.289739 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:47:58.772101 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:58.798921 27014 PointCloudDetector.cc:345] detectionPoseSolver result true
+I20200921 13:47:58.798933 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 32
+I20200921 13:47:58.798934 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 10
+E20200921 13:47:58.809486 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:47:58.849927 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:47:58.849941 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 43
+I20200921 13:47:58.849943 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 11
+I20200921 13:47:58.871135 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 96
+I20200921 13:47:58.871146 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 8
+I20200921 13:47:58.871148 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:58.871172 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 00.871898 -0.489687 000000000
+00.489687 00.871898 000000000
+000000000 000000000 000000001
+I20200921 13:47:58.871192 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 082.9833
+-256.895
+0731.453
+I20200921 13:47:58.871243 27015 PointCloudTracker.cc:586] test: inlierNum:8 96
+I20200921 13:47:58.949558 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 74
+I20200921 13:47:58.949570 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 7
+I20200921 13:47:58.949573 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:47:58.949573 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 000.907148 000.417342 000.053931
+0-0.418413 000.908204 0.00982857
+-0.0448785 -0.0314814 000.998496
+I20200921 13:47:58.949594 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -64.9742
+-14.6108
+0394.395
+I20200921 13:47:58.949646 27015 PointCloudTracker.cc:586] test: inlierNum:7 74
+E20200921 13:48:00.839290 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:00.883478 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:00.883489 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 42
+I20200921 13:48:00.883491 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:48:00.883505 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:48:00.920861 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 91
+I20200921 13:48:00.920872 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 8
+I20200921 13:48:00.920874 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:48:00.920876 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 000.959238 000.261738 0-0.106562
+0-0.251403 000.962575 000.101223
+000.129068 -0.0703068 0000.98914
+I20200921 13:48:00.920893 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -121.641
+0011.338
+0373.856
+I20200921 13:48:00.920943 27015 PointCloudTracker.cc:586] test: inlierNum:8 91
+E20200921 13:48:01.770977 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:01.812163 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:01.812176 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 30
+I20200921 13:48:01.812180 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:48:01.812191 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:48:01.852912 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 79
+I20200921 13:48:01.852924 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 7
+I20200921 13:48:01.852926 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:48:01.852928 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 00.981099 00.151672 -0.120168
+-0.138583 00.984144 00.110707
+00.135054 -0.091961 00.986562
+I20200921 13:48:01.852948 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -115.173
+-9.20959
+0415.059
+I20200921 13:48:01.853003 27015 PointCloudTracker.cc:586] test: inlierNum:7 79
+E20200921 13:48:02.367183 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:02.406988 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:02.407002 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 31
+I20200921 13:48:02.407004 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 6
+I20200921 13:48:02.407017 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:48:02.407493 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:02.445765 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:02.445775 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 28
+I20200921 13:48:02.445797 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:48:02.445811 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:48:02.458717 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 84
+I20200921 13:48:02.458732 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 10
+I20200921 13:48:02.458734 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:48:02.458736 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 000.995744 00.0921669 0000000000
+-0.0921669 000.995744 0000000000
+0000000000 0000000000 0000000001
+I20200921 13:48:02.458757 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -55.9323
+-64.9924
+0401.273
+I20200921 13:48:02.458817 27015 PointCloudTracker.cc:586] test: inlierNum:10 84
+I20200921 13:48:02.564883 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 90
+I20200921 13:48:02.564896 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 8
+I20200921 13:48:02.564898 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:48:02.564900 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0000.133665 0000.990964 0-0.0111444
+00-0.990985 0000.133548 0-0.0106685
+-0.00908375 000.0124699 0000.999881
+I20200921 13:48:02.564919 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -105.927
+-2.43394
+0680.422
+I20200921 13:48:02.564975 27015 PointCloudTracker.cc:586] test: inlierNum:8 90
+E20200921 13:48:04.720592 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:04.761884 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:04.761898 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 37
+I20200921 13:48:04.761900 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:48:04.761914 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:48:04.819162 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 115
+I20200921 13:48:04.819180 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 13
+I20200921 13:48:04.819182 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:48:04.819183 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0000.320157 0000.947351 00.00500752
+00-0.947294 0000.320193 0-0.0104937
+0-0.0115446 -0.00138396 0000.999932
+I20200921 13:48:04.819206 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -36.1631
+-171.832
+001319.5
+I20200921 13:48:04.819270 27015 PointCloudTracker.cc:586] test: inlierNum:13 115
+E20200921 13:48:05.932261 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:05.970424 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:05.970435 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 27
+I20200921 13:48:05.970438 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:48:05.970448 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:48:06.027678 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 98
+I20200921 13:48:06.027689 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 11
+I20200921 13:48:06.027691 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:48:06.027693 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 000.561525 000.824969 -0.0641546
+0-0.825818 000.563605 00.0193152
+00.0520923 000.042134 000.997753
+I20200921 13:48:06.027714 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -66.1728
+0-188.06
+01253.44
+I20200921 13:48:06.027772 27015 PointCloudTracker.cc:586] test: inlierNum:11 98
+E20200921 13:48:06.323586 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:06.360087 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:06.360132 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 23
+I20200921 13:48:06.360136 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 3
+I20200921 13:48:06.360149 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:48:06.360664 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:06.395505 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:06.395519 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 28
+I20200921 13:48:06.395520 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 3
+I20200921 13:48:06.395534 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:48:07.545159 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:07.582227 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:07.582240 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 21
+I20200921 13:48:07.582242 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:48:07.582253 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:48:07.582655 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:07.622961 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:07.622973 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 37
+I20200921 13:48:07.622975 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:48:07.622989 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+E20200921 13:48:09.972275 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:10.010357 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:10.010370 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 25
+I20200921 13:48:10.010372 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:48:10.010385 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:48:10.045883 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 82
+I20200921 13:48:10.045898 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 9
+I20200921 13:48:10.045902 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:48:10.045902 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0-0.843474 000.510571 000.166937
+0-0.510955 0-0.858483 00.0439646
+000.165759 -0.0482141 000.984987
+I20200921 13:48:10.045923 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 296.408
+144.899
+531.801
+I20200921 13:48:10.045981 27015 PointCloudTracker.cc:586] test: inlierNum:9 82
+E20200921 13:48:11.372893 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:11.423882 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:11.423894 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 32
+I20200921 13:48:11.423897 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 5
+I20200921 13:48:11.423909 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:48:11.444075 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 55
+I20200921 13:48:11.444087 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 6
+I20200921 13:48:11.444089 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:48:11.444090 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 0-0.918422 000.329968 000.218226
+0-0.330579 0-0.943137 00.0347984
+000.217299 -0.0401812 000.975278
+I20200921 13:48:11.444109 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: 442.556
+105.864
+652.544
+I20200921 13:48:11.444160 27015 PointCloudTracker.cc:586] test: inlierNum:6 55
+E20200921 13:48:12.503885 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty
+I20200921 13:48:12.542120 27014 PointCloudDetector.cc:345] detectionPoseSolver result false
+I20200921 13:48:12.542132 27014 PointCloudDetector.cc:347] detectionPoseSolver 3d matches size: 31
+I20200921 13:48:12.542135 27014 PointCloudDetector.cc:348] detectionPoseSolver 3d inliers size: 4
+I20200921 13:48:12.542147 27014 PointCloudDetector.cc:269] not enough 3d inliers for ceres optimization!
+I20200921 13:48:12.604933 27015 PointCloudTracker.cc:452] trackingPoseSolver 3d matches size: 105
+I20200921 13:48:12.604943 27015 PointCloudTracker.cc:453] trackingPoseSolver 3d inliers size: 8
+I20200921 13:48:12.604945 27015 PointCloudTracker.cc:454] trackingPoseSolver 2d inliers size: 0
+I20200921 13:48:12.604948 27015 PointCloudTracker.cc:455] trackingPoseSolver PoseSolve R: 000.956481 00.0863923 000.278712
+0-0.102357 000.993809 00.0432171
+0-0.273252 -0.0698644 000.959402
+I20200921 13:48:12.604967 27015 PointCloudTracker.cc:456] trackingPoseSolver PoseSolve t: -25.5274
+-46.9328
+0502.283
+I20200921 13:48:12.605018 27015 PointCloudTracker.cc:586] test: inlierNum:8 105
+E20200921 13:48:14.030576 27014 PointCloudDetector.cc:155] 2DMatch Frames QuryMap is empty

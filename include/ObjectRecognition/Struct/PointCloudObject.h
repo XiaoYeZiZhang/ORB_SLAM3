@@ -12,6 +12,7 @@
 #include <opencv2/core/mat.hpp>
 #include "Detector/DetectorFrame.h"
 #include "Object.h"
+#include "DBow3/src/DBoW3.h"
 
 typedef long unsigned int KeyFrameIndex;
 namespace ObjRecognition {
@@ -61,7 +62,7 @@ public:
 
     int GetID();
     void ReadFromMemory(unsigned int &mem_pos, const char *mem);
-    // void SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);
+    void SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);
     void GetPose(Eigen::Matrix3d &Rcw, Eigen::Vector3d &tcw);
     cv::Mat &GetRawImage();
 
@@ -69,8 +70,8 @@ public:
     std::vector<cv::KeyPoint> &GetKeyPoints();
     bool ComputeBowFeatures();
 
-    // DBoW3::FeatureVector &GetBowFeatVec();
-    // DBoW3::BowVector &GetBowVec();
+    DBoW3::FeatureVector &GetBowFeatVec();
+    DBoW3::BowVector &GetBowVec();
 
 private:
     int mnVersion = 0;
@@ -81,12 +82,11 @@ private:
     cv::Mat mDescriptors;
 
     /// bow feature
-
-    // std::shared_ptr<DBoW3::Vocabulary> voc_;
+    std::shared_ptr<DBoW3::Vocabulary> voc_;
     std::vector<cv::Mat> mvDesp;
-    // DBoW3::BowVector mBowVec;
-    // DBoW3::FeatureVector mFeatVec;
-    // std::vector<DBoW3::NodeId> mvNodeIds;
+    DBoW3::BowVector mBowVec;
+    DBoW3::FeatureVector mFeatVec;
+    std::vector<DBoW3::NodeId> mvNodeIds;
     bool mbBowValid;
 
     Eigen::Matrix3d mRcw = Eigen::Matrix3d::Identity();
@@ -107,31 +107,31 @@ public:
     };
     bool LoadPointCloud(const int &mem_size, const char *mem);
     bool LoadMesh(const int &mem_size, const char *mem);
-    // void SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);
+    void SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);
     bool Save(int &mem_size, char **mem);
     std::vector<MapPoint::Ptr> &GetPointClouds();
     std::vector<KeyFrame::Ptr> &GetKeyFrames();
-    // void SetDatabase(const std::shared_ptr<DBoW3::Database> &database);
-    // std::shared_ptr<DBoW3::Database> &GetDatabase();
+    void SetDatabase(const std::shared_ptr<DBoW3::Database> &database);
+    std::shared_ptr<DBoW3::Database> &GetDatabase();
     size_t GetPointCloudsNum();
     size_t GetKeyFramesNum();
     int GetKeyFrameIndexByEntryId(int entry_id);
     std::shared_ptr<KeyFrame> GetKeyFrameByIndex(const int &nKFID);
-    // std::shared_ptr<KeyFrame> GetMatchFrameFromMap(
-    // const DBoW3::QueryResults &dbowRet, const int &retIndex);
-    // std::vector<KeyFrame::Ptr>
-    // FrameQueryMap(const std::shared_ptr<ObjRecognition::DetectorFrame> &frm);
-    // void AddKeyFrames2Database(
-    // const std::vector<ObjRecognition::KeyFrame::Ptr> &kfs);
-    // std::shared_ptr<DBoW3::Vocabulary> &GetVocabulary();
+    std::shared_ptr<KeyFrame> GetMatchFrameFromMap(
+        const DBoW3::QueryResults &dbowRet, const int &retIndex);
+    std::vector<KeyFrame::Ptr>
+    FrameQueryMap(const std::shared_ptr<ObjRecognition::DetectorFrame> &frm);
+    void AddKeyFrames2Database(
+        const std::vector<ObjRecognition::KeyFrame::Ptr> &kfs);
+    std::shared_ptr<DBoW3::Vocabulary> &GetVocabulary();
 
 private:
     std::string m_version = "V0.0.0.0";
     double m_timestamp;
     std::vector<MapPoint::Ptr> m_pointclouds;
     std::vector<KeyFrame::Ptr> m_keyframes;
-    // std::shared_ptr<DBoW3::Vocabulary> m_voc;
-    // std::shared_ptr<DBoW3::Database> m_database;
+    std::shared_ptr<DBoW3::Vocabulary> m_voc;
+    std::shared_ptr<DBoW3::Database> m_database;
     std::map<FrameIndex, std::shared_ptr<KeyFrame>> m_mp_keyframes;
     std::vector<FrameIndex> m_entry_to_keyframe_index;
     std::unordered_map<FrameIndex, int> m_keyframe_index_to_entry;

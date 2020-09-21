@@ -1,0 +1,4 @@
+Log file created at: 2020/09/21 15:20:25
+Running on machine: zhangye-Z390-UD
+Log line format: [IWEF]yyyymmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I20200921 15:20:25.555361 31262 ObjectRecognitionManager.cc:266] ObjRecogManager isn't initialized

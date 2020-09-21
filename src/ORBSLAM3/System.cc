@@ -26,13 +26,6 @@
 #include <iomanip>
 #include <openssl/md5.h>
 #include <boost/serialization/base_object.hpp>
-#include <boost/serialization/string.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
 #include "Utility/Camera.h"
 
@@ -42,8 +35,8 @@ Verbose::eLevel Verbose::th = Verbose::VERBOSITY_NORMAL;
 
 System::System(
     const string &strVocFile, const string &strSettingsFile,
-    const eSensor sensor, const bool bUseViewer, const int initFr,
-    const string &strSequence, const string &strLoadingFile)
+    const eSensor sensor, const bool bUseViewer, bool isObjRecogMode,
+    const int initFr, const string &strSequence, const string &strLoadingFile)
     : mSensor(sensor), mpViewer(static_cast<Viewer *>(NULL)), mbReset(false),
       mbResetActiveMap(false), mbActivateLocalizationMode(false),
       mbDeactivateLocalizationMode(false) {
@@ -64,6 +57,7 @@ System::System(
 
     cout << "Input sensor was set to: ";
 
+    m_recognition_mode_ = isObjRecogMode;
     if (mSensor == MONOCULAR)
         cout << "Monocular" << endl;
     else if (mSensor == IMU_MONOCULAR)
@@ -182,7 +176,8 @@ System::System(
     cout << "Seq. Name: " << strSequence << endl;
     mpTracker = new Tracking(
         this, mpVocabulary, mpFrameDrawer, mpMapDrawer, mpAtlas,
-        mpKeyFrameDatabase, strSettingsFile, mSensor, strSequence);
+        mpKeyFrameDatabase, strSettingsFile, mSensor, strSequence,
+        m_recognition_mode_);
 
     // Initialize the Local Mapping thread and launch
     mpLocalMapper = new LocalMapping(
@@ -217,6 +212,7 @@ System::System(
         mpTracker->SetViewer(mpViewer);
         mpLoopCloser->mpViewer = mpViewer;
         mpViewer->both = mpFrameDrawer->both;
+        // mpViewer->SetPointCloudModel(m_pointCloud_model_);
     }
 
     // Set pointers between threads

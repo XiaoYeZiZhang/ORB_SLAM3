@@ -13,9 +13,8 @@
 #include "ORBSLAM3/ImuTypes.h"
 #include "Utility/Camera.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
-#include "ORBSLAM3/LocalMapping.h"
-//#define SCANNER;
-#define OBJECTRECOGNITION;
+#include "ORBSLAM3/FrameObjectProcess.h"
+#include "mode.h"
 
 using namespace std;
 class TestViewer {
@@ -23,6 +22,8 @@ public:
     bool InitSLAM(int argc, char **argv);
     bool InitObjectRecognition();
     bool RunSLAM(int argc, char *argv[]);
+    bool RunSLAMScanner(const std::string& mappoint_save_dir);
+
     ORB_SLAM3::System* GetSystem() {
         return SLAM;
     }
@@ -99,9 +100,19 @@ bool TestViewer::InitObjectRecognition() {
 
     // set slam data callback
 
+    //char *voc_buf = nullptr;
+    //unsigned int voc_buf_size = 0;
+    //LoadVoc("/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/voc.dat.zip", &voc_buf, voc_buf_size);
+    //ObjRecognitionExd::ObjRecongManager::Instance().LoadDic(voc_buf, voc_buf_size);
 
-
+    std::string voc_path = "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/ORBvoc.txt";
     std::string cloud_point_model_dir = "/home/zhangye/data/ObjectRecognition/shoe.bin";
+
+    bool voc_load_res = ObjRecognitionExd::ObjRecongManager::Instance().LoadORBVoc(voc_path);
+    if(!voc_load_res) {
+        LOG(ERROR) << "vocabulary load fail!";
+    }
+
     int model_id = 0;
     char *cloud_point_model_buffer = nullptr;
     int cloud_point_model_buf_size = 0;
@@ -111,6 +122,8 @@ bool TestViewer::InitObjectRecognition() {
         cloud_point_model_buf_size);
     ObjRecognitionExd::ObjRecongManager::Instance().LoadModel(model_id,
          cloud_point_model_buffer, cloud_point_model_buf_size);
+    SLAM->SetPointCloudModel(m_pointCloud);
+    SLAM->mpViewer->SetPointCloudModel(m_pointCloud);
     SaveResultInit();
     return true;
 }
@@ -275,8 +288,13 @@ bool TestViewer::InitSLAM(int argc, char **argv) {
     ObjRecognition::CameraIntrinsic::GetInstance().SetParameters(
         fx, fy, cx, cy, width, height);
 
+#ifdef OBJECTRECOGNITION
     SLAM = new ORB_SLAM3::System(
-        argv[1], argv[2], ORB_SLAM3::System::IMU_MONOCULAR, true);
+        argv[1], argv[2], ORB_SLAM3::System::IMU_MONOCULAR, true, true);
+#else
+    SLAM = new ORB_SLAM3::System(
+        argv[1], argv[2], ORB_SLAM3::System::IMU_MONOCULAR, true, false);
+#endif
     return true;
 }
 
@@ -364,15 +382,32 @@ void TestViewer::ObjectResultParse(const ObjRecognition::ObjRecogResult &result)
     //ObjectResultTransmitMultiTabs();
 }
 
+bool TestViewer::RunSLAMScanner(const std::string& mappoint_save_dir) {
+
+    // std::string mappoint_save_dir = "/home/zhangye/data/ObjectRecognition/shoe.bin";
+    // click boundingbox fix button:
+
+    //1. get the boundingbox
+    std::vector<Eigen::Vector3d> boundingbox;
+    //2. setboundingbox
+    ORB_SLAM3::FrameObjectProcess::GetInstance()->SetBoundingBox(boundingbox);
+    //3. run slam and extract more orb features
+
+    //4. save mappoint
+
+    if(SaveMappointFor3DObject(mappoint_save_dir)) {
+        std::cout << "save mappoint for 3dobject success!";
+    }
+}
+
 bool TestViewer::RunSLAM(int argc, char *argv[]) {
     int proccIm = 0;
     for (int seq = 0; seq < num_seq; seq++) {
-
         // Main loop
         cv::Mat im;
         vector<ORB_SLAM3::IMU::Point> vImuMeas;
         proccIm = 0;
-        nImages[seq] = 20;
+        //nImages[seq] = 20;
         for (int ni = 0; ni < nImages[seq]; ni++, proccIm++) {
             // Read image from file
             im = cv::imread(
@@ -524,10 +559,11 @@ int main(int argc, char *argv[]) {
     testViewer.RunSLAM(argc, argv);
 
 #ifdef SCANNER
-        std::string mappoint_save_path = "/home/zhangye/data/ObjectRecognition/shoe.bin";
-        if(testViewer.SaveMappointFor3DObject(mappoint_save_path)) {
-            std::cout << "save mappoint for 3dobject success!";
-        }
+    std::string mappoint_save_path = "/home/zhangye/data/ObjectRecognition/shoe.bin";
+    if(testViewer.SaveMappointFor3DObject(mappoint_save_path)) {
+        std::cout << "save mappoint for 3dobject success!";
+    }
 #endif
+
     return 0;
 }

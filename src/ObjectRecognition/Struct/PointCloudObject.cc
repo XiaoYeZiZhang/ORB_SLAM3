@@ -179,10 +179,10 @@ void KeyFrame::ReadFromMemory(unsigned int &mem_pos, const char *mem) {
     }
 }
 
-/*void KeyFrame::SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc) {
+void KeyFrame::SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc) {
     CHECK_NOTNULL(voc.get());
     voc_ = voc;
-}*/
+}
 
 cv::Mat &KeyFrame::GetRawImage() {
     return mImage;
@@ -201,8 +201,7 @@ std::vector<cv::KeyPoint> &KeyFrame::GetKeyPoints() {
     return mvKeypoints;
 }
 
-/*bool KeyFrame::ComputeBowFeatures() {
-
+bool KeyFrame::ComputeBowFeatures() {
     //  std::lock_guard<std::mutex> lck(mMutexBowFeature);
     if (!mbBowValid && !mDescriptors.empty()) {
         for (int i = 0; i < mDescriptors.rows; ++i) {
@@ -223,7 +222,7 @@ DBoW3::FeatureVector &KeyFrame::GetBowFeatVec() {
 DBoW3::BowVector &KeyFrame::GetBowVec() {
     return mBowVec;
 }
-*/
+
 int KeyFrame::GetID() {
     return mnId;
 }
@@ -302,7 +301,7 @@ bool Object::LoadPointCloud(const int &mem_size, const char *mem) {
     }
 }
 
-/*void Object::AddKeyFrames2Database(
+void Object::AddKeyFrames2Database(
     const std::vector<ObjRecognition::KeyFrame::Ptr> &kfs) {
 
     for (const auto &itKF : kfs) {
@@ -311,7 +310,7 @@ bool Object::LoadPointCloud(const int &mem_size, const char *mem) {
         auto bowVec = std::move(itKF->GetBowVec());
         auto vFeatVec = std::move(itKF->GetBowFeatVec());
         m_database->add(bowVec, vFeatVec);
-        STObjRecognition::FrameIndex kf_id = itKF->GetID();
+        ObjRecognition::FrameIndex kf_id = itKF->GetID();
         m_mp_keyframes.emplace(std::make_pair(kf_id, itKF));
         m_keyframe_index_to_entry.insert(
             std::make_pair(kf_id, m_entry_to_keyframe_index.size()));
@@ -320,9 +319,9 @@ bool Object::LoadPointCloud(const int &mem_size, const char *mem) {
         VLOG(10) << "KF id: " << kf_id << " BoW vec size: " << bowVec.size();
     }
 
-    timer.Stop();
+    // timer.Stop();
 }
-*/
+
 int Object::GetKeyFrameIndexByEntryId(int entry_id) {
     //    unique_lock<std::recursive_mutex> lck(mMutexMap);
     if (entry_id >= m_entry_to_keyframe_index.size())
@@ -337,7 +336,7 @@ std::shared_ptr<KeyFrame> Object::GetKeyFrameByIndex(const int &nKFID) {
     }
     return std::shared_ptr<KeyFrame>();
 }
-/*
+
 std::shared_ptr<KeyFrame> Object::GetMatchFrameFromMap(
     const DBoW3::QueryResults &dbowRet, const int &retIndex) {
 
@@ -347,7 +346,7 @@ std::shared_ptr<KeyFrame> Object::GetMatchFrameFromMap(
                  << ", index = " << retIndex;
     } else {
         int entry_id = dbowRet[retIndex].Id;
-        STObjRecognition::FrameIndex KFId = GetKeyFrameIndexByEntryId(entry_id);
+        ObjRecognition::FrameIndex KFId = GetKeyFrameIndexByEntryId(entry_id);
         pMostMatchFrame = GetKeyFrameByIndex(KFId);
         if (pMostMatchFrame) {
             VLOG(10) << "2DMatch get match KF from the map, succeed to get id: "
@@ -362,9 +361,9 @@ std::shared_ptr<KeyFrame> Object::GetMatchFrameFromMap(
 }
 
 std::vector<KeyFrame::Ptr> Object::FrameQueryMap(
-    const std::shared_ptr<STObjRecognition::DetectorFrame> &frm) {
+    const std::shared_ptr<ObjRecognition::DetectorFrame> &frm) {
 
-    STSLAMCommon::Timer timer("Frame query Map");
+    // STSLAMCommon::Timer timer("Frame query Map");
     std::vector<cv::Mat> desp;
     DBoW3::BowVector bow_vec;
     DBoW3::FeatureVector feat_vec;
@@ -391,7 +390,7 @@ std::vector<KeyFrame::Ptr> Object::FrameQueryMap(
         }
     }
 
-    timer.Stop();
+    // timer.Stop();
 
     return kf_matcheds;
 }
@@ -404,7 +403,7 @@ void Object::SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc) {
 std::shared_ptr<DBoW3::Vocabulary> &Object::GetVocabulary() {
     return m_voc;
 }
-*/
+
 bool Object::Save(int &mem_size, char **mem) {
     VLOG(3) << "PointCloudObject::Save";
     return true;
@@ -417,7 +416,7 @@ std::vector<MapPoint::Ptr> &Object::GetPointClouds() {
 std::vector<KeyFrame::Ptr> &Object::GetKeyFrames() {
     return m_keyframes;
 }
-/*
+
 void Object::SetDatabase(const std::shared_ptr<DBoW3::Database> &database) {
     m_database = database;
 }
@@ -425,7 +424,7 @@ void Object::SetDatabase(const std::shared_ptr<DBoW3::Database> &database) {
 std::shared_ptr<DBoW3::Database> &Object::GetDatabase() {
     return m_database;
 }
-*/
+
 size_t Object::GetPointCloudsNum() {
     return m_pointclouds.size();
 }

@@ -24,6 +24,7 @@
 #include "include/ORBSLAM3/KeyFrame.h"
 #include <pangolin/pangolin.h>
 #include <mutex>
+#include <cxeigen.hpp>
 
 namespace ORB_SLAM3 {
 
@@ -118,9 +119,10 @@ void MapDrawer::DrawMapPoints() {
     if (vpMPs.empty())
         return;
 
+    // mappoints:
     glPointSize(mPointSize);
     glBegin(GL_POINTS);
-    glColor3f(0.0, 0.0, 0.0);
+    glColor3f(1.0, 0.0, 0.0);
 
     for (size_t i = 0, iend = vpMPs.size(); i < iend; i++) {
         if (vpMPs[i]->isBad() || spRefMPs.count(vpMPs[i]))
@@ -132,7 +134,7 @@ void MapDrawer::DrawMapPoints() {
 
     glPointSize(mPointSize);
     glBegin(GL_POINTS);
-    glColor3f(1.0, 0.0, 0.0);
+    glColor3f(0.0, 0.0, 1.0);
 
     for (set<MapPoint *>::iterator sit = spRefMPs.begin(),
                                    send = spRefMPs.end();
@@ -166,6 +168,7 @@ void MapDrawer::DrawKeyFrames(
 
             if (!pKF->GetParent()) // It is the first KF in the map
             {
+                // first kf: red
                 glLineWidth(mKeyFrameLineWidth * 5);
                 glColor3f(1.0f, 0.0f, 0.0f);
                 glBegin(GL_LINES);
@@ -417,6 +420,33 @@ void MapDrawer::DrawCurrentCamera(pangolin::OpenGlMatrix &Twc) {
 void MapDrawer::SetCurrentCameraPose(const cv::Mat &Tcw) {
     unique_lock<mutex> lock(mMutexCamera);
     mCameraPose = Tcw.clone();
+}
+
+void MapDrawer::DrawCameraTrajectory(const std::vector<cv::Mat> &trajectory) {
+    glPointSize(mPointSize);
+    glBegin(GL_LINE_STRIP);
+    glColor3f(1.0, 1.0, 0.0);
+    for (const auto &p : trajectory) {
+        if (p.cols > 0 && p.rows > 0) {
+            glVertex3f(p.at<float>(0), p.at<float>(1), p.at<float>(2));
+        }
+    }
+    glEnd();
+}
+
+void MapDrawer::GetCurrentCameraPos(cv::Mat &cam_pos) {
+    if (!mCameraPose.empty()) {
+        cv::Mat Rwc(3, 3, CV_32F);
+        cv::Mat twc(3, 1, CV_32F);
+        {
+            unique_lock<mutex> lock(mMutexCamera);
+            Rwc = mCameraPose.rowRange(0, 3).colRange(0, 3).t();
+            twc = -Rwc * mCameraPose.rowRange(0, 3).col(3);
+        }
+        cam_pos = twc;
+    } else {
+        cam_pos = cv::Mat();
+    }
 }
 
 void MapDrawer::GetCurrentOpenGLCameraMatrix(

@@ -31,31 +31,32 @@ int ObjRecogThread::Init() {
         return -1;
     }
 
-    // pointcloudobj_detector_->SetVoc(voc_);
+    pointcloudobj_detector_->SetVoc(voc_);
     VLOG(10) << "Detector set voc success";
 
     return 0;
 }
 
-/*int ObjRecogThread::SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary>
-&voc) { voc_ = voc; return 0;
+int ObjRecogThread::SetVocabulary(
+    const std::shared_ptr<DBoW3::Vocabulary> &voc) {
+    voc_ = voc;
+    return 0;
 }
-*/
 
 int ObjRecogThread::SetModel(const std::shared_ptr<Object> &object) {
     object_ = object;
 
-    /*std::shared_ptr<DBoW3::Database> database =
+    std::shared_ptr<DBoW3::Database> database =
         std::make_shared<DBoW3::Database>(voc_, true, 4);
-    object_->SetDatabase(database);*/
+    object_->SetDatabase(database);
 
     VLOG(0) << "PointCloud detector database create success ";
     // VLOG(5) << "PointCloud database size: " <<
-    // object_->GetDatabase()->size();
+    object_->GetDatabase()->size();
 
     auto allKFs = object_->GetKeyFrames();
 
-    // object_->AddKeyFrames2Database(allKFs);
+    object_->AddKeyFrames2Database(allKFs);
 
     pointcloudobj_detector_->SetPointCloudObj(object_);
     pointcloudobj_tracker_->SetPointCloudObj(object_);

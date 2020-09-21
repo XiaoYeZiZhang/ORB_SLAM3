@@ -1,0 +1,23 @@
+Log file created at: 2020/09/21 17:26:10
+Running on machine: zhangye-Z390-UD
+Log line format: [IWEF]yyyymmdd hh:mm:ss.uuuuuu threadid file:line] msg
+I20200921 17:26:10.677740  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:10.762626  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:10.843528  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:11.024696  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:11.245927  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:11.470064  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:11.680687  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:11.886762  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:12.080344  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:12.287447  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:12.498744  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:12.688700  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:12.916873  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:13.169574  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:13.414821  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:13.644430  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:13.856230  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:14.047075  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:14.219216  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized
+I20200921 17:26:14.362028  5226 ObjectRecognitionManager.cc:274] ObjRecogManager isn't initialized

@@ -27,13 +27,11 @@ void PointCloudObjDetector::SetPointCloudObj(
     VLOG(0) << "PointCloud detector set obj success";
 }
 
-/*
 void PointCloudObjDetector::SetVoc(
     const std::shared_ptr<DBoW3::Vocabulary> &pVoc) {
     CHECK_NOTNULL(pVoc.get());
     voc_ = pVoc;
 }
-*/
 
 static PS::Point2D NormalizePoint2D(
     const cv::Point2d &pt, const float &fx, const float &fy, const float &cx,
@@ -146,9 +144,7 @@ PointCloudObjDetector::Find2DMatches(const std::vector<KeyFrame::Ptr> &allKFs) {
 
     // STSLAMCommon::Timer timer_find_2dmatch("find 2d matches");
 
-    // std::vector<KeyFrame::Ptr> kf_mathceds =
-    // mObj->FrameQueryMap(m_frame_cur);
-    std::vector<KeyFrame::Ptr> kf_mathceds;
+    std::vector<KeyFrame::Ptr> kf_mathceds = mObj->FrameQueryMap(m_frame_cur);
     std::vector<PS::MatchSet2D> matches_2ds;
 
     if (kf_mathceds.size() == 0) {

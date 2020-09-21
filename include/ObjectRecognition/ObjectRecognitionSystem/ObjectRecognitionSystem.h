@@ -19,7 +19,7 @@ public:
 
     int Init();
 
-    /*int SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);*/
+    int SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);
     int SetModel(const std::shared_ptr<Object> &object);
 
     void PushUnProcessedFrame(
@@ -40,8 +40,7 @@ protected:
     void SetInfo();
 
 private:
-    /*std::shared_ptr<DBoW3::Vocabulary> voc_;
-     */
+    std::shared_ptr<DBoW3::Vocabulary> voc_;
     std::shared_ptr<ObjRecognition::Object> object_;
 
     ObjRecognition::DetectorThread detector_thread_;
@@ -57,7 +56,6 @@ private:
     int frame_processed_num_ = 0;
 
     std::mutex mMutexInfoBuffer;
-
-}; // namespace ObjRecognition
+};
 } // namespace ObjRecognition
 #endif // ORB_SLAM3_OBJECTRECOGNITIONSYSTEM_H

@@ -134,13 +134,16 @@ void Viewer::Run() {
 
     pangolin::CreatePanel("menu").SetBounds(
         0.0, 1.0, 0.0, pangolin::Attach::Pix(175));
-    pangolin::Var<bool> menuFollowCamera("menu.Follow Camera", true, true);
+    pangolin::Var<bool> menuFollowCamera("menu.Follow Camera", false, true);
     pangolin::Var<bool> menuCamView("menu.Camera View", false, false);
     pangolin::Var<bool> menuTopView("menu.Top View", false, false);
     // pangolin::Var<bool> menuSideView("menu.Side View",false,false);
     pangolin::Var<bool> menuShowPoints("menu.Show Points", true, true);
     pangolin::Var<bool> menuShowKeyFrames("menu.Show KeyFrames", true, true);
     pangolin::Var<bool> menuShowGraph("menu.Show Graph", false, true);
+    pangolin::Var<bool> menuShowCameraTrajectory(
+        "menu.Show Camera trajectory", true, true);
+    pangolin::Var<bool> menuShow3DObject("menu.Show 3DObject", true, true);
     pangolin::Var<bool> menuShowInertialGraph(
         "menu.Show Inertial Graph", true, true);
     pangolin::Var<bool> menuLocalizationMode(
@@ -149,6 +152,7 @@ void Viewer::Run() {
     pangolin::Var<bool> menuStepByStep(
         "menu.Step By Step", false, true); // false, true
     pangolin::Var<bool> menuStep("menu.Step", false, false);
+    pangolin::Var<bool> menuStop("menu.Stop", false, false);
 
     // Define Camera Render Object (for view / scene browsing)
     pangolin::OpenGlRenderState s_cam(
@@ -182,6 +186,11 @@ void Viewer::Run() {
         menuShowGraph = true;
     }
 
+    if (mpTracker->m_objRecognition_mode_) {
+        menuShow3DObject = true;
+        menuShowCameraTrajectory = true;
+    }
+
     while (1) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -190,6 +199,13 @@ void Viewer::Run() {
         if (mbStopTrack) {
             menuStepByStep = true;
             mbStopTrack = false;
+        }
+
+        if (!menuFollowCamera) {
+            cv::Mat cam_pos;
+            // TODO(zhangye): check the cam pos???
+            mpMapDrawer->GetCurrentCameraPos(cam_pos);
+            m_trajectory.push_back(cam_pos);
         }
 
         if (menuFollowCamera && bFollow) {
@@ -270,13 +286,48 @@ void Viewer::Run() {
         }
 
         d_cam.Activate(s_cam);
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        pangolin::glDrawAxis(0.6f);
+        glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
+        pangolin::glDraw_z0(0.5f, 100);
+
         mpMapDrawer->DrawCurrentCamera(Twc);
         if (menuShowKeyFrames || menuShowGraph || menuShowInertialGraph)
             mpMapDrawer->DrawKeyFrames(
                 menuShowKeyFrames, menuShowGraph, menuShowInertialGraph);
         if (menuShowPoints)
             mpMapDrawer->DrawMapPoints();
+
+        if (menuShowCameraTrajectory) {
+            mpMapDrawer->DrawCameraTrajectory(m_trajectory);
+        }
+
+        if (menuShow3DObject) {
+            typedef std::shared_ptr<ObjRecognition::MapPoint> MPPtr;
+            glColor3f(0.0f, 1.0f, 0.0f);
+            glPointSize(4.0);
+
+            Eigen::Isometry3f T = Eigen::Isometry3f::Identity();
+            T.rotate(m_Row.cast<float>());
+            T.pretranslate(m_tow.cast<float>());
+
+            glBegin(GL_POINTS);
+            if (m_pointCloud_model) {
+                std::vector<MPPtr> &pointClouds =
+                    m_pointCloud_model->GetPointClouds();
+                for (int i = 0; i < pointClouds.size(); i++) {
+                    Eigen::Vector3f p = pointClouds[i]->GetPose().cast<float>();
+                    p = T.inverse() * p;
+                    glVertex3f(p.x(), p.y(), p.z());
+                }
+            }
+            glEnd();
+        }
+
+        if (menuStop) {
+            SetFinish();
+            mpSystem->Shutdown();
+        }
 
         pangolin::FinishFrame();
 
@@ -303,10 +354,13 @@ void Viewer::Run() {
                 mpSystem->DeactivateLocalizationMode();
             bLocalizationMode = false;
             bFollow = true;
-            menuFollowCamera = true;
+            menuFollowCamera = false;
+            menuShow3DObject = true;
+            menuShowCameraTrajectory = true;
             // mpSystem->Reset();
             mpSystem->ResetActiveMap();
             menuReset = false;
+            menuStop = false;
         }
 
         if (Stop()) {

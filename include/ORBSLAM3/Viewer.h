@@ -29,6 +29,7 @@
 
 #include <mutex>
 
+#include "Struct/PointCloudObject.h"
 namespace ORB_SLAM3 {
 
 class Tracking;
@@ -61,6 +62,11 @@ public:
 
     void SetTrackingPause();
 
+    void SetPointCloudModel(
+        std::shared_ptr<ObjRecognition::Object> &pointCloud_model) {
+        m_pointCloud_model = pointCloud_model;
+    }
+
     bool both;
 
 private:
@@ -90,6 +96,12 @@ private:
     std::mutex mMutexStop;
 
     bool mbStopTrack;
+
+    // objectRecognition
+    std::shared_ptr<ObjRecognition::Object> m_pointCloud_model;
+    Eigen::Matrix<double, 3, 3> m_Row = Eigen::Matrix<double, 3, 3>::Identity();
+    Eigen::Matrix<double, 3, 1> m_tow = Eigen::Matrix<double, 3, 1>::Zero();
+    std::vector<cv::Mat> m_trajectory;
 };
 
 } // namespace ORB_SLAM3

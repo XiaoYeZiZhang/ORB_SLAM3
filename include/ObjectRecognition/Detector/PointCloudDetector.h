@@ -20,7 +20,7 @@ public:
     ~PointCloudObjDetector();
 
     void SetPointCloudObj(const std::shared_ptr<Object> &pObj);
-    // void SetVoc(const std::shared_ptr<DBoW3::Vocabulary> &pVoc);
+    void SetVoc(const std::shared_ptr<DBoW3::Vocabulary> &pVoc);
     void Process(const std::shared_ptr<FrameData> &frm);
     void Reset();
     void Clear();
@@ -67,7 +67,7 @@ private:
     bool pnp_solver_result_;
     ObjRecogState detect_state_;
 
-    // std::shared_ptr<DBoW3::Vocabulary> voc_;
+    std::shared_ptr<DBoW3::Vocabulary> voc_;
 
     std::string info_;
 };

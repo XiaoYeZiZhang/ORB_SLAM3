@@ -24,7 +24,8 @@
 #include "include/ORBSLAM3/ORBmatcher.h"
 #include "include/ORBSLAM3/Optimizer.h"
 #include "include/ORBSLAM3/Converter.h"
-
+#include "ORBSLAM3/FrameObjectProcess.h"
+#include "mode.h"
 #include <mutex>
 #include <chrono>
 
@@ -86,6 +87,11 @@ void LocalMapping::Run() {
 
             // BoW conversion and insertion in Map
             ProcessNewKeyFrame();
+
+            // if scanning, need to extract more ORB features
+#ifdef SCANNER
+            FrameObjectProcess::GetInstance()->ProcessFrame(mpCurrentKeyFrame);
+#endif
             std::chrono::steady_clock::time_point t1 =
                 std::chrono::steady_clock::now();
 

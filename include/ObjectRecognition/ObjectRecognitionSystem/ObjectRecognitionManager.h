@@ -20,7 +20,8 @@ public:
 
     int Run(const ObjRecognition::ObjRecogFrameCallbackData &platform_frame);
     int CreateWithConfig();
-    /*int LoadDic(char const *buffer, int buffer_len);*/
+    int LoadDic(char const *buffer, int buffer_len);
+    bool LoadORBVoc(std::string &voc_path);
     int LoadModel(const int id, const char *buffer, int buffer_len);
 
     ObjRecognition::ObjRecogResult GetObjRecognitionResult();
@@ -42,7 +43,7 @@ private:
 
     std::map<int, std::shared_ptr<ObjRecognition::Object>> object_map_;
     std::shared_ptr<ObjRecognition::Object> object_;
-    // std::shared_ptr<DBoW3::Vocabulary> voc_;
+    std::shared_ptr<DBoW3::Vocabulary> voc_;
     ObjRecognition::ObjRecogThread objrecog_thread_;
     std::string version_ = "V1.0.1.0";
     char *version_buffer;

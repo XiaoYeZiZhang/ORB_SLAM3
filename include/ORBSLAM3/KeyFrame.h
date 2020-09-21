@@ -388,10 +388,20 @@ public:
 
     bool bImu;
 
+    // objectRecognition
     void WriteToMemoryFor3DObject(
         unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two,
         const Eigen::Matrix3d &Rgl2slam);
     unsigned int GetMemSizeFor3DObject();
+
+    void SetKeyPoints(std::vector<cv::KeyPoint> &keypoints) {
+        mvKeys = keypoints;
+        // TODO(zhangye): keys and keysUn???
+        mvKeysUn = keypoints;
+    }
+    void SetDesps(const cv::Mat &desps) {
+        mDescriptors = desps;
+    }
 
     // The following variables are accesed from only 1 thread or never change
     // (no mutex needed).
@@ -465,11 +475,11 @@ public:
     const int N;
 
     // KeyPoints, stereo coordinate and descriptors (all associated by an index)
-    const std::vector<cv::KeyPoint> mvKeys;
-    const std::vector<cv::KeyPoint> mvKeysUn;
+    std::vector<cv::KeyPoint> mvKeys;
+    std::vector<cv::KeyPoint> mvKeysUn;
     const std::vector<float> mvuRight; // negative value for monocular points
     const std::vector<float> mvDepth;  // negative value for monocular points
-    const cv::Mat mDescriptors;
+    cv::Mat mDescriptors;
 
     // BoW
     DBoW2::BowVector mBowVec;

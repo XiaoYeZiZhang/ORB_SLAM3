@@ -61,7 +61,7 @@ public:
         System *pSys, ORBVocabulary *pVoc, FrameDrawer *pFrameDrawer,
         MapDrawer *pMapDrawer, Atlas *pAtlas, KeyFrameDatabase *pKFDB,
         const string &strSettingPath, const int sensor,
-        const string &_nameSeq = std::string());
+        const string &_nameSeq = std::string(), bool isObjRecognition = false);
 
     ~Tracking();
 
@@ -339,6 +339,9 @@ protected:
 
 public:
     cv::Mat mImRight;
+
+    // objectRecognition
+    bool m_objRecognition_mode_;
 };
 
 } // namespace ORB_SLAM3
