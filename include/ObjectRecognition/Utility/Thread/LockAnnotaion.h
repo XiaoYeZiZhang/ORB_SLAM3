@@ -1,7 +1,7 @@
 // take from:
 // https://clang.llvm.org/docs/ThreadSafetyAnalysis.html#mutexheader
-#ifndef SENSESLAM_SRC_UTILITY_LOCKANNOTAION_H_
-#define SENSESLAM_SRC_UTILITY_LOCKANNOTAION_H_
+#ifndef SLAM_SRC_UTILITY_LOCKANNOTAION_H_
+#define SLAM_SRC_UTILITY_LOCKANNOTAION_H_
 
 // Enable thread safety attributes only with clang.
 // The attributes can be safely erased when compiling with other compilers.
@@ -61,4 +61,4 @@
 #define NO_THREAD_SAFETY_ANALYSIS                                              \
     THREAD_ANNOTATION_ATTRIBUTE__(no_thread_safety_analysis)
 
-#endif // SENSESLAM_SRC_UTILITY_LOCKANNOTAION_H_
+#endif // SLAM_SRC_UTILITY_LOCKANNOTAION_H_

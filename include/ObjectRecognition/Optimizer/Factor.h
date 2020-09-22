@@ -52,7 +52,7 @@ public:
 
         residual =
             PROJECTION_SQRT_INFO.asDiagonal() * residual; /// residual in pixels
-        /// TODO(wangnan) compute jacobians
+
         if (jacobians) {
             Eigen::Matrix3d R = Q.toRotationMatrix();
             Eigen::Matrix3d ric = RIC;

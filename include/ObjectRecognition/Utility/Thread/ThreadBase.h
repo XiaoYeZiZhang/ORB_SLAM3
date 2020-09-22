@@ -30,7 +30,7 @@ public:
 
     ///< 开始运行: STOPPED --> RUNNING
     int StartThread(
-        const std::string &threadName = "SenseSLAM", int cpuMask = 0x00);
+        const std::string &threadName = "ORB_SLAM3", int cpuMask = 0x00);
 
     ///< 请求停止: RUNNING|RESETTING|WAITING_FOR_START --> STOPPING
     int RequestStop();

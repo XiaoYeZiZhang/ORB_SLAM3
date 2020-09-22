@@ -470,9 +470,6 @@ vector<cv::KeyPoint> DistributeOctTree(
                     vSizeAndPointerToNode;
                 vSizeAndPointerToNode.clear();
 
-#if 0 // modified from SensetimeSLAM, make result more consistent
-                sort(vPrevSizeAndPointerToNode.begin(),vPrevSizeAndPointerToNode.end());
-#else
                 sort(
                     vPrevSizeAndPointerToNode.begin(),
                     vPrevSizeAndPointerToNode.end(),
@@ -489,7 +486,6 @@ vector<cv::KeyPoint> DistributeOctTree(
                             return false;
                         return false;
                     });
-#endif
                 for (int j = vPrevSizeAndPointerToNode.size() - 1; j >= 0;
                      j--) {
                     ExtractorNode n1, n2, n3, n4;

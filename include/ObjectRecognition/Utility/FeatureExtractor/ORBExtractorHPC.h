@@ -1,5 +1,5 @@
-#ifndef _SensetimeSLAM_ORBEXTRACTORHPC_H_
-#define _SensetimeSLAM_ORBEXTRACTORHPC_H_
+#ifndef _SLAM_ORBEXTRACTORHPC_H_
+#define _SLAM_ORBEXTRACTORHPC_H_
 
 #include "ORBExtractor.h"
 

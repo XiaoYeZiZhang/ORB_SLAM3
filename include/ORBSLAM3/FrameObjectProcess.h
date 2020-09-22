@@ -31,7 +31,9 @@ private:
     FrameObjectProcess &operator=(const FrameObjectProcess &);
     std::vector<Eigen::Vector3d> m_obj_corner_points;
 
-    cv::Ptr<cv::ORB> m_orb_detector = cv::ORB::create(1000, 1.2, 8);
+    cv::Ptr<cv::ORB> m_orb_detector = cv::ORB::create(
+        1000, Parameters::GetInstance().KORBExtractor_scaleFactor,
+        Parameters::GetInstance().KORBExtractor_nlevels);
 }; // class FrameObjectProcess
 
 } // namespace ORB_SLAM3

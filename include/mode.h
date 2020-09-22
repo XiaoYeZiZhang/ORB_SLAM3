@@ -4,6 +4,6 @@
 
 #ifndef ORB_SLAM3_MODE_H
 #define ORB_SLAM3_MODE_H
-//#define SCANNER;
+//#define SCANNER ;
 #define OBJECTRECOGNITION ;
 #endif // ORB_SLAM3_MODE_H

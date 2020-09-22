@@ -26,8 +26,7 @@
 #include <iomanip>
 #include <openssl/md5.h>
 #include <boost/serialization/base_object.hpp>
-#include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
-#include "Utility/Camera.h"
+#include "mode.h"
 
 namespace ORB_SLAM3 {
 
@@ -184,8 +183,10 @@ System::System(
         this, mpAtlas, mSensor == MONOCULAR || mSensor == IMU_MONOCULAR,
         mSensor == IMU_MONOCULAR, strSequence);
 
+#ifdef OBJECTRECOGNITION
     // set data callback for objectRecognition
     mpLocalMapper->SetObjRecogCallback(ObjRecognitionExd::ObjRecogCallback_V3);
+#endif
 
     mptLocalMapping = new thread(&ORB_SLAM3::LocalMapping::Run, mpLocalMapper);
     mpLocalMapper->mInitFr = initFr;

@@ -4,16 +4,14 @@
 #include "FrameObjectProcess.h"
 #include "glog/logging.h"
 #include "QuickHull.h"
-//#include "Visualizer/GlobalOcvViewer.h"
-#include "FrameObjectProcess.h"
-
-#define OBJECT_DEBUG
 
 namespace ORB_SLAM3 {
 
 FrameObjectProcess::FrameObjectProcess() {
     m_orb_detector->setScoreType(cv::ORB::FAST_SCORE);
-    m_orb_detector->setFastThreshold(20);
+    // TODO(zhangye): check the parameters
+    m_orb_detector->setFastThreshold(
+        Parameters::GetInstance().KORBExtractor_fastThreathold);
 }
 
 static bool InBorder(
@@ -98,22 +96,19 @@ static void GetBoundingBoxMask(
     pts.push_back(boxProjResult);
     cv::fillPoly(mask, pts, cv::Scalar(255));
 
-#if (defined DESKTOP_PLATFORM) && (defined OBJECT_DEBUG)
+    // show:
     cv::Mat maskShow = mask.clone();
     cv::cvtColor(maskShow, maskShow, cv::COLOR_GRAY2BGR);
     for (const auto &it : boxProjResultShow) {
         cv::drawMarker(maskShow, it, cv::Scalar(0, 0, 255));
     }
-    GlobalOcvViewer::UpdateView("2D bounding box mask", maskShow);
-#endif
+    // GlobalOcvViewer::UpdateView("2D bounding box mask", maskShow);
 
-#if (defined MOBILE_PLATFORM) && (defined OBJECT_DEBUG)
     static int index = 0;
     index++;
     const std::string image_name = std::string("/sdcard/SLAMRecord/object/") +
                                    std::to_string(index) + ".png";
-//    cv::imwrite(image_name, mask);
-#endif
+    //    cv::imwrite(image_name, mask);
 
 } // void GetBoundingBoxMask()
 

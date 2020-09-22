@@ -9,12 +9,12 @@ ENDIF()
 
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
-set(CMAKE_C_FLAGS_DEBUG  "${CMAKE_C_FLAGS_DEBUG} -O0 -g -ggdb")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -ggdb")
-set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -Wl,--no-as-needed")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wl,--no-as-needed")
+set(CMAKE_C_FLAGS_DEBUG  "${CMAKE_C_FLAGS_DEBUG} -O0 -g -ggdb -Wl,--no-as-needed")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g -ggdb -Wl,--no-as-needed ")
+set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O2 -Wl,--no-as-needed")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -Wl,--no-as-needed")
 
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wno-deprecated -O3 -march=native ")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-deprecated -O3 -march=native")
@@ -127,7 +127,10 @@ set (ORBSLAM3_FILES
         include/ORBSLAM3/FrameObjectProcess.h
         include/ORBSLAM3/QuickHull.cc
         include/ORBSLAM3/QuickHull.h
-        src/ORBSLAM3/TwoViewReconstruction.cc)
+        src/ORBSLAM3/TwoViewReconstruction.cc
+        src/ORBSLAM3/ViewerAR.cc
+        include/ORBSLAM3/ViewerAR.h)
+
 
 
 set(ORBSLAM3_CAMERAMODEL_FILES
@@ -344,6 +347,7 @@ add_executable(mono_inertial_objectRecognition_test
         Examples/Monocular-Inertial/mono_inertial_objectRecognition_test.cc)
 target_link_libraries(mono_inertial_objectRecognition_test ${PROJECT_NAME})
 
-add_executable(mono_inertial_tum_vi
-Examples/Monocular-Inertial/mono_inertial_tum_vi.cc)
-target_link_libraries(mono_inertial_tum_vi ${PROJECT_NAME})
+
+add_executable(mono_inertial_ar_test
+        Examples/Monocular-Inertial/mono_intertial_ar_test.cc)
+target_link_libraries(mono_inertial_ar_test ${PROJECT_NAME})

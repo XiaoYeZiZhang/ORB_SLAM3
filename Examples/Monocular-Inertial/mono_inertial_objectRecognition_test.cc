@@ -22,7 +22,7 @@ public:
     bool InitSLAM(int argc, char **argv);
     bool InitObjectRecognition();
     bool RunSLAM(int argc, char *argv[]);
-    bool RunSLAMScanner(const std::string& mappoint_save_dir);
+    bool RunSLAMScanner(const std::string& path_dir);
 
     ORB_SLAM3::System* GetSystem() {
         return SLAM;
@@ -287,6 +287,17 @@ bool TestViewer::InitSLAM(int argc, char **argv) {
 
     ObjRecognition::CameraIntrinsic::GetInstance().SetParameters(
         fx, fy, cx, cy, width, height);
+
+
+    double scaleFactor = fsSettings["ORBextractor.scaleFactor"];
+    int nlevels = fsSettings["ORBextractor.nLevels"];
+    int fastInit = fsSettings["ORBextractor.iniThFAST"];
+    int fastThreathold = fsSettings["ORBextractor.minThFAST"];
+
+    Parameters::GetInstance().SetScaleFactor(scaleFactor);
+    Parameters::GetInstance().SetLevels(nlevels);
+    Parameters::GetInstance().SetFastInit(fastInit);
+    Parameters::GetInstance().SetFastThreathold(fastThreathold);
 
 #ifdef OBJECTRECOGNITION
     SLAM = new ORB_SLAM3::System(

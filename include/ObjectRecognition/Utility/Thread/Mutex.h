@@ -1,5 +1,5 @@
-#ifndef SENSESLAM_SRC_UTILITY_MUTEX_H_
-#define SENSESLAM_SRC_UTILITY_MUTEX_H_
+#ifndef SLAM_SRC_UTILITY_MUTEX_H_
+#define SESLAM_SRC_UTILITY_MUTEX_H_
 
 #include <mutex>
 #include <condition_variable>
@@ -431,4 +431,4 @@ using namespace multi_thread;
 
 } // namespace Common
 
-#endif // SENSESLAM_SRC_UTILITY_MUTEX_H_
+#endif // SLAM_SRC_UTILITY_MUTEX_H_

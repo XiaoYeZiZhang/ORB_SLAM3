@@ -1121,8 +1121,6 @@ namespace DBoW3{
 
     int Vocabulary::LoadFromMemory(const char* mem, const unsigned int m_size)
     {
-//        LOGD("LoadFromMemory start\n");
-//        SenseSLAM::UniqueTimer<double> timer;
         std::string sstr(mem, m_size);
         std::stringstream str(sstr);
         m_words.clear();
@@ -1130,7 +1128,6 @@ namespace DBoW3{
         uint64_t sig=0;//magic number describing the file
         str.read((char*)&sig,sizeof(sig));
         if (sig!=20180817000){
-//            LOGD("LoadFromMemory: INVALID VOC MEMORY.\n");
             return -1;
         }
         bool compressed;

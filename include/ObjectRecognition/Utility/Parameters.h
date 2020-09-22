@@ -13,6 +13,19 @@ public:
         return instance;
     }
 
+    void SetScaleFactor(double factor) {
+        KORBExtractor_scaleFactor = factor;
+    }
+    void SetLevels(int level) {
+        KORBExtractor_nlevels = level;
+    }
+    int SetFastInit(double init) {
+        KORBExtractor_fastInit = init;
+    }
+    int SetFastThreathold(double threashold) {
+        KORBExtractor_fastThreathold = threashold;
+    }
+
 public:
     int kObjectModelVersion;
     int kObjectModelKFWidth;
@@ -28,6 +41,11 @@ public:
     int kDetectorPnPInliersUnreliableNumTh;
     int kDetectorPnPInliersGoodWithKFNumTh;
     int kDetectorPnPInliersUnreliableWithKFNumTh;
+
+    double KORBExtractor_scaleFactor;
+    int KORBExtractor_nlevels;
+    int KORBExtractor_fastInit;
+    int KORBExtractor_fastThreathold;
 };
 
 #endif // ORB_SLAM3_PARAMETERS_H

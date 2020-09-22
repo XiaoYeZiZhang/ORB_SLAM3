@@ -1,5 +1,5 @@
-#ifndef SENSESLAM_SRC_UTILITY_THREAD_H_
-#define SENSESLAM_SRC_UTILITY_THREAD_H_
+#ifndef SLAM_SRC_UTILITY_THREAD_H_
+#define SLAM_SRC_UTILITY_THREAD_H_
 
 #include <thread>
 #include <atomic>
@@ -133,4 +133,4 @@ using namespace deterministic_multi_thread;
 using namespace multi_thread;
 #endif
 } // namespace Common
-#endif // SENSESLAM_SRC_UTILITY_THREAD_H_
+#endif // SLAM_SRC_UTILITY_THREAD_H_

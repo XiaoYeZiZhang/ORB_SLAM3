@@ -1,4 +1,0 @@
-Log file created at: 2020/09/17 19:30:38
-Running on machine: zhangye-Z390-UD
-Log line format: [IWEF]yyyymmdd hh:mm:ss.uuuuuu threadid file:line] msg
-F20200917 19:30:38.041615 18459 FileIO.cc:27] Point cloud model file can't open /home/zhangye/data/ObjectRecognition/shoe.bin

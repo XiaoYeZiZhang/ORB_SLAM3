@@ -144,7 +144,6 @@ void ObjectBase::SetPose(
     }
 }
 
-// TODO(xiarui): use the structrure to get pose
 void ObjectBase::GetPose(
     FrameIndex &frmIndex, double &timeStamp, ObjRecogState &state,
     Eigen::Matrix3d &Rcw, Eigen::Vector3d &Tcw, Eigen::Matrix3d &Rwo,

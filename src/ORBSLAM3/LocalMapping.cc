@@ -297,12 +297,13 @@ void LocalMapping::Run() {
             //--
 
             // for objectRecognition
+#ifdef OBJECTRECOGNITION
             if (mpCurrentKeyFrame) {
                 cv::imshow("keyframe: ", mpCurrentKeyFrame->imgLeft);
                 cv::waitKey(9);
             }
 
-            // callback
+            // objectRecognition callback
             std::cout << "slam set callback" << std::endl;
             ObjRecognition::ObjRecogFrameCallbackData *callbackData =
                 new ObjRecognition::ObjRecogFrameCallbackData();
@@ -346,7 +347,7 @@ void LocalMapping::Run() {
             callbackData->t[1] << " " << callbackData->t[2] << std::endl;*/
 
             cb_(callbackData);
-
+#endif
         } else if (Stop() && !mbBadImu) {
             // Safe area to stop
             while (isStopped() && !CheckFinish()) {

@@ -1,4 +1,0 @@
-Log file created at: 2020/09/17 19:41:30
-Running on machine: zhangye-Z390-UD
-Log line format: [IWEF]yyyymmdd hh:mm:ss.uuuuuu threadid file:line] msg
-E20200917 19:41:30.351370 18994 PointCloudObject.cc:300] wrong pointCloud file format!

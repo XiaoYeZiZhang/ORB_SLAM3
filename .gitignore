@@ -39,3 +39,11 @@ cmake-build-debug/
 
 *.pyc
 *.osa
+
+Examples/Monocular-Inertial/mono_inertial_ar_test.INFO
+
+Examples/Monocular-Inertial/mono_inertial_objectRecognition_test.INFO
+
+cmake-build-release/
+
+.idea/

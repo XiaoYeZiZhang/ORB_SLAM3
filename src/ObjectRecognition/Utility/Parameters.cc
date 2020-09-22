@@ -18,4 +18,9 @@ Parameters::Parameters() {
     kDetectorPnPInliersUnreliableNumTh = 8;
     kDetectorPnPInliersGoodWithKFNumTh = 30;
     kDetectorPnPInliersUnreliableWithKFNumTh = 20;
+
+    KORBExtractor_scaleFactor = 0.0;
+    KORBExtractor_nlevels = 0;
+    KORBExtractor_fastInit = 0;
+    KORBExtractor_fastThreathold = 0;
 }
