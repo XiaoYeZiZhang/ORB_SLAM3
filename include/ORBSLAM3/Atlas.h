@@ -138,8 +138,14 @@ public:
     long unsigned int GetNumLivedMP();
 
     bool MappointInBoundingbox(const cv::Mat &pos_mat);
+    void GetBoundingBoxCoordsRange();
     bool WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem);
     unsigned int GetMemSizeFor3DObject(const std::string &version);
+    void
+    SetBoundingboxFor3DObject(const std::vector<Eigen::Vector3d> &boundingbox) {
+        m_boundingbox_.clear();
+        m_boundingbox_ = boundingbox;
+    }
 
 protected:
     std::set<Map *> mspMaps;
@@ -168,6 +174,14 @@ protected:
     std::string m_3dobject_version_ = "V1.0.0.0";
     std::vector<MapPoint *> m_saved_mappoint_for_3dobject_;
     std::vector<KeyFrame *> m_saved_keyframe_for_3dobject_;
+    std::vector<Eigen::Vector3d> m_boundingbox_;
+    double m_bbx_xmin;
+    double m_bbx_ymin;
+    double m_bbx_zmin;
+    double m_bbx_xmax;
+    double m_bbx_ymax;
+    double m_bbx_zmax;
+
 }; // class Atlas
 
 } // namespace ORB_SLAM3

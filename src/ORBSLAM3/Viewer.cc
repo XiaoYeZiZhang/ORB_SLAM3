@@ -119,6 +119,12 @@ bool Viewer::ParseViewerParamFile(cv::FileStorage &fSettings) {
     return !b_miss_params;
 }
 
+void Viewer::SetObjectRecognitionPose(
+    Eigen::Matrix3d Row, Eigen::Vector3d tow) {
+    m_Row = Row;
+    m_tow = tow;
+}
+
 void Viewer::Run() {
     mbFinished = false;
     mbStopped = false;

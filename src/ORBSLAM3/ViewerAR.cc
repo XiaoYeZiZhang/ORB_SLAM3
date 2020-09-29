@@ -21,11 +21,10 @@
 
 #include "include/ORBSLAM3/ViewerAR.h"
 #include <opencv2/highgui/highgui.hpp>
-
 #include <mutex>
-#include <thread>
 #include <cstdlib>
-
+#include "ORBSLAM3/ScannerStruct/Struct.h"
+#include <glm/gtc/type_ptr.hpp>
 using namespace std;
 
 namespace ORB_SLAM3 {
@@ -48,10 +47,55 @@ cv::Mat ExpSO3(const cv::Mat &v) {
 }
 
 ViewerAR::ViewerAR() {
+    m_is_debug_mode = false;
+    m_is_stop = false;
+    RegistEvents();
+}
+
+void ViewerAR::decrease_shape() {
+    boundingbox.SetChangeShapeOffset(-0.05);
+}
+
+void ViewerAR::increase_shape() {
+    boundingbox.SetChangeShapeOffset(0.05);
+}
+
+void ViewerAR::up_move() {
+    boundingbox.MoveObject(-0.03, 1);
+    boundingbox.SetChangeShapeOffset(0.0);
+}
+
+void ViewerAR::down_move() {
+    boundingbox.MoveObject(+0.03, 1);
+    boundingbox.SetChangeShapeOffset(0.0);
+}
+
+void ViewerAR::left_move() {
+    boundingbox.MoveObject(-0.03, 0);
+    boundingbox.SetChangeShapeOffset(0.0);
+}
+
+void ViewerAR::right_move() {
+    boundingbox.MoveObject(0.03, 0);
+    boundingbox.SetChangeShapeOffset(0.0);
+}
+
+void ViewerAR::front_move() {
+    boundingbox.MoveObject(0.03, 2);
+    boundingbox.SetChangeShapeOffset(0.0);
+}
+
+void ViewerAR::back_move() {
+    boundingbox.MoveObject(-0.03, 2);
+    boundingbox.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::Run() {
-    int w, h, wui;
+    scene.SetSceneSize(
+        ObjRecognition::CameraIntrinsic::GetInstance().Width(),
+        ObjRecognition::CameraIntrinsic::GetInstance().Height(), 200);
+
+    int w, h;
 
     cv::Mat im, Tcw;
     int status;
@@ -69,33 +113,72 @@ void ViewerAR::Run() {
         }
     }
 
-    wui = 200;
-
-    pangolin::CreateWindowAndBind("Viewer", w + wui, h);
+    pangolin::CreateWindowAndBind("Viewer", w + scene.GetSceneBarWidth(), h);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
 
     pangolin::CreatePanel("menu").SetBounds(
-        0.0, 1.0, 0.0, pangolin::Attach::Pix(wui));
-    pangolin::Var<bool> menu_detectplane("menu.Insert Cube", false, false);
+        0.0, 1.0, 0.0, pangolin::Attach::Pix(scene.GetSceneBarWidth()));
+    pangolin::Var<bool> menu_insertcube("menu.Insert Cube", false, false);
+    pangolin::Var<bool> menu_fixcube("menu.Fix Cube", false, false);
+    pangolin::Var<bool> menu_stop("menu.Finish Scan", false, false);
     pangolin::Var<bool> menu_clear("menu.Clear All", false, false);
+    pangolin::Var<bool> menu_debug("menu.Debug", false, false);
     pangolin::Var<bool> menu_drawim("menu.Draw Image", true, true);
     pangolin::Var<bool> menu_drawcube("menu.Draw Cube", true, true);
     pangolin::Var<float> menu_cubesize("menu. Cube Size", 0.05, 0.01, 0.3);
+    boundingbox.SetSize(menu_cubesize);
+    // if draw plane
     pangolin::Var<bool> menu_drawgrid("menu.Draw Grid", true, true);
+    // plane grid number
     pangolin::Var<int> menu_ngrid("menu. Grid Elements", 3, 1, 10);
+    // plane gird size
     pangolin::Var<float> menu_sizegrid("menu. Element Size", 0.05, 0.01, 0.3);
     pangolin::Var<bool> menu_drawpoints("menu.Draw Points", false, true);
+
+    // handle keyboard event
+    std::function<void(void)> decrease_shape_key_callback =
+        std::bind(&ViewerAR::decrease_shape, this);
+    std::function<void(void)> increase_shape_key_callback =
+        std::bind(&ViewerAR::increase_shape, this);
+
+    std::function<void(void)> up_key_callback =
+        std::bind(&ViewerAR::up_move, this);
+    std::function<void(void)> down_key_callback =
+        std::bind(&ViewerAR::down_move, this);
+    std::function<void(void)> left_key_callback =
+        std::bind(&ViewerAR::left_move, this);
+    std::function<void(void)> right_key_callback =
+        std::bind(&ViewerAR::right_move, this);
+    std::function<void(void)> front_key_callback =
+        std::bind(&ViewerAR::front_move, this);
+    std::function<void(void)> back_key_callback =
+        std::bind(&ViewerAR::back_move, this);
+    pangolin::RegisterKeyPressCallback('-', decrease_shape_key_callback);
+    pangolin::RegisterKeyPressCallback('=', increase_shape_key_callback);
+    pangolin::RegisterKeyPressCallback('w', up_key_callback);
+    pangolin::RegisterKeyPressCallback('s', down_key_callback);
+    pangolin::RegisterKeyPressCallback('a', left_key_callback);
+    pangolin::RegisterKeyPressCallback('d', right_key_callback);
+    pangolin::RegisterKeyPressCallback('f', front_key_callback);
+    pangolin::RegisterKeyPressCallback('b', back_key_callback);
 
     pangolin::Var<bool> menu_LocalizationMode(
         "menu.Localization Mode", false, true);
     bool bLocalizationMode = false;
 
+    // define projection and initial movelview matrix: default
+    s_cam = pangolin::OpenGlRenderState();
+    mp_handler3d.reset(new MapHandler3D(s_cam));
+
     pangolin::View &d_image =
         pangolin::Display("image")
-            .SetBounds(0, 1.0f, pangolin::Attach::Pix(wui), 1.0f, (float)w / h)
-            .SetLock(pangolin::LockLeft, pangolin::LockTop);
+            .SetBounds(
+                0, 1.0f, pangolin::Attach::Pix(scene.GetSceneBarWidth()), 1.0f,
+                (float)w / h)
+            .SetLock(pangolin::LockLeft, pangolin::LockTop)
+            .SetHandler(mp_handler3d.get());
 
     pangolin::GlTexture imageTexture(
         w, h, GL_RGB, false, 0, GL_RGB, GL_UNSIGNED_BYTE);
@@ -105,8 +188,8 @@ void ViewerAR::Run() {
 
     vector<Plane *> vpPlane;
 
-    while (1) {
-
+    while (true) {
+        m_is_debug_mode = menu_debug;
         if (menu_LocalizationMode && !bLocalizationMode) {
             mpSystem->ActivateLocalizationMode();
             bLocalizationMode = true;
@@ -118,15 +201,22 @@ void ViewerAR::Run() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Activate camera view
-        d_image.Activate();
+        d_image.Activate(s_cam);
         glColor3f(1.0, 1.0, 1.0);
 
         // Get last image and its computed pose from SLAM
         GetImagePose(im, Tcw, status, vKeys, vMPs);
 
+        if (!Tcw.empty()) {
+            cv::Mat Rwc = Tcw.rowRange(0, 3).colRange(0, 3).t();
+            cv::Mat twc = -Rwc * Tcw.rowRange(0, 3).col(3);
+            // set camera position
+            camera.SetCamPos(
+                twc.at<float>(0), twc.at<float>(1), twc.at<float>(2));
+        }
+
         // Add text to image
         PrintStatus(status, bLocalizationMode, im);
-
         cv::cvtColor(im, im, CV_GRAY2RGB);
 
         if (menu_drawpoints)
@@ -142,9 +232,11 @@ void ViewerAR::Run() {
         glMatrixMode(GL_PROJECTION);
         P.Load();
 
+        // load model view matrix
         glMatrixMode(GL_MODELVIEW);
 
-        // Load camera pose
+        // Load camera pose  set opengl coords, same as slam coords
+        // view matrix Tcw
         LoadCameraPose(Tcw);
 
         // Draw virtual things
@@ -155,27 +247,34 @@ void ViewerAR::Run() {
                         delete vpPlane[i];
                     }
                     vpPlane.clear();
+                    m_is_fix = false;
+                    m_is_stop = false;
+                    boundingbox.Reset();
+                    boundingbox.SetSize(menu_cubesize);
                     cout << "All cubes erased!" << endl;
                 }
                 menu_clear = false;
             }
-            if (menu_detectplane) {
+            if (menu_insertcube) {
                 Plane *pPlane = DetectPlane(Tcw, vMPs, 50);
-                if (pPlane) {
+                if (pPlane && vpPlane.empty()) {
                     cout << "New virtual cube inserted!" << endl;
                     vpPlane.push_back(pPlane);
-                } else {
+                } else if (!pPlane) {
                     cout << "No plane detected. Point the camera to a planar "
                             "region."
                          << endl;
+                } else {
+                    cout << "there is alreay a plane here. Please click clear "
+                            "and insert another cube"
+                         << std::endl;
                 }
-                menu_detectplane = false;
+
+                menu_insertcube = false;
             }
 
             if (!vpPlane.empty()) {
-                // Recompute plane if there has been a loop closure or global BA
-                // In localization mode, map is not updated so we do not need to
-                // recompute
+                boundingbox.SetExist(true);
                 bool bRecompute = false;
                 if (!bLocalizationMode) {
                     if (mpSystem->MapChanged()) {
@@ -186,28 +285,64 @@ void ViewerAR::Run() {
                     }
                 }
 
-                for (size_t i = 0; i < vpPlane.size(); i++) {
-                    Plane *pPlane = vpPlane[i];
+                if (vpPlane.size() > 1) {
+                    LOG(FATAL) << "plane error";
+                }
 
-                    if (pPlane) {
-                        if (bRecompute) {
-                            pPlane->Recompute();
+                Plane *pPlane = vpPlane[0];
+                if (pPlane) {
+                    if (menu_fixcube) {
+                        // get boundingbox in slam word coords:
+                        std::vector<Eigen::Vector3d> boundingbox_w;
+                        for (size_t i = 0; i < 8; i++) {
+                            Eigen::Vector3d point_p = Eigen::Vector3d(
+                                boundingbox.m_vertex_list_p[i][0],
+                                boundingbox.m_vertex_list_p[i][1],
+                                boundingbox.m_vertex_list_p[i][2]);
+                            // TODO(zhangye): transpose???
+                            Eigen::Vector4d p_4 = Eigen::Vector4d(
+                                point_p(0), point_p(1), point_p(2), 1.0f);
+                            Eigen::Matrix4d Twp =
+                                Change2EigenMatrix(pPlane->glTpw);
+                            Eigen::Vector4d bbx_4 = Twp * p_4;
+                            boundingbox_w.emplace_back(Eigen::Vector3d(
+                                bbx_4[0] / bbx_4[3], bbx_4[1] / bbx_4[3],
+                                bbx_4[2] / bbx_4[3]));
+                            SetBoundingbox(boundingbox_w);
                         }
-                        glPushMatrix();
-                        pPlane->glTpw.Multiply();
-
-                        // Draw cube
-                        if (menu_drawcube) {
-                            DrawCube(menu_cubesize);
-                        }
-
-                        // Draw grid plane
-                        if (menu_drawgrid) {
-                            DrawPlane(menu_ngrid, menu_sizegrid);
-                        }
-
-                        glPopMatrix();
+                        m_is_fix = true;
                     }
+
+                    if (menu_stop) {
+                        if (!m_is_fix) {
+                            LOG(FATAL) << "not set boundingbox" << std::endl;
+                        }
+                        m_is_stop = true;
+                        break;
+                    }
+
+                    if (bRecompute) {
+                        pPlane->Recompute();
+                    }
+
+                    ChangeShape(pPlane->glTpw);
+
+                    // plane coords:
+                    // model matrix:
+                    glPushMatrix();
+                    // Twp
+                    pPlane->glTpw.Multiply();
+
+                    // Draw cube
+                    if (menu_drawcube) {
+                        DrawCube();
+                    }
+
+                    // Draw grid plane
+                    if (menu_drawgrid) {
+                        DrawPlane(menu_ngrid, menu_sizegrid);
+                    }
+                    glPopMatrix();
                 }
             }
         }
@@ -349,21 +484,243 @@ void ViewerAR::DrawImageTexture(
     }
 }
 
-void ViewerAR::DrawCube(
-    const float &size, const float x, const float y, const float z) {
-    pangolin::OpenGlMatrix M =
-        pangolin::OpenGlMatrix::Translate(-x, -size - y, -z);
-    glPushMatrix();
-    M.Multiply();
-    pangolin::glDrawColouredCube(-size, size);
-    glPopMatrix();
+Eigen::Vector3d ViewerAR::GetRay(
+    const Eigen::Matrix4d &transformationMatrix,
+    const Eigen::Matrix4d &projectionMatrix) {
+    float x =
+        (2.0f * mouseState.GetMousePoseX()) / scene.GetSceneWidth() - 1.0f;
+    float y =
+        1.0f - (2.0f * mouseState.GetMousePoseY()) / scene.GetSceneHeight();
+    float z = 1.0f;
+    Eigen::Vector3d ray_nds = Eigen::Vector3d(x, y, z);
+    Eigen::Vector4d ray_clip =
+        Eigen::Vector4d(ray_nds(0), ray_nds(1), ray_nds(2), 1.0);
+    Eigen::Vector4d ray_eye = projectionMatrix.inverse() * ray_clip;
+    Eigen::Vector4d ray_world = transformationMatrix.inverse() * ray_eye;
+
+    if (ray_world(3) != 0.0) {
+        ray_world(0) /= ray_world(3);
+        ray_world(1) /= ray_world(3);
+        ray_world(2) /= ray_world(3);
+    }
+
+    return Eigen::Vector3d(ray_world(0), ray_world(1), ray_world(2));
 }
 
-void ViewerAR::DrawPlane(Plane *pPlane, int ndivs, float ndivsize) {
-    glPushMatrix();
-    pPlane->glTpw.Multiply();
-    DrawPlane(ndivs, ndivsize);
-    glPopMatrix();
+bool IsIntersectWithTriangle(
+    const Eigen::Vector3d &orig, const Eigen::Vector3d &dir,
+    Eigen::Vector3d &v0, Eigen::Vector3d &v1, Eigen::Vector3d &v2, float &t,
+    float &u, float &v) {
+    Eigen::Vector3d E1 = v1 - v0;
+    Eigen::Vector3d E2 = v2 - v0;
+    Eigen::Vector3d P = dir.cross(E2);
+    float det = E1.dot(P);
+    Eigen::Vector3d T;
+    if (det > 0) {
+        T = orig - v0;
+    } else {
+        T = v0 - orig;
+        det = -det;
+    }
+    if (det < 0.0001f)
+        return false;
+    u = T.dot(P);
+    if (u < 0.0f || u > det)
+        return false;
+    Eigen::Vector3d Q = T.cross(E1);
+    v = dir.dot(Q);
+    if (v < 0.0f || u + v > det)
+        return false;
+    t = E2.dot(Q);
+    float fInvDet = 1.0f / det;
+    t *= fInvDet;
+    u *= fInvDet;
+    v *= fInvDet;
+    return true;
+}
+
+void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
+    if (boundingbox.IsExist()) {
+        Eigen::Vector2d left_button;
+        if (mp_handler3d->GetLeftButtonPos(left_button)) {
+            boundingbox.minTriangleIndex = -1;
+            mouseState.SetMousePoseX(
+                left_button.x() - scene.GetSceneBarWidth());
+            mouseState.SetMousePoseY(
+                ObjRecognition::CameraIntrinsic::GetInstance().Height() -
+                left_button.y());
+            scene.isChangingPlane = false;
+            boundingbox.minTriangleIndex = -1;
+            boundingbox.SetChangeShapeOffset(0.0);
+
+            Eigen::Matrix4d transformationMatrix = Eigen::Matrix4d::Identity();
+            Eigen::Matrix4d projectionMatrix = Eigen::Matrix4d::Identity();
+            GLfloat view_model[16];
+            glGetFloatv(GL_MODELVIEW_MATRIX, view_model);
+            GLdouble projection[16];
+            glGetDoublev(GL_PROJECTION_MATRIX, projection);
+            transformationMatrix << view_model[0], view_model[1], view_model[2],
+                view_model[3], view_model[4], view_model[5], view_model[6],
+                view_model[7], view_model[8], view_model[9], view_model[10],
+                view_model[11], view_model[12], view_model[13], view_model[14],
+                view_model[15];
+
+            projectionMatrix << projection[0], projection[1], projection[2],
+                projection[3], projection[4], projection[5], projection[6],
+                projection[7], projection[8], projection[9], projection[10],
+                projection[11], projection[12], projection[13], projection[14],
+                projection[15];
+
+            Eigen::Vector3d ray = GetRay(
+                transformationMatrix.transpose(), projectionMatrix.transpose());
+
+            Eigen::Vector3d ray_dir = (ray - camera.GetCamPos()).normalized();
+            ray = camera.GetCamPos() + ray_dir * 5.0f;
+
+//            glPointSize(10.0);
+//            glBegin(GL_POINTS);
+//            glColor3f(0.0, 1.0, 0);
+//            glVertex3f(ray(0), ray(1), ray(2));
+//            glEnd();
+//
+//            glBegin(GL_LINES);
+//            glColor3f(1.0, 1.0, 0.0);
+//            glVertex3f(
+//                camera.GetCamPos()[0], camera.GetCamPos()[1],
+//                camera.GetCamPos()[2]);
+//            glVertex3f(ray(0), ray(1), ray(2));
+//            glEnd();
+
+            // ray and campos: under world coords
+            Eigen::Vector3d CameraPosition_w = camera.GetCamPos();
+            //            Eigen::Vector3d RayDir_w = ray;
+            Eigen::Vector3d RayDir_w = ray_dir;
+            // change to plane coords
+            Eigen::Vector3d CameraPosition_p =
+                Change2PlaneCoords(Twp, CameraPosition_w, true);
+            Eigen::Vector3d RayDir_p = Change2PlaneCoords(Twp, RayDir_w, false);
+
+            // boundingbox: under plane coords
+            //      intersection
+            float minDistance = INT_MAX;
+            for (size_t i = 0; i < boundingbox.GetAllTriangles().size(); i++) {
+                Triangle thisTriangle = boundingbox.GetAllTriangles()[i];
+                if (i == 0) {
+                    auto pts = thisTriangle.GetVertex();
+                }
+                float t;
+                float u;
+                float v;
+
+                // use plane coords to compute intersection
+                if (IsIntersectWithTriangle(
+                        CameraPosition_p, RayDir_p, thisTriangle.GetVertex()[0],
+                        thisTriangle.GetVertex()[1],
+                        thisTriangle.GetVertex()[2], t, u, v)) {
+
+                    Eigen::Vector3d intersectionPoint =
+                        (1 - u - v) * thisTriangle.GetVertex()[0] +
+                        thisTriangle.GetVertex()[1] * u +
+                        thisTriangle.GetVertex()[2] * v;
+
+                    float distance =
+                        pow((intersectionPoint(0) - CameraPosition_p[0]), 2) +
+                        pow((intersectionPoint(1) - CameraPosition_p[1]), 2) +
+                        pow((intersectionPoint(2) - CameraPosition_p[2]), 2);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        boundingbox.minTriangleIndex = i;
+                    }
+                }
+            }
+
+            // draw this intersection plane
+            if (boundingbox.minTriangleIndex != -1) {
+                std::cout << "hit the cube: " << boundingbox.minTriangleIndex
+                          << std::endl;
+                scene.isChangingPlane = true;
+
+                // draw: under plane coords:
+                glPushMatrix();
+                Twp.Multiply();
+                glBegin(GL_QUADS);
+                glColor3f(0.0f, 0.0f, 1.0f);
+                glVertex3fv(boundingbox.m_vertex_list_p
+                                [boundingbox.triangle_plane
+                                     [boundingbox.minTriangleIndex + 1][0]]);
+                glVertex3fv(boundingbox.m_vertex_list_p
+                                [boundingbox.triangle_plane
+                                     [boundingbox.minTriangleIndex + 1][1]]);
+                glVertex3fv(boundingbox.m_vertex_list_p
+                                [boundingbox.triangle_plane
+                                     [boundingbox.minTriangleIndex + 1][2]]);
+                glVertex3fv(boundingbox.m_vertex_list_p
+                                [boundingbox.triangle_plane
+                                     [boundingbox.minTriangleIndex + 1][3]]);
+                glEnd();
+                glPopMatrix();
+            } else {
+                scene.isChangingPlane = false;
+            }
+        }
+
+        if (scene.isChangingPlane) {
+            float offset = boundingbox.GetChangeShapeOffset();
+            boundingbox.ChangePlane(boundingbox.minTriangleIndex / 2, offset);
+            boundingbox.SetChangeShapeOffset(0.0);
+        }
+    }
+}
+
+Eigen::Matrix4d
+ViewerAR::Change2EigenMatrix(pangolin::OpenGlMatrix opengl_matrix) {
+    Eigen::Matrix4d eigen_matrix = Eigen::Matrix4d::Identity();
+    eigen_matrix << opengl_matrix.m[0], opengl_matrix.m[1], opengl_matrix.m[2],
+        opengl_matrix.m[3], opengl_matrix.m[4], opengl_matrix.m[5],
+        opengl_matrix.m[6], opengl_matrix.m[7], opengl_matrix.m[8],
+        opengl_matrix.m[9], opengl_matrix.m[10], opengl_matrix.m[11],
+        opengl_matrix.m[12], opengl_matrix.m[13], opengl_matrix.m[14],
+        opengl_matrix.m[15];
+    eigen_matrix.transposeInPlace();
+    return eigen_matrix;
+}
+
+Eigen::Vector3d ViewerAR::Change2PlaneCoords(
+    pangolin::OpenGlMatrix Plane_wp, Eigen::Vector3d world_coords,
+    bool is_point) {
+
+    Eigen::Vector4d Pp_4, Pw_4;
+    Eigen::Vector3d Pp;
+    Eigen::Matrix4d Twp = Change2EigenMatrix(Plane_wp);
+    // WARNING: maybe some numerical problem
+    Eigen::Matrix4d Tpw = Twp.inverse();
+
+    if (is_point) {
+        Pw_4 << world_coords[0], world_coords[1], world_coords[2], 1.0f;
+        Pp_4 = Tpw * Pw_4;
+        Pp_4[0] = Pp_4[0] / Pp_4[3];
+        Pp_4[1] = Pp_4[1] / Pp_4[3];
+        Pp_4[2] = Pp_4[2] / Pp_4[3];
+        Pp << Pp_4[0], Pp_4[1], Pp_4[2];
+    } else {
+        Pw_4 << world_coords[0], world_coords[1], world_coords[2], 0.0f;
+        Pp_4 = Tpw * Pw_4;
+        Pp << Pp_4[0], Pp_4[1], Pp_4[2];
+    }
+    return Pp;
+}
+
+void ViewerAR::DrawCube(const float x, const float y, const float z) {
+    glColor3f(0.0, 1.0, 0);
+    int i, j;
+    glBegin(GL_LINES);
+    for (i = 0; i < 12; ++i) {
+        for (j = 0; j < 2; ++j) {
+            glVertex3fv(
+                boundingbox.m_vertex_list_p[boundingbox.m_index_list[i][j]]);
+        }
+    }
+    glEnd();
 }
 
 void ViewerAR::DrawPlane(int ndivs, float ndivsize) {

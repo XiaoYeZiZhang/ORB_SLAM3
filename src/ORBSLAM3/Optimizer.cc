@@ -20,12 +20,8 @@
  */
 
 #include "include/ORBSLAM3/Optimizer.h"
-
 #include <complex>
-
 #include <Eigen/StdVector>
-#include <Eigen/Sparse>
-#include <Eigen/Dense>
 #include <unsupported/Eigen/MatrixFunctions>
 
 #include "Thirdparty/g2o/g2o/core/sparse_block_matrix.h"
@@ -4265,7 +4261,8 @@ int Optimizer::OptimizeSim3(
             float x = P3D2c.at<float>(0) * invz;
             float y = P3D2c.at<float>(1) * invz;
 
-            obs2 << x, y;
+            // obs2 << x, y;
+            obs2 << pKF2->fx * x + pKF2->cx, pKF2->fy * y + pKF2->cy;
             kpUn2 = cv::KeyPoint(cv::Point2f(x, y), pMP2->mnTrackScaleLevel);
 
             inKF2 = false;

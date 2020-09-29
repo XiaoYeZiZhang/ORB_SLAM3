@@ -906,9 +906,6 @@ void KeyFrame::WriteToMemoryFor3DObject(
     Eigen::Vector3d tco = Rcw_gl * Two.block<3, 1>(0, 3) + Tcw;
 
     ObjRecognition::PackCamCWToMem(tco, Rco, mem_pos, mem);
-    /// upload image
-    std::cout << "KeyFrame::WriteToMemory: upload image. width = "
-              << imgLeft.cols << " height = " << imgLeft.rows << std::endl;
     ObjRecognition::PutDataToMem(
         mem + mem_pos, imgLeft.data,
         sizeof(char) * ObjRecognition::CameraIntrinsic::GetInstance().Width() *

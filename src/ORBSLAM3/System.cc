@@ -620,6 +620,9 @@ void System::SaveKeyFrameTrajectoryEuRoC(const string &filename) {
         }
     }
     f.close();
+    cout << endl
+         << "End of saving keyframe trajectory to " << filename << " ..."
+         << endl;
 }
 
 void System::SaveTrajectoryKITTI(const string &filename) {
@@ -800,6 +803,10 @@ void System::ChangeDataset() {
     }
 
     mpTracker->NewDataset();
+}
+
+void System::SetBoundingbox(const std::vector<Eigen::Vector3d> &boundingbox) {
+    mpAtlas->SetBoundingboxFor3DObject(boundingbox);
 }
 
 bool System::PackAtlasToMemoryFor3DObject(

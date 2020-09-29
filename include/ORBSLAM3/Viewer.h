@@ -26,9 +26,7 @@
 #include "MapDrawer.h"
 #include "Tracking.h"
 #include "System.h"
-
 #include <mutex>
-
 #include "Struct/PointCloudObject.h"
 namespace ORB_SLAM3 {
 
@@ -68,6 +66,8 @@ public:
     }
 
     bool both;
+
+    void SetObjectRecognitionPose(Eigen::Matrix3d Row, Eigen::Vector3d tow);
 
 private:
     bool ParseViewerParamFile(cv::FileStorage &fSettings);

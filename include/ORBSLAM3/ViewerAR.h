@@ -26,9 +26,79 @@
 #include <opencv2/core/core.hpp>
 #include <pangolin/pangolin.h>
 #include <string>
+#include "ORBSLAM3/ScannerStruct/Struct.h"
 #include "ORBSLAM3/System.h"
+#include "System.h"
 
 namespace ORB_SLAM3 {
+class System;
+struct MapHandler3D : public pangolin::Handler3D {
+
+    MapHandler3D(
+        pangolin::OpenGlRenderState &cam_state,
+        pangolin::AxisDirection enforce_up = pangolin::AxisNone,
+        float trans_scale = 0.01f,
+        float zoom_fraction = PANGO_DFLT_HANDLER3D_ZF)
+        : Handler3D(cam_state, enforce_up, trans_scale, zoom_fraction) {
+        m_view_state = &cam_state;
+    };
+
+    void Mouse(
+        pangolin::View &display, pangolin::MouseButton button, int x, int y,
+        bool pressed, int button_state) {
+
+        pangolin::Handler3D::Mouse(
+            display, button, x, y, pressed, button_state);
+
+        if (pangolin::MouseButtonLeft == button) {
+            if (button_state == 0) {
+                m_is_left_button_down = false;
+            }
+            if (button_state == 1) {
+                m_left_button_pos.x() = x;
+                m_left_button_pos.y() = y;
+                m_is_left_button_down = true;
+            }
+        }
+
+        if (pangolin::MouseButtonRight == button) {
+            if (button_state == 0) {
+                std::cout << "right button down" << std::endl;
+                m_right_button_pos.x() = x;
+                m_right_button_pos.y() = y;
+                m_is_right_button_down = true;
+            } else if (button_state == 1) {
+                std::cout << "right button up" << std::endl;
+                m_is_right_button_down = false;
+            }
+        }
+    }
+
+    void MouseMotion(pangolin::View &display, int x, int y, int button_state) {
+        pangolin::Handler3D::MouseMotion(display, x, y, button_state);
+        if (button_state ==
+            pangolin::MouseButtonLeft + pangolin::KeyModifierCtrl) {
+            m_left_button_pos.x() = x;
+            m_left_button_pos.y() = y;
+        }
+    }
+
+    int GetRightButtonPos(Eigen::Vector2d &right_button_pos) {
+        right_button_pos = m_right_button_pos;
+        return m_is_right_button_down;
+    }
+
+    int GetLeftButtonPos(Eigen::Vector2d &left_button_pos) {
+        left_button_pos = m_left_button_pos;
+        return m_is_left_button_down;
+    }
+
+    bool m_is_left_button_down = false;
+    bool m_is_right_button_down = false;
+    pangolin::OpenGlRenderState *m_view_state;
+    Eigen::Vector2d m_left_button_pos = Eigen::Vector2d::Zero();
+    Eigen::Vector2d m_right_button_pos = Eigen::Vector2d::Zero();
+};
 
 class Plane {
 public:
@@ -58,10 +128,29 @@ public:
 class ViewerAR {
 public:
     ViewerAR();
-
+    std::unique_ptr<MapHandler3D> mp_handler3d;
     void SetFPS(const float fps) {
         mFPS = fps;
         mT = 1e3 / fps;
+    }
+
+    bool GetDebugFlag() {
+        return m_is_debug_mode;
+    }
+    bool GetStopFlag() {
+        return m_is_stop;
+    }
+    bool GetFixFlag() {
+        return m_is_fix;
+    }
+
+    void SetBoundingbox(std::vector<Eigen::Vector3d> boundingbox) {
+        m_boundingbox.clear();
+        m_boundingbox = boundingbox;
+    }
+
+    std::vector<Eigen::Vector3d> GetBoundingbox() {
+        return m_boundingbox;
     }
 
     void SetSLAM(ORB_SLAM3::System *pSystem) {
@@ -71,6 +160,7 @@ public:
     // Main thread function.
     void Run();
 
+    void ChangeShape(pangolin::OpenGlMatrix);
     void SetCameraCalibration(
         const float &fx_, const float &fy_, const float &cx_,
         const float &cy_) {
@@ -99,9 +189,7 @@ private:
         const int b = 0);
     void LoadCameraPose(const cv::Mat &Tcw);
     void DrawImageTexture(pangolin::GlTexture &imageTexture, cv::Mat &im);
-    void DrawCube(
-        const float &size, const float x = 0, const float y = 0,
-        const float z = 0);
+    void DrawCube(const float x = 0, const float y = 0, const float z = 0);
     void DrawPlane(int ndivs, float ndivsize);
     void DrawPlane(Plane *pPlane, int ndivs, float ndivsize);
     void DrawTrackedPoints(
@@ -116,6 +204,28 @@ private:
     float mFPS, mT;
     float fx, fy, cx, cy;
 
+    Eigen::Vector3d GetRay(
+        const Eigen::Matrix4d &transformationMatrix,
+        const Eigen::Matrix4d &projectionMatrix);
+    Eigen::Vector3d Change2PlaneCoords(
+        pangolin::OpenGlMatrix Plane_wp, Eigen::Vector3d word_coords,
+        bool is_point = true);
+
+    Eigen::Matrix4d Change2EigenMatrix(pangolin::OpenGlMatrix opengl_matrix);
+
+    virtual void RegistEvents() {
+    }
+
+    // user interface
+    void decrease_shape();
+    void increase_shape();
+    void up_move();
+    void down_move();
+    void left_move();
+    void right_move();
+    void front_move();
+    void back_move();
+
     // Last processed image and computed pose by the SLAM
     std::mutex mMutexPoseImage;
     cv::Mat mTcw;
@@ -123,8 +233,16 @@ private:
     int mStatus;
     std::vector<cv::KeyPoint> mvKeys;
     std::vector<MapPoint *> mvMPs;
+    Object boundingbox;
+    MouseState mouseState;
+    Scene scene;
+    Camera camera;
+    bool m_is_debug_mode;
+    bool m_is_stop;
+    bool m_is_fix;
+    pangolin::OpenGlRenderState s_cam;
+    std::vector<Eigen::Vector3d> m_boundingbox;
 };
-
 } // namespace ORB_SLAM3
 
 #endif // VIEWERAR_H

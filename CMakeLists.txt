@@ -70,6 +70,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include/PoseSolver)
 include_directories(${PROJECT_SOURCE_DIR}/Thirdparty)
 
 set (ORBSLAM3_FILES
+        src/ORBSLAM3/ScannerStruct/Struct.cc
         src/ORBSLAM3/System.cc
         src/ORBSLAM3/Tracking.cc
         src/ORBSLAM3/LocalMapping.cc
@@ -96,6 +97,7 @@ set (ORBSLAM3_FILES
         src/CameraModels/KannalaBrandt8.cpp
         src/ORBSLAM3/OptimizableTypes.cpp
         src/ORBSLAM3/MLPnPsolver.cpp
+        include/ORBSLAM3/ScannerStruct/Struct.h
         include/ORBSLAM3/System.h
         include/ORBSLAM3/Tracking.h
         include/ORBSLAM3/LocalMapping.h
@@ -295,8 +297,7 @@ set (SOURCE_FILES
         ${CERES_SOLVER_FILES}
         ${DBOW3_FILES}
         ${ORBSLAM3_CAMERAMODEL_FILES}
-        ${MODEL_FILE}
-        )
+        ${MODEL_FILE})
 
 add_library(${PROJECT_NAME} SHARED  ${SOURCE_FILES}
 
@@ -343,11 +344,11 @@ add_executable(mono_inertial_euroc
 Examples/Monocular-Inertial/mono_inertial_euroc.cc)
 target_link_libraries(mono_inertial_euroc ${PROJECT_NAME})
 
-add_executable(mono_inertial_objectRecognition_test
-        Examples/Monocular-Inertial/mono_inertial_objectRecognition_test.cc)
-target_link_libraries(mono_inertial_objectRecognition_test ${PROJECT_NAME})
+add_executable(objectRecognition_test
+        Examples/Monocular-Inertial/objectRecognition_test.cc)
+target_link_libraries(objectRecognition_test ${PROJECT_NAME})
 
 
-add_executable(mono_inertial_ar_test
-        Examples/Monocular-Inertial/mono_intertial_ar_test.cc)
-target_link_libraries(mono_inertial_ar_test ${PROJECT_NAME})
+add_executable(scanner_test
+        Examples/Monocular-Inertial/scanner_test.cc)
+target_link_libraries(scanner_test ${PROJECT_NAME})

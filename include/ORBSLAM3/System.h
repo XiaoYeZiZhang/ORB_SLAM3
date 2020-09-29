@@ -171,6 +171,7 @@ public:
     // void SaveAtlas(int type);
 
     bool PackAtlasToMemoryFor3DObject(char **buffer_out, int &buffer_out_len);
+    void SetBoundingbox(const std::vector<Eigen::Vector3d> &boundingbox);
 
     // ObjectRecognition
     void SetPointCloudModel(

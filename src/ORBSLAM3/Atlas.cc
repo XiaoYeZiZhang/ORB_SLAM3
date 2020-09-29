@@ -233,7 +233,54 @@ bool Atlas::isImuInitialized() {
     return mpCurrentMap->isImuInitialized();
 }
 
+void Atlas::GetBoundingBoxCoordsRange() {
+    m_bbx_xmin = 10000;
+    m_bbx_ymin = 10000;
+    m_bbx_zmin = 10000;
+    m_bbx_xmax = -10000;
+    m_bbx_ymax = -10000;
+    m_bbx_zmax = -10000;
+
+    for (int i = 0; i < m_boundingbox_.size(); i++) {
+        if (m_boundingbox_[i](0) < m_bbx_xmin) {
+            m_bbx_xmin = m_boundingbox_[i](0);
+        }
+        if (m_boundingbox_[i](0) > m_bbx_xmax) {
+            m_bbx_xmax = m_boundingbox_[i](0);
+        }
+
+        if (m_boundingbox_[i](1) < m_bbx_ymin) {
+            m_bbx_ymin = m_boundingbox_[i](1);
+        }
+        if (m_boundingbox_[i](1) > m_bbx_ymax) {
+            m_bbx_ymax = m_boundingbox_[i](1);
+        }
+
+        if (m_boundingbox_[i](2) < m_bbx_zmin) {
+            m_bbx_zmin = m_boundingbox_[i](2);
+        }
+        if (m_boundingbox_[i](2) > m_bbx_zmax) {
+            m_bbx_zmax = m_boundingbox_[i](2);
+        }
+    }
+}
+
+bool Atlas::MappointInBoundingbox(const cv::Mat &mappoint_pos) {
+    if (mappoint_pos.at<float>(0) >= m_bbx_xmin &&
+        mappoint_pos.at<float>(0) <= m_bbx_xmax &&
+        mappoint_pos.at<float>(1) >= m_bbx_ymin &&
+        mappoint_pos.at<float>(1) <= m_bbx_ymax &&
+        mappoint_pos.at<float>(2) >= m_bbx_zmin &&
+        mappoint_pos.at<float>(2) <= m_bbx_zmax) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 unsigned int Atlas::GetMemSizeFor3DObject(const std::string &version) {
+    // already set boundingbox
+    GetBoundingBoxCoordsRange();
     m_3dobject_version_ = version;
 
     unsigned int nTotalSize = 0;
@@ -264,9 +311,9 @@ unsigned int Atlas::GetMemSizeFor3DObject(const std::string &version) {
 
         for (Map *pMi : saved_map) {
             for (MapPoint *pMPi : pMi->GetAllMapPoints()) {
-                // condition???
                 cv::Mat tmpPos = pMPi->GetWorldPos();
-                if (true) {
+                // condition???
+                if (MappointInBoundingbox(tmpPos)) {
                     m_saved_mappoint_for_3dobject_.emplace_back(pMPi);
                     nTotalSize += pMPi->GetMemSizeFor3DObject();
                 }
@@ -314,16 +361,13 @@ bool Atlas::WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem) {
         mem + mem_pos, &camera_intrinsic.CY(), sizeof(double), mem_pos);
 
     // bounding box
-
     // TODO(zhangye): check bbx data
     double bounding_box[24];
-
-    /*for(int i = 0; i < m_obj_corner_points.size(); i++) {
-        bounding_box[i * 3] = m_obj_corner_points[i](0);
-        bounding_box[i * 3 + 1] = m_obj_corner_points[i](1);
-        bounding_box[i * 3 + 2] = m_obj_corner_points[i](2);
+    for (int i = 0; i < m_boundingbox_.size(); i++) {
+        bounding_box[i * 3] = m_boundingbox_[i](0);
+        bounding_box[i * 3 + 1] = m_boundingbox_[i](1);
+        bounding_box[i * 3 + 2] = m_boundingbox_[i](2);
     }
-    */
 
     ObjRecognition::PutDataToMem(
         mem + mem_pos, bounding_box, 24 * sizeof(double), mem_pos);
