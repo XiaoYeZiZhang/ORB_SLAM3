@@ -27,26 +27,22 @@ public:
     Scene() {
         m_width = 100;
         m_height = 100;
-        isChangingPlane = false;
+        m_is_changing_plane = false;
         m_bar_width = 0;
     }
 
-    Scene(int width, int height) {
-        m_width = width;
-        m_height = height;
-        isChangingPlane = false;
-    }
-
     void SetSceneSize(int width, int height, int bar_width);
-    int GetSceneWidth();
-    int GetSceneHeight();
-    int GetSceneBarWidth();
-    bool isChangingPlane;
+    int GetSceneWidth() const;
+    int GetSceneHeight() const;
+    int GetSceneBarWidth() const;
+    bool GetIsChangingPlane() const;
+    void SetIsChangingPlane(const bool &state);
 
 private:
     int m_width;
     int m_height;
     int m_bar_width;
+    bool m_is_changing_plane;
 };
 
 class Object {
@@ -58,9 +54,10 @@ public:
         m_exist = false;
     }
     void SetExist(bool exist);
-    bool IsExist();
+    bool IsExist() const;
+    void SetCornerPoint();
     void Reset();
-    void SetSize(const float length);
+    void SetSize(float side);
     void MoveObject(float offset, int axies);
     void SetVertexList(float vertex_list[8][3]);
     void SetIndexList(GLint index_list[12][2]);
@@ -86,20 +83,6 @@ private:
 
 class Camera {
 public:
-    Camera(
-        float pos_x, float pos_y, float pos_z, float front_x, float front_y,
-        float front_z, float up_x, float up_y, float up_z) {
-        cameraPos_x = pos_x;
-        cameraPos_y = pos_y;
-        cameraPos_z = pos_z;
-        cameraFront_x = front_x;
-        cameraFront_y = front_y;
-        cameraFront_z = front_z;
-        cameraUp_x = up_x;
-        cameraUp_y = up_y;
-        cameraUp_z = up_z;
-    }
-
     Camera() {
         cameraPos_x = 0.0;
         cameraPos_y = 0.0;
@@ -112,9 +95,9 @@ public:
         cameraUp_z = 0.0;
     }
 
-    Eigen::Vector3d GetCamPos();
+    Eigen::Vector3d GetCamPos() const;
     void SetCamPos(float x, float y, float z);
-    Eigen::Vector3d GetCamFront();
+    Eigen::Vector3d GetCamFront() const;
     void SetCamFront(float x, float y, float z);
 
 private:
@@ -144,22 +127,22 @@ public:
     }
 
     void SetMouseAngleX(float x);
-    float GetMouseAngleX();
+    float GetMouseAngleX() const;
     void SetMouseAngleY(float y);
-    float GetMouseAngleY();
+    float GetMouseAngleY() const;
     void SetMousePoseX(int x);
-    float GetMousePoseX();
+    float GetMousePoseX() const;
     void SetMousePoseY(int y);
-    float GetMousePoseY();
+    float GetMousePoseY() const;
     void SetMouseLeftDown(bool state);
-    bool IsMouseLeftDown();
+    bool IsMouseLeftDown() const;
     void SetMouseRightDown(bool state);
-    bool IsMouseRightDown();
+    bool IsMouseRightDown() const;
     void SetMouseWheelUp(bool state);
-    bool IsMouseWheelUp();
+    bool IsMouseWheelUp() const;
     void SetMouseWheelDown(bool state);
-    bool IsMouseWheelDown();
-    float GetMouseWheelValue();
+    bool IsMouseWheelDown() const;
+    float GetMouseWheelValue() const;
     void SetMouseWheelValue(float value);
 
 private:

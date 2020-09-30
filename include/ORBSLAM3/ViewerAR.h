@@ -144,13 +144,10 @@ public:
         return m_is_fix;
     }
 
-    void SetBoundingbox(std::vector<Eigen::Vector3d> boundingbox) {
-        m_boundingbox.clear();
-        m_boundingbox = boundingbox;
-    }
+    void ComputeAndSetBoundingbox(const pangolin::OpenGlMatrix &Twp_opengl);
 
     std::vector<Eigen::Vector3d> GetBoundingbox() {
-        return m_boundingbox;
+        return m_boundingbox_vertices;
     }
 
     void SetSLAM(ORB_SLAM3::System *pSystem) {
@@ -162,13 +159,7 @@ public:
 
     void ChangeShape(pangolin::OpenGlMatrix);
     void SetCameraCalibration(
-        const float &fx_, const float &fy_, const float &cx_,
-        const float &cy_) {
-        fx = fx_;
-        fy = fy_;
-        cx = cx_;
-        cy = cy_;
-    }
+        const float &fx_, const float &fy_, const float &cx_, const float &cy_);
 
     void SetImagePose(
         const cv::Mat &im, const cv::Mat &Tcw, const int &status,
@@ -233,15 +224,17 @@ private:
     int mStatus;
     std::vector<cv::KeyPoint> mvKeys;
     std::vector<MapPoint *> mvMPs;
-    Object boundingbox;
-    MouseState mouseState;
-    Scene scene;
-    Camera camera;
+
+    // scann
+    Object m_boundingbox;
+    MouseState m_mouseState;
+    Scene m_scene;
+    Camera m_camera;
     bool m_is_debug_mode;
     bool m_is_stop;
     bool m_is_fix;
     pangolin::OpenGlRenderState s_cam;
-    std::vector<Eigen::Vector3d> m_boundingbox;
+    std::vector<Eigen::Vector3d> m_boundingbox_vertices;
 };
 } // namespace ORB_SLAM3
 
