@@ -89,9 +89,7 @@ void LocalMapping::Run() {
             ProcessNewKeyFrame();
 
             // if scanning, need to extract more ORB features
-#ifdef SCANNER
-            FrameObjectProcess::GetInstance()->ProcessFrame(mpCurrentKeyFrame);
-#endif
+
             std::chrono::steady_clock::time_point t1 =
                 std::chrono::steady_clock::now();
 
@@ -393,6 +391,10 @@ void LocalMapping::ProcessNewKeyFrame() {
         mpCurrentKeyFrame = mlNewKeyFrames.front();
         mlNewKeyFrames.pop_front();
     }
+
+#ifdef SCANNER
+    FrameObjectProcess::GetInstance()->ProcessFrame(mpCurrentKeyFrame);
+#endif
 
     // Compute Bags of Words structures
     mpCurrentKeyFrame->ComputeBoW();

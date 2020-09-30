@@ -577,19 +577,19 @@ void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
             Eigen::Vector3d ray_dir = (ray - camera.GetCamPos()).normalized();
             ray = camera.GetCamPos() + ray_dir * 5.0f;
 
-//            glPointSize(10.0);
-//            glBegin(GL_POINTS);
-//            glColor3f(0.0, 1.0, 0);
-//            glVertex3f(ray(0), ray(1), ray(2));
-//            glEnd();
-//
-//            glBegin(GL_LINES);
-//            glColor3f(1.0, 1.0, 0.0);
-//            glVertex3f(
-//                camera.GetCamPos()[0], camera.GetCamPos()[1],
-//                camera.GetCamPos()[2]);
-//            glVertex3f(ray(0), ray(1), ray(2));
-//            glEnd();
+            //            glPointSize(10.0);
+            //            glBegin(GL_POINTS);
+            //            glColor3f(0.0, 1.0, 0);
+            //            glVertex3f(ray(0), ray(1), ray(2));
+            //            glEnd();
+            //
+            //            glBegin(GL_LINES);
+            //            glColor3f(1.0, 1.0, 0.0);
+            //            glVertex3f(
+            //                camera.GetCamPos()[0], camera.GetCamPos()[1],
+            //                camera.GetCamPos()[2]);
+            //            glVertex3f(ray(0), ray(1), ray(2));
+            //            glEnd();
 
             // ray and campos: under world coords
             Eigen::Vector3d CameraPosition_w = camera.GetCamPos();

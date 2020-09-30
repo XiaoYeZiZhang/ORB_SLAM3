@@ -394,14 +394,8 @@ public:
         const Eigen::Matrix3d &Rgl2slam);
     unsigned int GetMemSizeFor3DObject();
 
-    void SetKeyPoints(std::vector<cv::KeyPoint> &keypoints) {
-        mvKeys = keypoints;
-        // TODO(zhangye): keys and keysUn???
-        mvKeysUn = keypoints;
-    }
-    void SetDesps(const cv::Mat &desps) {
-        mDescriptors = desps;
-    }
+    void SetKeyPoints(std::vector<cv::KeyPoint> &keypoints);
+    void SetDesps(const cv::Mat &desps);
 
     // The following variables are accesed from only 1 thread or never change
     // (no mutex needed).
@@ -472,7 +466,7 @@ public:
     cv::Mat mDistCoef;
 
     // Number of KeyPoints
-    const int N;
+    int N;
 
     // KeyPoints, stereo coordinate and descriptors (all associated by an index)
     std::vector<cv::KeyPoint> mvKeys;
@@ -594,6 +588,8 @@ protected:
 
     // Backup for Cameras
     unsigned int mnBackupIdCamera, mnBackupIdCamera2;
+
+    void UndistortKeyPoints();
 
 public:
     GeometricCamera *mpCamera, *mpCamera2;

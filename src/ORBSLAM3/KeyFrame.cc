@@ -25,6 +25,7 @@
 #include "include/ORBSLAM3/ImuTypes.h"
 #include <mutex>
 #include <opencv2/core/eigen.hpp>
+#include <include/CameraModels/Pinhole.h>
 #include "ObjectRecognition/Utility/Tools.h"
 #include "ObjectRecognition/Utility/Camera.h"
 
@@ -54,6 +55,37 @@ KeyFrame::KeyFrame()
       mpParent(NULL), mbNotErase(false), mbToBeErased(false), mbBad(false),
       mHalfBaseline(0), mbCurrentPlaceRecognition(false), mbHasHessian(false),
       mnMergeCorrectedForKF(0), NLeft(0), NRight(0), mnNumberOfOpt(0) {
+}
+
+void KeyFrame::UndistortKeyPoints() {
+    if (mDistCoef.at<float>(0) == 0.0) {
+        mvKeysUn = mvKeys;
+        return;
+    }
+
+    // Fill matrix with points
+    cv::Mat mat(N, 2, CV_32F);
+
+    for (int i = 0; i < N; i++) {
+        mat.at<float>(i, 0) = mvKeys[i].pt.x;
+        mat.at<float>(i, 1) = mvKeys[i].pt.y;
+    }
+
+    // Undistort points
+    mat = mat.reshape(2);
+    cv::undistortPoints(
+        mat, mat, static_cast<Pinhole *>(mpCamera)->toK(), mDistCoef, cv::Mat(),
+        mK);
+    mat = mat.reshape(1);
+
+    // Fill undistorted keypoint vector
+    mvKeysUn.resize(N);
+    for (int i = 0; i < N; i++) {
+        cv::KeyPoint kp = mvKeys[i];
+        kp.pt.x = mat.at<float>(i, 0);
+        kp.pt.y = mat.at<float>(i, 1);
+        mvKeysUn[i] = kp;
+    }
 }
 
 KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB)
@@ -859,6 +891,22 @@ Map *KeyFrame::GetMap() {
 void KeyFrame::UpdateMap(Map *pMap) {
     unique_lock<mutex> lock(mMutexMap);
     mpMap = pMap;
+}
+
+// TODO(zhangye): need more variables to reset???
+void KeyFrame::SetKeyPoints(std::vector<cv::KeyPoint> &keypoints) {
+    mvKeys = keypoints;
+    N = mvKeys.size();
+    UndistortKeyPoints();
+    int originN = mvpMapPoints.size();
+    mvpMapPoints.resize(N);
+    for (int i = originN; i < mvpMapPoints.size(); i++) {
+        mvpMapPoints[i] = static_cast<MapPoint *>(NULL);
+    }
+}
+
+void KeyFrame::SetDesps(const cv::Mat &desps) {
+    mDescriptors = desps;
 }
 
 unsigned int KeyFrame::GetMemSizeFor3DObject() {

@@ -8,8 +8,11 @@
 namespace ORB_SLAM3 {
 
 FrameObjectProcess::FrameObjectProcess() {
-    m_orb_detector->setScoreType(cv::ORB::FAST_SCORE);
     // TODO(zhangye): check the parameters
+    m_orb_detector = cv::ORB::create(
+        1000, Parameters::GetInstance().KORBExtractor_scaleFactor,
+        Parameters::GetInstance().KORBExtractor_nlevels);
+    m_orb_detector->setScoreType(cv::ORB::FAST_SCORE);
     m_orb_detector->setFastThreshold(
         Parameters::GetInstance().KORBExtractor_fastThreathold);
 }
@@ -88,8 +91,6 @@ static void GetBoundingBoxMask(
         point.x = it.x;
         point.y = it.y;
         boxProjResult.push_back(point);
-        //        LOGDLH("[STObject] QuickHull point: %d, %d", point.x,
-        //        point.y);
     }
 
     std::vector<std::vector<cv::Point>> pts;
@@ -97,18 +98,12 @@ static void GetBoundingBoxMask(
     cv::fillPoly(mask, pts, cv::Scalar(255));
 
     // show:
-    cv::Mat maskShow = mask.clone();
-    cv::cvtColor(maskShow, maskShow, cv::COLOR_GRAY2BGR);
-    for (const auto &it : boxProjResultShow) {
-        cv::drawMarker(maskShow, it, cv::Scalar(0, 0, 255));
-    }
+    //    cv::Mat maskShow = mask.clone();
+    //    cv::cvtColor(maskShow, maskShow, cv::COLOR_GRAY2BGR);
+    //    for (const auto &it : boxProjResultShow) {
+    //        cv::drawMarker(maskShow, it, cv::Scalar(0, 0, 255));
+    //    }
     // GlobalOcvViewer::UpdateView("2D bounding box mask", maskShow);
-
-    static int index = 0;
-    index++;
-    const std::string image_name = std::string("/sdcard/SLAMRecord/object/") +
-                                   std::to_string(index) + ".png";
-    //    cv::imwrite(image_name, mask);
 
 } // void GetBoundingBoxMask()
 
@@ -174,10 +169,6 @@ void FrameObjectProcess::ProcessFrame(ORB_SLAM3::KeyFrame *&pKF) {
 
     pKF->SetKeyPoints(keypoints_old);
     pKF->SetDesps(descriptor_old);
-
-    // pKF->SetFeatureInfo(
-    // pKF->mImg, keypoints_old, pKF->mDepth, descriptor_old,
-    // pKF->mvDepthsSqrtInfo);
 } // FrameObjectProcess::ProcessFrame
 
 void FrameObjectProcess::AddObjectModel(const int obj_id) {
