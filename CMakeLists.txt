@@ -163,8 +163,8 @@ set(OBJECTRECOGNITION_FILES
         include/ObjectRecognition/Utility/Tools.h
         include/ObjectRecognition/Detector/DetectorThread.h
         src/ObjectRecognition/Detector/DetectorThread.cc
-        include/ObjectRecognition/Detector/PointCloudDetector.h
-        src/ObjectRecognition/Detector/PointCloudDetector.cc
+        include/ObjectRecognition/Detector/DetectorPointCloud.h
+        src/ObjectRecognition/Detector/DetectorPointCloud.cc
         include/ObjectRecognition/Utility/ThreadBase.h
         src/ObjectRecognition/Utility/ThreadBase.cc
         include/ObjectRecognition/Struct/Frame.h
@@ -186,8 +186,8 @@ set(OBJECTRECOGNITION_FILES
         #src/ObjectRecognition/Optimizer/LBAOptimizer.cc
         src/ObjectRecognition/Tracker/TrackerFrame.cc
         include/ObjectRecognition/Tracker/TrackerFrame.h
-        src/ObjectRecognition/Tracker/PointCloudTracker.cc
-        include/ObjectRecognition/Tracker/PointCloudTracker.h
+        src/ObjectRecognition/Tracker/TrackerPointCloud.cc
+        include/ObjectRecognition/Tracker/TrackerPointCloud.h
         include/ObjectRecognition/Tracker/TrackerCommon.h
         src/ObjectRecognition/Tracker/TrackerCommon.cc
         src/ObjectRecognition/Detector/DetectorCommon.cc
@@ -319,36 +319,30 @@ ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 
 
 # Build examples
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/Monocular)
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/Monocular)
+#add_executable(mono_tum
+#Examples/Monocular/mono_tum.cc)
+#target_link_libraries(mono_tum ${PROJECT_NAME})
+#add_executable(mono_kitti
+#Examples/Monocular/mono_kitti.cc)
+#target_link_libraries(mono_kitti ${PROJECT_NAME})
+#add_executable(mono_euroc
+#Examples/Monocular/mono_euroc.cc)
+#target_link_libraries(mono_euroc ${PROJECT_NAME})
+#add_executable(mono_tum_vi
+#Examples/Monocular/mono_tum_vi.cc)
+#target_link_libraries(mono_tum_vi ${PROJECT_NAME})
 
-add_executable(mono_tum
-Examples/Monocular/mono_tum.cc)
-target_link_libraries(mono_tum ${PROJECT_NAME})
+#set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/Monocular-Inertial)
+#add_executable(mono_inertial_euroc
+#Examples/Monocular-Inertial/mono_inertial_euroc.cc)
+#target_link_libraries(mono_inertial_euroc ${PROJECT_NAME})
 
-add_executable(mono_kitti
-Examples/Monocular/mono_kitti.cc)
-target_link_libraries(mono_kitti ${PROJECT_NAME})
-
-add_executable(mono_euroc
-Examples/Monocular/mono_euroc.cc)
-target_link_libraries(mono_euroc ${PROJECT_NAME})
-
-add_executable(mono_tum_vi
-Examples/Monocular/mono_tum_vi.cc)
-target_link_libraries(mono_tum_vi ${PROJECT_NAME})
-
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/Monocular-Inertial)
-
-add_executable(mono_inertial_euroc
-Examples/Monocular-Inertial/mono_inertial_euroc.cc)
-target_link_libraries(mono_inertial_euroc ${PROJECT_NAME})
-
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/ObjectRecognition)
 add_executable(objectRecognition_test
-        Examples/Monocular-Inertial/objectRecognition_test.cc)
+        Examples/ObjectRecognition/objectRecognition_test.cc)
 target_link_libraries(objectRecognition_test ${PROJECT_NAME})
 
-
 add_executable(scanner_test
-        Examples/Monocular-Inertial/scanner_test.cc)
+        Examples/ObjectRecognition/scanner_test.cc)
 target_link_libraries(scanner_test ${PROJECT_NAME})

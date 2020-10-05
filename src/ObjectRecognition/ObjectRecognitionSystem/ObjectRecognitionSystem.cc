@@ -51,7 +51,6 @@ int ObjRecogThread::SetModel(const std::shared_ptr<Object> &object) {
     object_->SetDatabase(database);
 
     VLOG(0) << "PointCloud detector database create success ";
-    // VLOG(5) << "PointCloud database size: " <<
     object_->GetDatabase()->size();
 
     auto allKFs = object_->GetKeyFrames();
@@ -219,9 +218,8 @@ int ObjRecogThread::Process() {
         cur_frame->mTcw(i) = platformFrame->t[i];
     }
 
-    std::cout << "push frame to detector and tracker thread" << std::endl;
-    cv::imshow("frame for detector and tracker", cur_frame->img);
-    cv::waitKey(10);
+    // cv::imshow("frame for detector and tracker", cur_frame->img);
+    // cv::waitKey(10);
     detector_thread_.PushData(cur_frame);
     tracker_thread_.PushData(cur_frame);
     ret = 0;

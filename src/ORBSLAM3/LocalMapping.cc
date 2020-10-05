@@ -152,9 +152,9 @@ void LocalMapping::Run() {
                                       mpCurrentKeyFrame->mPrevKF->mTimeStamp;
                         if (!mpCurrentKeyFrame->GetMap()->GetIniertialBA2()) {
                             if ((mTinit < 10.f) && (dist < 0.02)) {
-                                cout << "Not enough motion for initializing. "
-                                        "Reseting..."
-                                     << endl;
+                                VLOG(0) << "ORBSLAM3: Not enough motion for "
+                                           "initializing. "
+                                           "Reseting...";
                                 unique_lock<mutex> lock(mMutexReset);
                                 mbResetRequestedActiveMap = true;
                                 mpMapToReset = mpCurrentKeyFrame->GetMap();
@@ -205,28 +205,28 @@ void LocalMapping::Run() {
                     {
                         if (!mpCurrentKeyFrame->GetMap()->GetIniertialBA1()) {
                             if (mTinit > 5.0f) {
-                                cout << "start VIBA 1" << endl;
+                                VLOG(5) << "ORBSLAM3: start VIBA 1";
                                 mpCurrentKeyFrame->GetMap()->SetIniertialBA1();
                                 if (mbMonocular)
                                     InitializeIMU(1.f, 1e5, true); // 1.f, 1e5
                                 else
                                     InitializeIMU(1.f, 1e5, true); // 1.f, 1e5
 
-                                cout << "end VIBA 1" << endl;
+                                VLOG(5) << "ORBSLAM3: end VIBA 1";
                             }
                         }
                         // else if (mbNotBA2){
                         else if (!mpCurrentKeyFrame->GetMap()
                                       ->GetIniertialBA2()) {
                             if (mTinit > 15.0f) { // 15.0f
-                                cout << "start VIBA 2" << endl;
+                                VLOG(5) << "ORBSLAM3: start VIBA 2";
                                 mpCurrentKeyFrame->GetMap()->SetIniertialBA2();
                                 if (mbMonocular)
                                     InitializeIMU(0.f, 0.f, true); // 0.f, 0.f
                                 else
                                     InitializeIMU(0.f, 0.f, true);
 
-                                cout << "end VIBA 2" << endl;
+                                VLOG(5) << "ORBSLAM3: end VIBA 2";
                             }
                         }
 
@@ -238,10 +238,10 @@ void LocalMapping::Run() {
                              (mTinit > 55.0f && mTinit < 55.5f) ||
                              (mTinit > 65.0f && mTinit < 65.5f) ||
                              (mTinit > 75.0f && mTinit < 75.5f))) {
-                            cout << "start scale ref" << endl;
+                            VLOG(5) << "ORBSLAM3: start scale ref";
                             if (mbMonocular)
                                 ScaleRefinement();
-                            cout << "end scale ref" << endl;
+                            VLOG(5) << "ORBSLAM3: end scale ref";
                         }
                     }
                 }
@@ -297,12 +297,11 @@ void LocalMapping::Run() {
             // for objectRecognition
 #ifdef OBJECTRECOGNITION
             if (mpCurrentKeyFrame) {
-                cv::imshow("keyframe: ", mpCurrentKeyFrame->imgLeft);
-                cv::waitKey(9);
+                // cv::imshow("keyframe: ", mpCurrentKeyFrame->imgLeft);
+                // cv::waitKey(9);
             }
 
             // objectRecognition callback
-            std::cout << "slam set callback" << std::endl;
             ObjRecognition::ObjRecogFrameCallbackData *callbackData =
                 new ObjRecognition::ObjRecogFrameCallbackData();
             callbackData->id = mpCurrentKeyFrame->mnId;
@@ -964,7 +963,7 @@ bool LocalMapping::Stop() {
     unique_lock<mutex> lock(mMutexStop);
     if (mbStopRequested && !mbNotStop) {
         mbStopped = true;
-        cout << "Local Mapping STOP" << endl;
+        VLOG(5) << "ORBSLAM3: Local Mapping STOP";
         return true;
     }
 
@@ -994,7 +993,7 @@ void LocalMapping::Release() {
         delete *lit;
     mlNewKeyFrames.clear();
 
-    cout << "Local Mapping RELEASE" << endl;
+    VLOG(5) << "ORBSLAM3: Local Mapping RELEASE";
 }
 
 bool LocalMapping::AcceptKeyFrames() {
@@ -1192,10 +1191,10 @@ cv::Mat LocalMapping::SkewSymmetricMatrix(const cv::Mat &v) {
 void LocalMapping::RequestReset() {
     {
         unique_lock<mutex> lock(mMutexReset);
-        cout << "LM: Map reset recieved" << endl;
+        VLOG(5) << "ORBSLAM3: LM: Map reset recieved";
         mbResetRequested = true;
     }
-    cout << "LM: Map reset, waiting..." << endl;
+    VLOG(0) << "ORBSLAM3: LM: Map reset, waiting...";
 
     while (1) {
         {
@@ -1205,17 +1204,17 @@ void LocalMapping::RequestReset() {
         }
         usleep(3000);
     }
-    cout << "LM: Map reset, Done!!!" << endl;
+    VLOG(0) << "ORBSLAM3: LM: Map reset, Done!!!";
 }
 
 void LocalMapping::RequestResetActiveMap(Map *pMap) {
     {
         unique_lock<mutex> lock(mMutexReset);
-        cout << "LM: Active map reset recieved" << endl;
+        VLOG(5) << "ORBSLAM3: LM: Active map reset recieved";
         mbResetRequestedActiveMap = true;
         mpMapToReset = pMap;
     }
-    cout << "LM: Active map reset, waiting..." << endl;
+    VLOG(5) << "ORBSLAM3: LM: Active map reset, waiting...";
 
     while (1) {
         {
@@ -1225,7 +1224,7 @@ void LocalMapping::RequestResetActiveMap(Map *pMap) {
         }
         usleep(3000);
     }
-    cout << "LM: Active map reset, Done!!!" << endl;
+    VLOG(5) << "ORBSLAM3: LM: Active map reset, Done!!!";
 }
 
 void LocalMapping::ResetIfRequested() {
@@ -1235,7 +1234,7 @@ void LocalMapping::ResetIfRequested() {
         if (mbResetRequested) {
             executed_reset = true;
 
-            cout << "LM: Reseting Atlas in Local Mapping..." << endl;
+            VLOG(5) << "ORBSLAM3: LM: Reseting Atlas in Local Mapping...";
             mlNewKeyFrames.clear();
             mlpRecentAddedMapPoints.clear();
             mbResetRequested = false;
@@ -1249,12 +1248,12 @@ void LocalMapping::ResetIfRequested() {
 
             mIdxInit = 0;
 
-            cout << "LM: End reseting Local Mapping..." << endl;
+            VLOG(5) << "ORBSLAM3: LM: End reseting Local Mapping...";
         }
 
         if (mbResetRequestedActiveMap) {
             executed_reset = true;
-            cout << "LM: Reseting current map in Local Mapping..." << endl;
+            VLOG(3) << "ORBSLAM3: LM: Reseting current map in Local Mapping...";
             mlNewKeyFrames.clear();
             mlpRecentAddedMapPoints.clear();
 
@@ -1265,11 +1264,11 @@ void LocalMapping::ResetIfRequested() {
             mbBadImu = false;
 
             mbResetRequestedActiveMap = false;
-            cout << "LM: End reseting Local Mapping..." << endl;
+            VLOG(5) << "ORBSLAM3: LM: End reseting Local Mapping...";
         }
     }
     if (executed_reset)
-        cout << "LM: Reset free the mutex" << endl;
+        VLOG(5) << "ORBSLAM3: LM: Reset free the mutex";
 }
 
 void LocalMapping::RequestFinish() {
@@ -1390,7 +1389,7 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA) {
     cout << "ba after inertial-only optimization: " << mba << endl;*/
 
     if (mScale < 1e-1) {
-        cout << "scale too small" << endl;
+        VLOG(0) << "ORBSLAM3: scale too small";
         bInitializing = false;
         return;
     }
@@ -1434,8 +1433,8 @@ void LocalMapping::InitializeIMU(float priorG, float priorA, bool bFIBA) {
     // If initialization is OK
     mpTracker->UpdateFrameIMU(1.0, vpKF[0]->GetImuBias(), mpCurrentKeyFrame);
     if (!mpAtlas->isImuInitialized()) {
-        cout << "IMU in Map " << mpAtlas->GetCurrentMap()->GetId()
-             << " is initialized" << endl;
+        VLOG(5) << "ORBSLAM3: IMU in Map " << mpAtlas->GetCurrentMap()->GetId()
+                << " is initialized";
         mpAtlas->SetImuInitialized();
         mpTracker->t0IMU = mpTracker->mCurrentFrame.mTimeStamp;
         mpCurrentKeyFrame->bImu = true;
@@ -1506,7 +1505,7 @@ void LocalMapping::ScaleRefinement() {
 
     if (mScale < 1e-1) // 1e-1
     {
-        cout << "scale too small" << endl;
+        VLOG(0) << "ORBSLAM3: scale too small";
         bInitializing = false;
         return;
     }

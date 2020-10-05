@@ -40,7 +40,7 @@ System::System(
       mbResetActiveMap(false), mbActivateLocalizationMode(false),
       mbDeactivateLocalizationMode(false) {
     // Output welcome message
-    cout << endl
+    /*cout << endl
          << "ORB-SLAM3 Copyright (C) 2017-2020 Carlos Campos, Richard Elvira, "
             "Juan J. Gómez, José M.M. Montiel and Juan D. Tardós, University "
             "of Zaragoza."
@@ -52,15 +52,15 @@ System::System(
          << "This is free software, and you are welcome to redistribute it"
          << endl
          << "under certain conditions. See LICENSE.txt." << endl
-         << endl;
+         << endl;*/
 
-    cout << "Input sensor was set to: ";
+    VLOG(5) << "ORBSLAM3: Input sensor was set to: ";
 
     m_recognition_mode_ = isObjRecogMode;
     if (mSensor == MONOCULAR)
-        cout << "Monocular" << endl;
+        VLOG(0) << "ORBSLAM3: Monocular";
     else if (mSensor == IMU_MONOCULAR)
-        cout << "Monocular-Inertial" << endl;
+        VLOG(0) << "ORBSLAM3: Monocular-Inertial";
 
     // Check settings file
     cv::FileStorage fsSettings(strSettingsFile.c_str(), cv::FileStorage::READ);
@@ -73,8 +73,7 @@ System::System(
 
     //----
     // Load ORB Vocabulary
-    cout << endl
-         << "Loading ORB Vocabulary. This could take a while..." << endl;
+    VLOG(0) << "ORBSLAM3: Loading ORB Vocabulary. This could take a while...";
 
     mpVocabulary = new ORBVocabulary();
     bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
@@ -83,7 +82,8 @@ System::System(
         cerr << "Falied to open at: " << strVocFile << endl;
         exit(-1);
     }
-    cout << "Vocabulary loaded!" << endl << endl;
+    VLOG(0) << "ORBSLAM3: Vocabulary loaded!"
+            << "\n";
 
     // Create KeyFrame Database
     mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
@@ -172,7 +172,6 @@ System::System(
     // Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this
     // constructor)
-    cout << "Seq. Name: " << strSequence << endl;
     mpTracker = new Tracking(
         this, mpVocabulary, mpFrameDrawer, mpMapDrawer, mpAtlas,
         mpKeyFrameDatabase, strSettingsFile, mSensor, strSequence,
@@ -192,8 +191,8 @@ System::System(
     mpLocalMapper->mInitFr = initFr;
     mpLocalMapper->mThFarPoints = fsSettings["thFarPoints"];
     if (mpLocalMapper->mThFarPoints != 0) {
-        cout << "Discard points further than " << mpLocalMapper->mThFarPoints
-             << " m from current camera" << endl;
+        VLOG(5) << "ORBSLAM3: Discard points further than "
+                << mpLocalMapper->mThFarPoints << " m from current camera";
         mpLocalMapper->mbFarPoints = true;
     } else
         mpLocalMapper->mbFarPoints = false;
@@ -269,7 +268,8 @@ cv::Mat System::TrackMonocular(
             mbReset = false;
             mbResetActiveMap = false;
         } else if (mbResetActiveMap) {
-            cout << "SYSTEM-> Reseting active map in monocular case" << endl;
+            VLOG(5)
+                << "ORBSLAM3: SYSTEM-> Reseting active map in monocular case";
             mpTracker->ResetActiveMap();
             mbResetActiveMap = false;
         }
@@ -332,12 +332,12 @@ void System::Shutdown() {
     while (!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() ||
            mpLoopCloser->isRunningGBA()) {
         if (!mpLocalMapper->isFinished())
-            cout << "mpLocalMapper is not finished" << endl;
+            VLOG(0) << "ORBSLAM3: mpLocalMapper is not finished";
         if (!mpLoopCloser->isFinished())
-            cout << "mpLoopCloser is not finished" << endl;
+            VLOG(0) << "ORBSLAM3: mpLoopCloser is not finished";
         if (mpLoopCloser->isRunningGBA()) {
-            cout << "mpLoopCloser is running GBA" << endl;
-            cout << "break anyway..." << endl;
+            VLOG(0) << "ORBSLAM3: mpLoopCloser is running GBA";
+            VLOG(0) << "ORBSLAM3: break anyway...";
             break;
         }
         usleep(5000);
@@ -348,8 +348,8 @@ void System::Shutdown() {
 }
 
 void System::SaveTrajectoryTUM(const string &filename) {
-    cout << endl
-         << "Saving camera trajectory to " << filename << " ..." << endl;
+    VLOG(5) << endl
+            << "ORBSLAM3: Saving camera trajectory to " << filename << " ...";
     if (mSensor == MONOCULAR) {
         cerr << "ERROR: SaveTrajectoryTUM cannot be used for monocular."
              << endl;
@@ -413,8 +413,8 @@ void System::SaveTrajectoryTUM(const string &filename) {
 }
 
 void System::SaveKeyFrameTrajectoryTUM(const string &filename) {
-    cout << endl
-         << "Saving keyframe trajectory to " << filename << " ..." << endl;
+    VLOG(5) << endl
+            << "ORBSLAM3: Saving keyframe trajectory to " << filename << " ...";
 
     vector<KeyFrame *> vpKFs = mpAtlas->GetAllKeyFrames();
     sort(vpKFs.begin(), vpKFs.end(), KeyFrame::lId);
@@ -446,12 +446,7 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename) {
 
 void System::SaveTrajectoryEuRoC(const string &filename) {
 
-    cout << endl << "Saving trajectory to " << filename << " ..." << endl;
-    /*if(mSensor==MONOCULAR)
-    {
-        cerr << "ERROR: SaveTrajectoryEuRoC cannot be used for monocular." <<
-    endl; return;
-    }*/
+    VLOG(5) << endl << "ORBSLAM3: Saving trajectory to " << filename << " ...";
 
     vector<Map *> vpMaps = mpAtlas->GetAllMaps();
     Map *pBiggerMap;
@@ -566,13 +561,13 @@ void System::SaveTrajectoryEuRoC(const string &filename) {
     }
     // cout << "end saving trajectory" << endl;
     f.close();
-    cout << endl
-         << "End of saving trajectory to " << filename << " ..." << endl;
+    VLOG(5) << endl
+            << "ORBSLAM3: End of saving trajectory to " << filename << " ...";
 }
 
 void System::SaveKeyFrameTrajectoryEuRoC(const string &filename) {
-    cout << endl
-         << "Saving keyframe trajectory to " << filename << " ..." << endl;
+    VLOG(5) << endl
+            << "ORBSLAM3: Saving keyframe trajectory to " << filename << " ...";
 
     vector<Map *> vpMaps = mpAtlas->GetAllMaps();
     Map *pBiggerMap;
@@ -620,14 +615,14 @@ void System::SaveKeyFrameTrajectoryEuRoC(const string &filename) {
         }
     }
     f.close();
-    cout << endl
-         << "End of saving keyframe trajectory to " << filename << " ..."
-         << endl;
+    VLOG(5) << endl
+            << "ORBSLAM3: End of saving keyframe trajectory to " << filename
+            << " ...";
 }
 
 void System::SaveTrajectoryKITTI(const string &filename) {
-    cout << endl
-         << "Saving camera trajectory to " << filename << " ..." << endl;
+    VLOG(5) << endl
+            << "ORBSLAM3: Saving camera trajectory to " << filename << " ...";
     if (mSensor == MONOCULAR) {
         cerr << "ERROR: SaveTrajectoryKITTI cannot be used for monocular."
              << endl;
@@ -818,7 +813,7 @@ bool System::PackAtlasToMemoryFor3DObject(
         *buffer_out = new char[buffer_out_len];
         ret = mpAtlas->WriteToMemoryFor3DObject(buffer_out_len, *buffer_out);
         if (!ret) {
-            std::cout << "write atlas error" << std::endl;
+            LOG(FATAL) << "write atlas to memory error!";
         }
     }
     return ret;

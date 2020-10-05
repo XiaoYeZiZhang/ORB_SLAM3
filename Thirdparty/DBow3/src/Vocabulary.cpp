@@ -1233,8 +1233,6 @@ namespace DBoW3{
             for(pit = children.begin(); pit != children.end(); pit++)
             {
                 const Node& child = m_nodes[*pit];
-                std::cout<<m_nodes[*pit].id<<" ";
-
                 // save node data
                 f << "{:";
                 f << "nodeId" << (int)child.id;
@@ -1250,7 +1248,6 @@ namespace DBoW3{
                 }
             }
         }
-        std::cout<<"\n";
 
         f << "]"; // nodes
 
@@ -1280,7 +1277,6 @@ namespace DBoW3{
         out_str.write((char*)&compressed,sizeof(compressed));
         uint32_t nnodes=m_nodes.size();
         out_str.write((char*)&nnodes,sizeof(nnodes));
-        std::cout << sig << "\n" << compressed << "\n" << nnodes << std::endl;
         if (nnodes==0)return;
         //save everything to a stream
         std::stringstream aux_stream;

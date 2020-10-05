@@ -410,7 +410,7 @@ bool Frame::ProjectPointDistort(
 
     // Check positive depth
     if (PcZ < 0.0f) {
-        cout << "Negative depth: " << PcZ << endl;
+        VLOG(5) << "ORBSLAM3: Negative depth: " << PcZ;
         return false;
     }
 

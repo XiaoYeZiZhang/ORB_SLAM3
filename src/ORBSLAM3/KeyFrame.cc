@@ -21,11 +21,11 @@
 
 #include "include/ORBSLAM3/KeyFrame.h"
 #include "include/ORBSLAM3/Converter.h"
-#include "include/ORBSLAM3/ORBmatcher.h"
 #include "include/ORBSLAM3/ImuTypes.h"
 #include <mutex>
 #include <opencv2/core/eigen.hpp>
 #include <include/CameraModels/Pinhole.h>
+#include <glog/logging.h>
 #include "ObjectRecognition/Utility/Tools.h"
 #include "ObjectRecognition/Utility/Camera.h"
 
@@ -312,7 +312,6 @@ vector<KeyFrame *> KeyFrame::GetCovisiblesByWeight(const int &w) {
         return vector<KeyFrame *>();
     } else {
         int n = it - mvOrderedWeights.begin();
-        // cout << "n = " << n << endl;
         return vector<KeyFrame *>(
             mvpOrderedConnectedKeyFrames.begin(),
             mvpOrderedConnectedKeyFrames.begin() + n);
@@ -454,13 +453,13 @@ void KeyFrame::UpdateConnections(bool upParent) {
     vector<pair<int, KeyFrame *>> vPairs;
     vPairs.reserve(KFcounter.size());
     if (!upParent)
-        cout << "UPDATE_CONN: current KF " << mnId << endl;
+        VLOG(5) << "ORBSLAM3: UPDATE_CONN: current KF " << mnId;
     for (map<KeyFrame *, int>::iterator mit = KFcounter.begin(),
                                         mend = KFcounter.end();
          mit != mend; mit++) {
         if (!upParent)
-            cout << "  UPDATE_CONN: KF " << mit->first->mnId
-                 << " ; num matches: " << mit->second << endl;
+            VLOG(5) << "  UPDATE_CONN: KF " << mit->first->mnId
+                    << " ; num matches: " << mit->second;
         if (mit->second > nmax) {
             nmax = mit->second;
             pKFmax = mit->first;
@@ -544,8 +543,8 @@ void KeyFrame::ChangeParent(KeyFrame *pKF) {
     //    if(!mpParent && mpParent != this)
     //        mpParent->EraseChild(this);
     if (pKF == this) {
-        cout << "ERROR: Change parent KF, the parent and child are the same KF"
-             << endl;
+        LOG(FATAL) << "ORBSLAM3 ERROR: Change parent KF, the parent and child "
+                      "are the same KF";
         throw std::invalid_argument("The parent and child can not be the same");
     }
 
@@ -614,14 +613,11 @@ void KeyFrame::SetErase() {
 }
 
 void KeyFrame::SetBadFlag() {
-    // std::cout << "Erasing KF..." << std::endl;
     {
         unique_lock<mutex> lock(mMutexConnections);
         if (mnId == mpMap->GetInitKFid()) {
-            // std::cout << "KF.BADFLAG-> KF 0!!" << std::endl;
             return;
         } else if (mbNotErase) {
-            // std::cout << "KF.BADFLAG-> mbNotErase!!" << std::endl;
             mbToBeErased = true;
             return;
         }
@@ -934,7 +930,9 @@ unsigned int KeyFrame::GetMemSizeFor3DObject() {
 void KeyFrame::WriteToMemoryFor3DObject(
     unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two,
     const Eigen::Matrix3d &Rgl2slam) {
+    VLOG(10) << "keyframe id: " << mnId;
     ObjRecognition::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
+
     ObjRecognition::PackORBFeatures(mvKeys, mDescriptors, mem_pos, mem);
 
     Eigen::Vector3d Tcw;
@@ -954,6 +952,10 @@ void KeyFrame::WriteToMemoryFor3DObject(
     Eigen::Vector3d tco = Rcw_gl * Two.block<3, 1>(0, 3) + Tcw;
 
     ObjRecognition::PackCamCWToMem(tco, Rco, mem_pos, mem);
+
+    VLOG(10) << "size: "
+             << ObjRecognition::CameraIntrinsic::GetInstance().Width() << " "
+             << ObjRecognition::CameraIntrinsic::GetInstance().Height();
     ObjRecognition::PutDataToMem(
         mem + mem_pos, imgLeft.data,
         sizeof(char) * ObjRecognition::CameraIntrinsic::GetInstance().Width() *
@@ -1150,7 +1152,7 @@ bool KeyFrame::ProjectPointDistort(
 
     // Check positive depth
     if (PcZ < 0.0f) {
-        cout << "Negative depth: " << PcZ << endl;
+        VLOG(5) << "ORBSLAM3: Negative depth: " << PcZ;
         return false;
     }
 
@@ -1212,7 +1214,7 @@ bool KeyFrame::ProjectPointUnDistort(
 
     // Check positive depth
     if (PcZ < 0.0f) {
-        cout << "Negative depth: " << PcZ << endl;
+        VLOG(5) << "ORBSLAM3: Negative depth: " << PcZ;
         return false;
     }
 

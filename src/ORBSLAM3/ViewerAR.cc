@@ -274,7 +274,7 @@ void ViewerAR::Run() {
                 m_is_stop = false;
                 m_boundingbox.Reset();
                 m_boundingbox.SetSize(menu_cubesize);
-                cout << "All cubes erased!" << endl;
+                VLOG(0) << "ORBSLAM3: All cubes erased!";
             }
             menu_clear = false;
         }
@@ -284,16 +284,16 @@ void ViewerAR::Run() {
             if (menu_insertcube) {
                 Plane *pPlane = DetectPlane(Tcw, vMPs, 50);
                 if (pPlane && vpPlane.empty()) {
-                    cout << "New virtual cube inserted!" << endl;
+                    VLOG(0) << "ORBSLAM3: New virtual cube inserted!";
                     vpPlane.push_back(pPlane);
                 } else if (!pPlane) {
-                    cout << "No plane detected. Point the m_camera to a planar "
-                            "region."
-                         << endl;
+                    VLOG(0) << "ORBSLAM3: No plane detected. Point the "
+                               "m_camera to a planar "
+                               "region.";
                 } else {
-                    cout << "there is alreay a plane here. Please click clear "
-                            "and insert another cube"
-                         << std::endl;
+                    VLOG(0) << "ORBSLAM3: There is alreay a plane here. Please "
+                               "click clear "
+                               "and insert another cube";
                 }
                 menu_insertcube = false;
             }
@@ -305,9 +305,9 @@ void ViewerAR::Run() {
             bool bRecompute = false;
             if (!bLocalizationMode) {
                 if (mpSystem->MapChanged()) {
-                    cout << "Map changed. All virtual elements are "
-                            "recomputed!"
-                         << endl;
+                    VLOG(0)
+                        << "ORBSLAM3: Map changed. All virtual elements are "
+                           "recomputed!";
                     bRecompute = true;
                 }
             }
@@ -322,12 +322,11 @@ void ViewerAR::Run() {
                     // get m_boundingbox in slam word coords:
                     ComputeAndSetBoundingbox(pPlane->glTpw);
                     m_is_fix = true;
+                    menu_fixcube = false;
                 }
                 if (menu_stop) {
-                    if (!m_is_fix) {
-                        LOG(FATAL) << "not set m_boundingbox" << std::endl;
-                    }
                     m_is_stop = true;
+                    menu_stop = false;
                     break;
                 }
                 if (bRecompute) {
@@ -971,7 +970,6 @@ Plane::Plane(
     const float a = atan2(s, c);
     Tpw = cv::Mat::eye(4, 4, CV_32F);
     const float rang = -3.14f / 2 + ((float)rand() / RAND_MAX) * 3.14f;
-    cout << rang;
     Tpw.rowRange(0, 3).colRange(0, 3) = ExpSO3(v * a / s) * ExpSO3(up * rang);
     o.copyTo(Tpw.col(3).rowRange(0, 3));
 

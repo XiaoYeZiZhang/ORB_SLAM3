@@ -56,7 +56,7 @@ void ObjRecongManager::Clear() {
 }
 
 int ObjRecongManager::Destroy() {
-    std::cout << "ObjRecong Manager Destroy" << std::endl;
+    VLOG(10) << "ObjRecong Manager Destroy";
     std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
     if (!IsInitializedState()) {
         return -1;
@@ -69,7 +69,7 @@ int ObjRecongManager::Destroy() {
 }
 
 int ObjRecongManager::Reset() {
-    std::cout << "ObjRecong Manager Reset" << std::endl;
+    VLOG(10) << "ObjRecong Manager Reset";
     std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
     if (!IsInitializedState()) {
         return -1;
@@ -83,6 +83,7 @@ int ObjRecongManager::CreateWithConfig() {
     std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
 
     if (IsInitializedState()) {
+        VLOG(0) << "ObjRecogManager isn't initialized";
         return -1;
     }
 
@@ -197,7 +198,6 @@ int ObjRecongManager::Init() {
     objrecog_thread_.SetVocabulary(voc_);
     objrecog_thread_.Init();
     objrecog_thread_.StartThread("ObjRecongManager", 0x10);
-
     return 0;
 }
 
@@ -251,7 +251,6 @@ int ObjRecongManager::Run(
 }
 
 ObjRecognition::ObjRecogResult ObjRecongManager::GetObjRecognitionResult() {
-
     double timestamp = 0;
     ObjRecognition::FrameIndex frmIndex = -1;
     ObjRecognition::ObjRecogState state =

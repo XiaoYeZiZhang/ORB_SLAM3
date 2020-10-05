@@ -172,13 +172,11 @@ Preintegrated::Preintegrated(Preintegrated *pImuPre)
 }
 
 void Preintegrated::CopyFrom(Preintegrated *pImuPre) {
-    std::cout << "Preintegrated: start clone" << std::endl;
     dT = pImuPre->dT;
     C = pImuPre->C.clone();
     Info = pImuPre->Info.clone();
     Nga = pImuPre->Nga.clone();
     NgaWalk = pImuPre->NgaWalk.clone();
-    std::cout << "Preintegrated: first clone" << std::endl;
     b.CopyFrom(pImuPre->b);
     dR = pImuPre->dR.clone();
     dV = pImuPre->dV.clone();
@@ -190,12 +188,9 @@ void Preintegrated::CopyFrom(Preintegrated *pImuPre) {
     JPa = pImuPre->JPa.clone();
     avgA = pImuPre->avgA.clone();
     avgW = pImuPre->avgW.clone();
-    std::cout << "Preintegrated: second clone" << std::endl;
     bu.CopyFrom(pImuPre->bu);
     db = pImuPre->db.clone();
-    std::cout << "Preintegrated: third clone" << std::endl;
     mvMeasurements = pImuPre->mvMeasurements;
-    std::cout << "Preintegrated: end clone" << std::endl;
 }
 
 void Preintegrated::Initialize(const Bias &b_) {

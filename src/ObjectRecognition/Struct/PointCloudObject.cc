@@ -57,9 +57,9 @@ bool MapPoint::Load(unsigned int &mem_pos, const char *mem) {
 
     GetDataFromMem(&mnVisible, ((mem) + mem_pos), sizeof(mnVisible), mem_pos);
     GetDataFromMem(&mnFound, ((mem) + mem_pos), sizeof(mnFound), mem_pos);
-    VLOG(0) << "MapPoint Data: " << mnId << ", " << m_multi_desps.size() << ", "
-            << m_reference_kf_ids.size() << ", " << mnVisible << ", "
-            << mnFound;
+    VLOG(20) << "MapPoint Data: " << mnId << ", " << m_multi_desps.size()
+             << ", " << m_reference_kf_ids.size() << ", " << mnVisible << ", "
+             << mnFound;
     return true;
 }
 
@@ -117,6 +117,7 @@ std::tuple<std::vector<cv::KeyPoint>, cv::Mat>
 UnpackORBFeatures(unsigned int &mem_cur, const char *mem) {
     unsigned int nKpts = 0;
     PutDataToMem(&(nKpts), mem + mem_cur, sizeof(nKpts), mem_cur);
+    VLOG(5) << "keyframe kpts: " << nKpts;
     if (nKpts == 0) {
         return std::forward_as_tuple(std::vector<cv::KeyPoint>(), cv::Mat());
     }
@@ -152,10 +153,12 @@ void UnPackCamCWFromMem(
     PutDataToMem(&(QR.y()), mem + mem_pos, sizeof(double), mem_pos);
     PutDataToMem(&(QR.z()), mem + mem_pos, sizeof(double), mem_pos);
     Rcw = QR;
+    VLOG(10) << "pose: " << QR.z();
 }
 
 void KeyFrame::ReadFromMemory(unsigned int &mem_pos, const char *mem) {
     PutDataToMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
+    VLOG(10) << "keyframe id: " << mnId;
     std::tie(mvKeypoints, mDescriptors) = UnpackORBFeatures(mem_pos, mem);
     // TODO(zhangye): check keyframe pose, Tcw under OPENGL?? need to change to
     // SLAM COords?
@@ -169,6 +172,9 @@ void KeyFrame::ReadFromMemory(unsigned int &mem_pos, const char *mem) {
     Rgl2slam(2, 1) = 1;
     mRcw = mRcw * Rgl2slam.transpose();*/
 
+    VLOG(10) << "size: "
+             << ObjRecognition::CameraIntrinsic::GetInstance().Width() << " "
+             << ObjRecognition::CameraIntrinsic::GetInstance().Height();
     {
         /// upload image ???
         int imgWidth = ObjRecognition::CameraIntrinsic::GetInstance().Width();
@@ -283,7 +289,7 @@ bool Object::LoadPointCloud(const int &mem_size, const char *mem) {
         }
     }
 
-    int keyFrameNum = 0;
+    unsigned int keyFrameNum = 0;
     GetDataFromMem(&keyFrameNum, mem + mem_pos, sizeof(keyFrameNum), mem_pos);
     VLOG(3) << "KeyFrame num: " << keyFrameNum;
     m_keyframes.reserve(keyFrameNum);

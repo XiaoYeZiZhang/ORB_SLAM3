@@ -4,8 +4,8 @@
 
 #ifndef ORB_SLAM3_OBJECTRECOGNITIONSYSTEM_H
 #define ORB_SLAM3_OBJECTRECOGNITIONSYSTEM_H
-#include "Tracker/PointCloudTracker.h"
-#include "Detector/PointCloudDetector.h"
+#include "Tracker/TrackerPointCloud.h"
+#include "Detector/DetectorPointCloud.h"
 #include "Struct/PointCloudObject.h"
 #include "Detector/DetectorThread.h"
 #include "Tracker/TrackerThread.h"

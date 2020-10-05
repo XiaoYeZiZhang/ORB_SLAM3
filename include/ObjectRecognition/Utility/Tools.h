@@ -4,6 +4,7 @@
 
 #ifndef ORB_SLAM3_TOOLS_H
 #define ORB_SLAM3_TOOLS_H
+#include <glog/logging.h>
 namespace ObjRecognition {
 template <class T1, class T2>
 static void PutDataToMem(
@@ -24,16 +25,18 @@ static void PackCamCWToMem(
     PutDataToMem(mem + mem_pos, &(QR.x()), sizeof(double), mem_pos);
     PutDataToMem(mem + mem_pos, &(QR.y()), sizeof(double), mem_pos);
     PutDataToMem(mem + mem_pos, &(QR.z()), sizeof(double), mem_pos);
+    VLOG(10) << "pose: " << QR.z();
 }
 
 static void PackORBFeatures(
     const std::vector<cv::KeyPoint> &vKpts, const cv::Mat &desp,
     unsigned int &mem_cur, char *mem) {
     unsigned int nKpts = vKpts.size();
+    VLOG(10) << "keyframe kpts: " << nKpts;
     PutDataToMem(mem + mem_cur, &(nKpts), sizeof(nKpts), mem_cur);
     if (nKpts == 0) {
-        std::cout << "error: PackORBFeatures: nKpts.size = 0, mem_cur = "
-                  << mem_cur;
+        LOG(FATAL) << "error: PackORBFeatures: nKpts.size = 0, mem_cur = "
+                   << mem_cur;
         return;
     }
 

@@ -502,17 +502,17 @@ void Optimizer::FullInertialBA(
                 if (!bInit) {
                     if (!VP1 || !VV1 || !VG1 || !VA1 || !VP2 || !VV2 || !VG2 ||
                         !VA2) {
-                        cout << "Error" << VP1 << ", " << VV1 << ", " << VG1
-                             << ", " << VA1 << ", " << VP2 << ", " << VV2
-                             << ", " << VG2 << ", " << VA2 << endl;
+                        VLOG(0) << "ORBSLAM3 Error" << VP1 << ", " << VV1
+                                << ", " << VG1 << ", " << VA1 << ", " << VP2
+                                << ", " << VV2 << ", " << VG2 << ", " << VA2;
 
                         continue;
                     }
                 } else {
                     if (!VP1 || !VV1 || !VG1 || !VA1 || !VP2 || !VV2) {
-                        cout << "Error" << VP1 << ", " << VV1 << ", " << VG1
-                             << ", " << VA1 << ", " << VP2 << ", " << VV2
-                             << endl;
+                        VLOG(0)
+                            << "ORBSLAM3 Error" << VP1 << ", " << VV1 << ", "
+                            << VG1 << ", " << VA1 << ", " << VP2 << ", " << VV2;
 
                         continue;
                     }
@@ -570,8 +570,8 @@ void Optimizer::FullInertialBA(
                     optimizer.addEdge(ear);
                 }
             } else {
-                cout << pKFi->mnId << " or " << pKFi->mPrevKF->mnId << " no imu"
-                     << endl;
+                VLOG(5) << "ORBSLAM3: " << pKFi->mnId << " or "
+                        << pKFi->mPrevKF->mnId << " no imu";
             }
         }
     }
@@ -5457,7 +5457,7 @@ void Optimizer::InertialOptimization(
     vpei.reserve(vpKFs.size());
     vector<pair<KeyFrame *, KeyFrame *>> vppUsedKF;
     vppUsedKF.reserve(vpKFs.size());
-    std::cout << "build optimization graph" << std::endl;
+    VLOG(5) << "ORBSLAM3: build optimization graph";
 
     for (size_t i = 0; i < vpKFs.size(); i++) {
         KeyFrame *pKFi = vpKFs[i];
@@ -5466,7 +5466,7 @@ void Optimizer::InertialOptimization(
             if (pKFi->isBad() || pKFi->mPrevKF->mnId > maxKFid)
                 continue;
             if (!pKFi->mpImuPreintegrated)
-                std::cout << "Not preintegrated measurement" << std::endl;
+                VLOG(5) << "ORBSLAM3: Not preintegrated measurement";
 
             pKFi->mpImuPreintegrated->SetNewBias(pKFi->mPrevKF->GetImuBias());
             g2o::HyperGraph::Vertex *VP1 =
@@ -5512,12 +5512,9 @@ void Optimizer::InertialOptimization(
     // Compute error for different scales
     std::set<g2o::HyperGraph::Edge *> setEdges = optimizer.edges();
 
-    std::cout << "start optimization" << std::endl;
     optimizer.setVerbose(false);
     optimizer.initializeOptimization();
     optimizer.optimize(its);
-
-    std::cout << "end optimization" << std::endl;
 
     scale = VS->estimate();
 
@@ -5537,7 +5534,7 @@ void Optimizer::InertialOptimization(
     cv::Mat cvbg = Converter::toCvMat(bg);
 
     // Keyframes velocities and biases
-    std::cout << "update Keyframes velocities and biases" << std::endl;
+    VLOG(5) << "ORBSLAM3: update Keyframes velocities and biases";
 
     const int N = vpKFs.size();
     for (size_t i = 0; i < N; i++) {

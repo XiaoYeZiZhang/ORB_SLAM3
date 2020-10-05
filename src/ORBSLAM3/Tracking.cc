@@ -63,15 +63,15 @@ Tracking::Tracking(
 
     bool b_parse_cam = ParseCamParamFile(fSettings);
     if (!b_parse_cam) {
-        std::cout << "*Error with the camera parameters in the config file*"
-                  << std::endl;
+        LOG(FATAL) << "ORBSLAM3: *Error with the camera parameters in the "
+                      "config file*";
     }
 
     // Load ORB parameters
     bool b_parse_orb = ParseORBParamFile(fSettings);
     if (!b_parse_orb) {
-        std::cout << "*Error with the ORB parameters in the config file*"
-                  << std::endl;
+        LOG(FATAL)
+            << "ORBSLAM3: *Error with the ORB parameters in the config file*";
     }
 
     initID = 0;
@@ -82,8 +82,8 @@ Tracking::Tracking(
     if (sensor == System::IMU_MONOCULAR) {
         b_parse_imu = ParseIMUParamFile(fSettings);
         if (!b_parse_imu) {
-            std::cout << "*Error with the IMU parameters in the config file*"
-                      << std::endl;
+            LOG(FATAL) << "ORBSLAM3: *Error with the IMU parameters in the "
+                          "config file*";
         }
 
         mnFramesToResetIMU = mMaxFrames;
@@ -279,19 +279,18 @@ bool Tracking::ParseCamParamFile(cv::FileStorage &fSettings) {
 
         mpAtlas->AddCamera(mpCamera);
 
-        std::cout << "- Camera: Pinhole" << std::endl;
-        std::cout << "- fx: " << fx << std::endl;
-        std::cout << "- fy: " << fy << std::endl;
-        std::cout << "- cx: " << cx << std::endl;
-        std::cout << "- cy: " << cy << std::endl;
-        std::cout << "- k1: " << mDistCoef.at<float>(0) << std::endl;
-        std::cout << "- k2: " << mDistCoef.at<float>(1) << std::endl;
-
-        std::cout << "- p1: " << mDistCoef.at<float>(2) << std::endl;
-        std::cout << "- p2: " << mDistCoef.at<float>(3) << std::endl;
+        VLOG(5) << "ORBSLAM3: - Camera: Pinhole\n"
+                << "- fx: " << fx << "\n"
+                << "- fy: " << fy << "\n"
+                << "- cx: " << cx << "\n"
+                << "- cy: " << cy << "\n"
+                << "- k1: " << mDistCoef.at<float>(0) << "\n"
+                << "- k2: " << mDistCoef.at<float>(1) << "\n"
+                << "- p1: " << mDistCoef.at<float>(2) << "\n"
+                << "- p2: " << mDistCoef.at<float>(3);
 
         if (mDistCoef.rows == 5)
-            std::cout << "- k3: " << mDistCoef.at<float>(4) << std::endl;
+            VLOG(5) << "ORBSLAM3: - k3: " << mDistCoef.at<float>(4);
 
         mK = cv::Mat::eye(3, 3, CV_32F);
         mK.at<float>(0, 0) = fx;
@@ -387,15 +386,16 @@ bool Tracking::ParseCamParamFile(cv::FileStorage &fSettings) {
             vector<float> vCamCalib{fx, fy, cx, cy, k1, k2, k3, k4};
             mpCamera = new KannalaBrandt8(vCamCalib);
 
-            std::cout << "- Camera: Fisheye" << std::endl;
-            std::cout << "- fx: " << fx << std::endl;
-            std::cout << "- fy: " << fy << std::endl;
-            std::cout << "- cx: " << cx << std::endl;
-            std::cout << "- cy: " << cy << std::endl;
-            std::cout << "- k1: " << k1 << std::endl;
-            std::cout << "- k2: " << k2 << std::endl;
-            std::cout << "- k3: " << k3 << std::endl;
-            std::cout << "- k4: " << k4 << std::endl;
+            VLOG(5) << "ORBSLAM3: - Camera: Fisheye"
+                    << "\n"
+                    << "- fx: " << fx << "\n"
+                    << "- fy: " << fy << "\n"
+                    << "- cx: " << cx << "\n"
+                    << "- cy: " << cy << "\n"
+                    << "- k1: " << k1 << "\n"
+                    << "- k2: " << k2 << "\n"
+                    << "- k3: " << k3 << "\n"
+                    << "- k4: " << k4;
 
             mK = cv::Mat::eye(3, 3, CV_32F);
             mK.at<float>(0, 0) = fx;
@@ -1293,7 +1293,7 @@ void Tracking::Track() {
 #endif
             }
             if (!bOK)
-                cout << "Fail to track local map!" << endl;
+                VLOG(0) << "ORBSLAM3: Fail to track local map!";
         } else {
             // mbVO true means that there are few matches to MapPoints in the
             // map. We cannot retrieve a local map and therefore we do not
@@ -1312,9 +1312,9 @@ void Tracking::Track() {
                     Verbose::VERBOSITY_NORMAL);
                 if (!pCurrentMap->isImuInitialized() ||
                     !pCurrentMap->GetIniertialBA2()) {
-                    cout << "IMU is not or recently initialized. Reseting "
-                            "active map..."
-                         << endl;
+                    VLOG(0) << "ORBSLAM3: IMU is not or recently initialized. "
+                               "Reseting "
+                               "active map...";
                     mpSystem->ResetActiveMap();
                 }
 
@@ -2838,7 +2838,7 @@ void Tracking::ResetActiveMap(bool bLocMap) {
     list<bool> lbLost;
     // lbLost.reserve(mlbLost.size());
     unsigned int index = mnFirstFrameId;
-    cout << "mnFirstFrameId = " << mnFirstFrameId << endl;
+    VLOG(0) << "ORBSLAM3: mnFirstFrameId = " << mnFirstFrameId;
     for (Map *pMap : mpAtlas->GetAllMaps()) {
         if (pMap->GetAllKeyFrames().size() > 0) {
             if (index > pMap->GetLowerKFID())
@@ -2848,7 +2848,7 @@ void Tracking::ResetActiveMap(bool bLocMap) {
 
     // cout << "First Frame id: " << index << endl;
     int num_lost = 0;
-    cout << "mnInitialFrameId = " << mnInitialFrameId << endl;
+    VLOG(5) << "ORBSLAM3: mnInitialFrameId = " << mnInitialFrameId;
 
     for (list<bool>::iterator ilbL = mlbLost.begin(); ilbL != mlbLost.end();
          ilbL++) {
@@ -2861,7 +2861,7 @@ void Tracking::ResetActiveMap(bool bLocMap) {
 
         index++;
     }
-    cout << num_lost << " Frames set to lost" << endl;
+    VLOG(5) << "ORBSLAM3: " << num_lost << " Frames set to lost" << endl;
 
     mlbLost = lbLost;
 

@@ -37,7 +37,7 @@ struct ScopeTimer
             case SEC:fact=1e9;str="s";break;
             };
 
-            std::cout << "Time ("<<name<<")= "<<double(std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count())/fact<<str<<std::endl; ;
+            //std::cout << "Time ("<<name<<")= "<<double(std::chrono::duration_cast<std::chrono::nanoseconds>(end-begin).count())/fact<<str<<std::endl; ;
         }
     }
 };
@@ -112,7 +112,7 @@ struct Timer{
         case MSEC:fact=1e6;str="ms";break;
         case SEC:fact=1e9;str="s";break;
         };
-        std::cout<<"Time("<<_name<<")= "<< ( sum/n)/fact<<str<<std::endl;
+        //std::cout<<"Time("<<_name<<")= "<< ( sum/n)/fact<<str<<std::endl;
     }
 
 };

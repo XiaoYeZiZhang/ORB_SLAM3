@@ -329,8 +329,8 @@ void GetMaskKeypointAndDesp(
         cv::Mat mask = cv::Mat::zeros(imageSrc.size(), CV_8UC1);
         mask(rect).setTo(255);
         image.copyTo(imageShow, mask);
-        cv::imshow("imageShow", imageShow);
-        cv::waitKey(1);
+        // cv::imshow("imageShow", imageShow);
+        // cv::waitKey(1);
 
         // extract keypoints
         cv::Ptr<cv::ORB> orb = cv::ORB::create(

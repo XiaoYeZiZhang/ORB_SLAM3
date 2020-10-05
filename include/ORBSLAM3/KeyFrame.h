@@ -628,8 +628,8 @@ public:
                     right++;
             }
         }
-        cout << "Point distribution in KeyFrame: left-> " << left
-             << " --- right-> " << right << endl;
+        VLOG(5) << "ORBSLAM3: Point distribution in KeyFrame: left-> " << left
+                << " --- right-> " << right;
     }
 };
 

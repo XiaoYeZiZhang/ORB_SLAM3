@@ -63,12 +63,10 @@ struct MapHandler3D : public pangolin::Handler3D {
 
         if (pangolin::MouseButtonRight == button) {
             if (button_state == 0) {
-                std::cout << "right button down" << std::endl;
                 m_right_button_pos.x() = x;
                 m_right_button_pos.y() = y;
                 m_is_right_button_down = true;
             } else if (button_state == 1) {
-                std::cout << "right button up" << std::endl;
                 m_is_right_button_down = false;
             }
         }
@@ -142,6 +140,9 @@ public:
     }
     bool GetFixFlag() {
         return m_is_fix;
+    }
+    void SetFixFlag(bool state) {
+        m_is_fix = state;
     }
 
     void ComputeAndSetBoundingbox(const pangolin::OpenGlMatrix &Twp_opengl);

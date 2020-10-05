@@ -56,21 +56,21 @@ Atlas::~Atlas() {
 
 void Atlas::CreateNewMap() {
     unique_lock<mutex> lock(mMutexAtlas);
-    cout << "Creation of new map with id: " << Map::nNextId << endl;
+    VLOG(5) << "ORBSLAM3: Creation of new map with id: " << Map::nNextId;
     if (mpCurrentMap) {
-        cout << "Exits current map " << endl;
+        VLOG(5) << "ORBSLAM3: Exits current map " << endl;
         if (!mspMaps.empty() && mnLastInitKFidMap < mpCurrentMap->GetMaxKFid())
             mnLastInitKFidMap = mpCurrentMap->GetMaxKFid() +
                                 1; // The init KF is the next of current maximum
 
         mpCurrentMap->SetStoredMap();
-        cout << "Saved map with ID: " << mpCurrentMap->GetId() << endl;
+        VLOG(5) << "ORBSLAM3: Saved map with ID: " << mpCurrentMap->GetId();
 
         // if(mHasViewer)
         //    mpViewer->AddMapToCreateThumbnail(mpCurrentMap);
     }
-    cout << "Creation of new map with last KF id: " << mnLastInitKFidMap
-         << endl;
+    VLOG(5) << "ORBSLAM3: Creation of new map with last KF id: "
+            << mnLastInitKFidMap;
 
     mpCurrentMap = new Map(mnLastInitKFidMap);
     mpCurrentMap->SetCurrentMap();
@@ -79,7 +79,7 @@ void Atlas::CreateNewMap() {
 
 void Atlas::ChangeMap(Map *pMap) {
     unique_lock<mutex> lock(mMutexAtlas);
-    cout << "Chage to map with id: " << pMap->GetId() << endl;
+    VLOG(5) << "ORBSLAM3: Chage to map with id: " << pMap->GetId();
     if (mpCurrentMap) {
         mpCurrentMap->SetStoredMap();
     }
@@ -297,7 +297,7 @@ unsigned int Atlas::GetMemSizeFor3DObject(const std::string &version) {
         // bounding box + scale
         nTotalSize += 27 * sizeof(double);
 
-        // std::cout << "getmemsize1" << nTotalSize << std::endl;
+        VLOG(10) << "getmemsize1" << nTotalSize;
         nTotalSize += sizeof(unsigned int);
         std::vector<Map *> saved_map;
         struct compFunctor {
@@ -320,7 +320,7 @@ unsigned int Atlas::GetMemSizeFor3DObject(const std::string &version) {
             }
         }
 
-        // std::cout << "getmemsize2" << nTotalSize << std::endl;
+        VLOG(10) << "getmemsize2" << nTotalSize;
         for (Map *pMi : saved_map) {
             for (KeyFrame *pKFi : pMi->GetAllKeyFrames()) {
                 m_saved_keyframe_for_3dobject_.emplace_back(pKFi);
@@ -331,7 +331,7 @@ unsigned int Atlas::GetMemSizeFor3DObject(const std::string &version) {
         for (auto &item : m_saved_keyframe_for_3dobject_) {
             nTotalSize += item->GetMemSizeFor3DObject();
         }
-        // std::cout << "getmemsize3" << nTotalSize << std::endl;
+        VLOG(10) << "getmemsize3" << nTotalSize;
     }
 
     return nTotalSize;
@@ -381,11 +381,14 @@ bool Atlas::WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem) {
     unsigned int nKFs = 0;
 
     std::set<GeometricCamera *> spCams(mvpCameras.begin(), mvpCameras.end());
-    cout << "There are " << spCams.size() << " cameras in the atlas" << endl;
+    VLOG(5) << "ORBSLAM3: There are " << spCams.size()
+            << " cameras in the atlas";
     nMPs = m_saved_mappoint_for_3dobject_.size();
     nKFs = m_saved_keyframe_for_3dobject_.size();
 
-    // std::cout << "writememsize1" << mem_pos << std::endl;
+    VLOG(10) << "write to memory for mappoints: " << nMPs;
+    VLOG(10) << "write to memory for keyframes: " << nKFs;
+    VLOG(10) << "writememsize1" << mem_pos;
     ObjRecognition::PutDataToMem(mem + mem_pos, &nMPs, sizeof(nMPs), mem_pos);
 
     // TODO(zhangye): check Two???
@@ -393,8 +396,8 @@ bool Atlas::WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem) {
     for (MapPoint *pMPi : m_saved_mappoint_for_3dobject_) {
         pMPi->WriteToMemoryFor3DObject(mem_pos, mem, m_object_Two);
     }
-    std::cout << "saved mappoint num: " << nMPs << std::endl;
-    // std::cout << "writememsize2" << mem_pos << std::endl;
+    VLOG(0) << "saved mappoint num: " << nMPs;
+    VLOG(10) << "writememsize2" << mem_pos;
 
     // keyframe size:
     ObjRecognition::PutDataToMem(mem + mem_pos, &nKFs, sizeof(nKFs), mem_pos);
@@ -408,7 +411,7 @@ bool Atlas::WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem) {
         pKFi->WriteToMemoryFor3DObject(mem_pos, mem, m_object_Two, Rgl2slam);
     }
 
-    // std::cout << "writememsize3" << mem_pos << std::endl;
+    VLOG(10) << "writememsize3" << mem_pos;
     return mem_pos == mem_size;
 }
 
@@ -429,14 +432,15 @@ void Atlas::PreSave() {
     sort(mvpBackupMaps.begin(), mvpBackupMaps.end(), compFunctor());
 
     std::set<GeometricCamera *> spCams(mvpCameras.begin(), mvpCameras.end());
-    cout << "There are " << spCams.size() << " cameras in the atlas" << endl;
+    VLOG(10) << "ORBSLAM3: There are " << spCams.size()
+             << " cameras in the atlas";
     for (Map *pMi : mvpBackupMaps) {
-        cout << "Pre-save of map " << pMi->GetId() << endl;
+        VLOG(10) << "ORBSLAM3: Pre-save of map " << pMi->GetId();
         pMi->PreSave(spCams);
     }
-    cout << "Maps stored" << endl;
+    VLOG(10) << "ORBSLAM3: Maps stored";
     for (GeometricCamera *pCam : mvpCameras) {
-        cout << "Pre-save of camera " << pCam->GetId() << endl;
+        VLOG(10) << "ORBSLAM3: Pre-save of camera " << pCam->GetId();
         if (pCam->GetType() == pCam->CAM_PINHOLE) {
             mvpBackupCamPin.push_back((Pinhole *)pCam);
         } else if (pCam->GetType() == pCam->CAM_FISHEYE) {
@@ -463,7 +467,7 @@ void Atlas::PostLoad() {
     unsigned long int numKF = 0, numMP = 0;
     map<long unsigned int, KeyFrame *> mpAllKeyFrameId;
     for (Map *pMi : mvpBackupMaps) {
-        cout << "Map id:" << pMi->GetId() << endl;
+        VLOG(10) << "ORBSLAM3: Map id:" << pMi->GetId();
         mspMaps.insert(pMi);
         map<long unsigned int, KeyFrame *> mpKeyFrameId;
         pMi->PostLoad(mpKeyFrameDB, mpORBVocabulary, mpKeyFrameId, mpCams);
@@ -472,7 +476,7 @@ void Atlas::PostLoad() {
         numMP += pMi->GetAllMapPoints().size();
     }
 
-    cout << "Number KF:" << numKF << "; number MP:" << numMP << endl;
+    VLOG(10) << "ORBSLAM3: Number KF:" << numKF << "; number MP:" << numMP;
     mvpBackupMaps.clear();
 }
 

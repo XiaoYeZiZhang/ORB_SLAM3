@@ -26,6 +26,7 @@
 
 #include <vector>
 
+#include <glog/logging.h>
 #include "Thirdparty/DBoW2/DBoW2/BowVector.h"
 #include "Thirdparty/DBoW2/DBoW2/FeatureVector.h"
 
@@ -330,8 +331,8 @@ public:
                     right++;
             }
         }
-        cout << "Point distribution in Frame: left-> " << left
-             << " --- right-> " << right << endl;
+        VLOG(5) << "ORBSLAM3: Point distribution in Frame: left-> " << left
+                << " --- right-> " << right;
     }
 };
 

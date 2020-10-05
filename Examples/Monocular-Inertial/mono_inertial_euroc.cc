@@ -204,8 +204,6 @@ int main(int argc, char *argv[]) {
                     t2 - t1)
                     .count();
             ttrack_tot += ttrack;
-            // std::cout << "ttrack: " << ttrack << std::endl;
-
             vTimesTrack[ni] = ttrack;
 
             // Wait to load the next frame
