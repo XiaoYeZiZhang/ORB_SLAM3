@@ -25,6 +25,7 @@
 #include "include/ORBSLAM3/Optimizer.h"
 #include "include/ORBSLAM3/Converter.h"
 #include "ORBSLAM3/FrameObjectProcess.h"
+#include "Visualizer/GlobalImageViewer.h"
 #include "mode.h"
 #include <mutex>
 #include <chrono>
@@ -297,8 +298,8 @@ void LocalMapping::Run() {
             // for objectRecognition
 #ifdef OBJECTRECOGNITION
             if (mpCurrentKeyFrame) {
-                // cv::imshow("keyframe: ", mpCurrentKeyFrame->imgLeft);
-                // cv::waitKey(9);
+                ObjRecognition::GlobalOcvViewer::UpdateView(
+                    "ORBSLAM3-KeyFrame", mpCurrentKeyFrame->imgLeft);
             }
 
             // objectRecognition callback

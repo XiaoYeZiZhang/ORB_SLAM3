@@ -49,6 +49,8 @@ private:
 
     void ShowDetectResult();
 
+    void DrawTextInfo(const cv::Mat &img, cv::Mat &img_txt);
+
 private:
     std::shared_ptr<Object> mObj;
     std::shared_ptr<DetectorFrame> m_frame_cur;

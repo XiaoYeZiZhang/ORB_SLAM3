@@ -28,11 +28,6 @@ GetTMatrix(const Eigen::Matrix3d &R, const Eigen::Vector3d &t);
 void DrawBox(
     cv::Mat &imgRGB, const Eigen::Isometry3f &T,
     const std::vector<Eigen::Vector3d> &pointBoxs);
-void ShowDetectResult(
-    const std::shared_ptr<ObjRecognition::FrameData> &frm,
-    const std::shared_ptr<Object> &mObj, const Eigen::Isometry3f &T,
-    const ObjRecogState &detectState,
-    const std::map<int, MapPointIndex> &matches2dTo3d);
 void GetMaskKeypointAndDesp(
     const cv::Mat &image,
     const std::shared_ptr<ObjRecognition::FrameData> &frm);

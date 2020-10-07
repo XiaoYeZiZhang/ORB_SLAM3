@@ -150,6 +150,8 @@ set(OBJECTRECOGNITION_FILES
         include/ObjectRecognition/Utility/Thread/TaskQueue.h
         include/ObjectRecognition/Utility/Thread/Thread.h
         include/ObjectRecognition/Utility/Thread/ThreadBase.h
+        include/ObjectRecognition/Visualizer/GlobalImageViewer.h
+        src/ObjectRecognition/Visualizer/GlobalImageViewer.cc
         src/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionManager.cc
         src/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionSystem.cc
         src/ObjectRecognition/Utility/Thread/MessageQueue.cc
@@ -326,7 +328,6 @@ ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 #add_executable(mono_kitti
 #Examples/Monocular/mono_kitti.cc)
 #target_link_libraries(mono_kitti ${PROJECT_NAME})
-#add_executable(mono_euroc
 #Examples/Monocular/mono_euroc.cc)
 #target_link_libraries(mono_euroc ${PROJECT_NAME})
 #add_executable(mono_tum_vi

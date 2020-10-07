@@ -312,50 +312,7 @@ void DrawBoundingBox(
     cv::line(showResult, boxProjResult[2], boxProjResult[6], color);
     cv::line(showResult, boxProjResult[3], boxProjResult[7], color);
 }
-// show boundingbox
-void ShowLastResultAndTrackResult(
-    const std::shared_ptr<ObjRecognition::FrameData> &frm,
-    const Eigen::Matrix3d &resultObjR, const Eigen::Vector3d &resultObjT,
-    const std::vector<Eigen::Vector3d> &mapPointBoundingBox,
-    const ObjRecogState &resultState, int flag) {
 
-#ifdef MOBILE_PLATFORM
-    return;
-#endif
-    Eigen::Matrix3d K = CameraIntrinsic::GetInstance().GetEigenK();
-
-    cv::Mat showResult;
-    cv::cvtColor(frm->img.clone(), showResult, cv::COLOR_GRAY2BGR);
-    // only show when trackingGood
-
-    std::vector<cv::Point2d> boxProjResult;
-    for (int i = 0; i < mapPointBoundingBox.size(); i++) {
-        Eigen::Vector3d p =
-            K * (resultObjR * mapPointBoundingBox[i] + resultObjT);
-        cv::Point2d pResult;
-        pResult.x = p(0) / p(2);
-        pResult.y = p(1) / p(2);
-        boxProjResult.emplace_back(pResult);
-    }
-
-    for (int i = 0; i < boxProjResult.size(); i++) {
-        if (i < 4)
-            cv::drawMarker(
-                showResult, boxProjResult[i], cv::Scalar(0, 255, 255));
-        else
-            cv::drawMarker(showResult, boxProjResult[i], cv::Scalar(0, 0, 255));
-    }
-
-    if (flag == 0) {
-        cv::Scalar color = cv::Scalar(224, 24, 255);
-        DrawBoundingBox(showResult, boxProjResult, color);
-    } else {
-        cv::Scalar color = cv::Scalar(0, 0, 0);
-        DrawBoundingBox(showResult, boxProjResult, color);
-    }
-
-    // GlobalOcvViewer::UpdateView("tracking result", showResult);
-}
 void ExtractKeyPointsAndDes(
     const std::shared_ptr<ObjRecognition::FrameData> &frm,
     std::vector<cv::KeyPoint> &imgKeyPoints, cv::Mat &imgDescriptor) {

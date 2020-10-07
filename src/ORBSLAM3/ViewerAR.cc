@@ -19,6 +19,7 @@
  * ORB-SLAM3. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Visualizer/GlobalImageViewer.h"
 #include "include/ORBSLAM3/ViewerAR.h"
 #include <opencv2/highgui/highgui.hpp>
 #include <mutex>
@@ -250,6 +251,8 @@ void ViewerAR::Run() {
         // Draw image
         if (menu_drawim)
             DrawImageTexture(imageTexture, im);
+
+        ObjRecognition::GlobalOcvViewer::DrawAllView();
 
         glClear(GL_DEPTH_BUFFER_BIT);
 

@@ -55,13 +55,6 @@ void DrawBoundingBox(
     const cv::Mat &showResult, std::vector<cv::Point2d> &boxProjResult,
     cv::Scalar &color);
 
-// show boundingbox
-void ShowLastResultAndTrackResult(
-    const std::shared_ptr<ObjRecognition::FrameData> &frm,
-    const Eigen::Matrix3d &resultObjR, const Eigen::Vector3d &resultObjT,
-    const std::vector<Eigen::Vector3d> &mapPointBoundingBox,
-    const ObjRecogState &resultState, int flag = 0);
-
 void ExtractKeyPointsAndDes(
     const std::shared_ptr<ObjRecognition::FrameData> &frm,
     std::vector<cv::KeyPoint> &imgKeyPoints, cv::Mat &imgDescriptor);

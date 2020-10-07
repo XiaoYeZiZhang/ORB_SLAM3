@@ -49,6 +49,7 @@ private:
     void ShowOpticalFlowpoints(
         const std::vector<cv::Point2d> &opticalFlowKeyPointsPre);
     void ShowTrackResultAndInliers();
+    void DrawTextInfo(const cv::Mat &img, cv::Mat &img_txt);
 
 private:
     std::shared_ptr<Object> mObj;

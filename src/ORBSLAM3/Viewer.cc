@@ -19,10 +19,10 @@
  * ORB-SLAM3. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "include/ORBSLAM3/Viewer.h"
 #include <pangolin/pangolin.h>
-
 #include <mutex>
+#include "Visualizer/GlobalImageViewer.h"
+#include "include/ORBSLAM3/Viewer.h"
 
 namespace ORB_SLAM3 {
 
@@ -337,18 +337,8 @@ void Viewer::Run() {
 
         pangolin::FinishFrame();
 
-        cv::Mat toShow;
-        cv::Mat im = mpFrameDrawer->DrawFrame(true);
-
-        if (both) {
-            cv::Mat imRight = mpFrameDrawer->DrawRightFrame();
-            cv::hconcat(im, imRight, toShow);
-        } else {
-            toShow = im;
-        }
-
-        cv::imshow("ORB-SLAM3: Current Frame", toShow);
-        cv::waitKey(mT);
+        mpFrameDrawer->DrawFrame(true);
+        ObjRecognition::GlobalOcvViewer::DrawAllView();
 
         if (menuReset) {
             menuShowGraph = true;

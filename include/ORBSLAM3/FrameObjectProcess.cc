@@ -4,6 +4,7 @@
 #include "FrameObjectProcess.h"
 #include "glog/logging.h"
 #include "QuickHull.h"
+#include "Visualizer/GlobalImageViewer.h"
 
 namespace ORB_SLAM3 {
 
@@ -15,6 +16,7 @@ FrameObjectProcess::FrameObjectProcess() {
     m_orb_detector->setScoreType(cv::ORB::FAST_SCORE);
     m_orb_detector->setFastThreshold(
         Parameters::GetInstance().KORBExtractor_fastThreathold);
+    m_obj_corner_points = std::vector<Eigen::Vector3d>();
 }
 
 static bool InBorder(
@@ -113,6 +115,10 @@ void FrameObjectProcess::ProcessFrame(ORB_SLAM3::KeyFrame *&pKF) {
         LOG(FATAL) << "keyframe to process is null";
     }
 
+    if (m_obj_corner_points.empty()) {
+        return;
+    }
+
     cv::Mat img = pKF->imgLeft.clone();
     Eigen::Matrix3d Rcw;
     Eigen::Vector3d tcw;
@@ -145,17 +151,29 @@ void FrameObjectProcess::ProcessFrame(ORB_SLAM3::KeyFrame *&pKF) {
             << ", object detect orb feature "
             << static_cast<int>(keypoints_new.size());
 
-    /*
     std::string featureInfo = std::string("2d feature num: ");
-    featureInfo += std::to_string(keypoints_new.size());
+    featureInfo += std::to_string(keypoints_new.size()) + " ";
     cv::Mat show = img.clone();
     cv::cvtColor(show, show, CV_GRAY2BGR);
     cv::drawKeypoints(show, keypoints_new, show);
+
+    cv::Mat img_txt;
+    std::stringstream s;
+    s << featureInfo;
+    int baseline = 0;
+    cv::Size textSize =
+        cv::getTextSize(s.str(), cv::FONT_HERSHEY_PLAIN, 1, 1, &baseline);
+    img_txt = cv::Mat(show.rows + textSize.height + 10, show.cols, show.type());
+    show.copyTo(img_txt.rowRange(0, show.rows).colRange(0, show.cols));
+    img_txt.rowRange(show.rows, img_txt.rows) =
+        cv::Mat::zeros(textSize.height + 10, show.cols, show.type());
     cv::putText(
-        show, featureInfo, cv::Point(10, 20), cv::FONT_HERSHEY_COMPLEX, 0.5,
-        cv::Scalar(255, 0, 0));
-    cv::imshow("keypoints new:", show);
-    */
+        img_txt, s.str(), cv::Point(5, img_txt.rows - 5),
+        cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 255, 255), 1, 8);
+
+    VLOG(0) << "here!!!!!!!!!!!!!!!!!!!";
+    ObjRecognition::GlobalOcvViewer::UpdateView(
+        "New Keypoints to Extract:", img_txt);
 
     // TODO(zhangye): keys and keysun???
     std::vector<cv::KeyPoint> keypoints_old = pKF->mvKeys;

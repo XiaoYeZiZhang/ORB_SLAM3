@@ -30,7 +30,6 @@ private:
     FrameObjectProcess(const FrameObjectProcess &);
     FrameObjectProcess &operator=(const FrameObjectProcess &);
     std::vector<Eigen::Vector3d> m_obj_corner_points;
-
     cv::Ptr<cv::ORB> m_orb_detector;
 }; // class FrameObjectProcess
 

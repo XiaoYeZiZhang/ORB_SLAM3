@@ -278,45 +278,6 @@ void DrawBox(
     drawMarker(imgRGB, point2fXxyxzx, cvScalar(255, 255, 0));
 }
 
-void ShowDetectResult(
-    const std::shared_ptr<ObjRecognition::FrameData> &frm,
-    const std::shared_ptr<Object> &mObj, const Eigen::Isometry3f &T,
-    const ObjRecogState &detectState,
-    const std::map<int, MapPointIndex> &matches2dTo3d) {
-#ifdef MOBILE_PLATFORM
-    return;
-#endif
-    cv::Mat imgRGB = frm->img.clone();
-    const std::vector<MapPoint::Ptr> pointClouds = mObj->GetPointClouds();
-    const std::vector<cv::KeyPoint> keyPoints = frm->mKpts;
-    std::vector<Eigen::Vector3d> pointBoxs; // the 8 point of box
-    pointBoxs.resize(8);
-
-    const cv::Mat &cameraMatrix = CameraIntrinsic::GetInstance().GetCVK();
-    std::vector<cv::Point3f> point3f;
-    std::vector<cv::Point2f> point2f;
-    std::vector<cv::Point2f> imagePoint2f;
-    cv::Point2f tempPoint2f;
-    Eigen::Vector3f tempPoint3f;
-    Eigen::Vector3f tempCameraPoint3f;
-
-    if (detectState == DetectionGood) {
-        ObjDetectionCommon::GetBoxPoint(mObj, pointBoxs);
-        DrawBox(imgRGB, T, pointBoxs);
-    }
-    std::vector<cv::KeyPoint> keyPointsShow;
-    std::vector<MapPointIndex> mapPointId;
-
-    for (auto iter = matches2dTo3d.begin(); iter != matches2dTo3d.end();
-         iter++) {
-        keyPointsShow.emplace_back(keyPoints[iter->first]);
-        mapPointId.emplace_back(iter->second);
-    }
-    drawKeypoints(imgRGB, keyPointsShow, imgRGB, cv::Scalar(0, 0, 255));
-    // GlobalPointCloudMatchViewer::SetMatchedMapPoint(mapPointId);
-    // GlobalOcvViewer::UpdateView("ObjDetectorResult", imgRGB);
-}
-
 void GetMaskKeypointAndDesp(
     const cv::Mat &image,
     const std::shared_ptr<ObjRecognition::FrameData> &frm) {

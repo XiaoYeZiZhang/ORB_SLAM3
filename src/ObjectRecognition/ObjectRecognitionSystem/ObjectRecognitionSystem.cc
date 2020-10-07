@@ -5,6 +5,7 @@
 #include <cv.hpp>
 #include <iomanip>
 #include "Utility/Thread/ThreadBase.h"
+#include "Visualizer/GlobalImageViewer.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionSystem.h"
 #include "Utility/FeatureExtractor/ORBExtractor.h"
 namespace ObjRecognition {
@@ -218,8 +219,8 @@ int ObjRecogThread::Process() {
         cur_frame->mTcw(i) = platformFrame->t[i];
     }
 
-    // cv::imshow("frame for detector and tracker", cur_frame->img);
-    // cv::waitKey(10);
+    GlobalOcvViewer::UpdateView(
+        "Frame for Detector and Tracker", cur_frame->img);
     detector_thread_.PushData(cur_frame);
     tracker_thread_.PushData(cur_frame);
     ret = 0;

@@ -19,13 +19,12 @@
  * ORB-SLAM3. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "include/ORBSLAM3/FrameDrawer.h"
-#include "include/ORBSLAM3/Tracking.h"
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-
 #include <mutex>
+#include "Visualizer/GlobalImageViewer.h"
+#include "include/ORBSLAM3/FrameDrawer.h"
+#include "include/ORBSLAM3/Tracking.h"
 
 namespace ORB_SLAM3 {
 
@@ -35,7 +34,7 @@ FrameDrawer::FrameDrawer(Atlas *pAtlas) : both(false), mpAtlas(pAtlas) {
     mImRight = cv::Mat(480, 640, CV_8UC3, cv::Scalar(0, 0, 0));
 }
 
-cv::Mat FrameDrawer::DrawFrame(bool bOldFeatures) {
+void FrameDrawer::DrawFrame(bool bOldFeatures) {
     // std::cout << "0" << std::endl;
     cv::Mat im;
     vector<cv::KeyPoint>
@@ -254,7 +253,8 @@ cv::Mat FrameDrawer::DrawFrame(bool bOldFeatures) {
     cv::Mat imWithInfo;
     DrawTextInfo(im, state, imWithInfo);
 
-    return imWithInfo;
+    ObjRecognition::GlobalOcvViewer::UpdateView(
+        "ORB-SLAM3: Current Frame", imWithInfo);
 }
 
 cv::Mat FrameDrawer::DrawRightFrame() {

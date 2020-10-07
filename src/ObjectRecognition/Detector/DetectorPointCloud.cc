@@ -3,6 +3,7 @@
 //
 #include <glog/logging.h>
 #include <cv.hpp>
+#include "Visualizer/GlobalImageViewer.h"
 #include "ObjectRecognition/Utility/Utility.h"
 #include "Detector/DetectorCommon.h"
 #include "Utility/Camera.h"
@@ -425,11 +426,42 @@ void PointCloudObjDetector::PnPResultHandle() {
     }
 }
 
-void PointCloudObjDetector::ShowDetectResult() {
-#ifdef MOBILE_PLATFORM
-    return;
-#endif
+void PointCloudObjDetector::DrawTextInfo(const cv::Mat &img, cv::Mat &img_txt) {
+    std::string matchTxt = "keyPoints 3dmatch num:" +
+                           std::to_string(m_frame_cur->m_matches_3d.size()) +
+                           "| ";
+    std::string inlierTxt =
+        "keyPoints 3dinliers num: " +
+        std::to_string(m_frame_cur->m_matches2dto3d_inliers.size()) + "| ";
+    std::string detectionStateString;
+    if (detect_state_ == DetectionGood) {
+        detectionStateString = "Good";
 
+    } else if (detect_state_ == DetectionUnreliable) {
+        detectionStateString = "Unreliable";
+    } else {
+        detectionStateString = "Bad";
+    }
+
+    std::stringstream s;
+    s << matchTxt;
+    s << inlierTxt;
+    s << detectionStateString;
+
+    int baseline = 0;
+    cv::Size textSize =
+        cv::getTextSize(s.str(), cv::FONT_HERSHEY_PLAIN, 1, 1, &baseline);
+
+    img_txt = cv::Mat(img.rows + textSize.height + 10, img.cols, img.type());
+    img.copyTo(img_txt.rowRange(0, img.rows).colRange(0, img.cols));
+    img_txt.rowRange(img.rows, img_txt.rows) =
+        cv::Mat::zeros(textSize.height + 10, img.cols, img.type());
+    cv::putText(
+        img_txt, s.str(), cv::Point(5, img_txt.rows - 5),
+        cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 255, 255), 1, 8);
+}
+
+void PointCloudObjDetector::ShowDetectResult() {
     const Eigen::Isometry3f T =
         ObjDetectionCommon::GetTMatrix(Rco_cur_, tco_cur_);
     cv::Mat imgRGB = m_frame_cur->m_raw_image.clone();
@@ -454,30 +486,6 @@ void PointCloudObjDetector::ShowDetectResult() {
         ObjDetectionCommon::DrawBox(imgRGB, T, pointBoxs);
     }
 
-    std::string matchTxt = "keyPoints 3dmatch num:" +
-                           std::to_string(m_frame_cur->m_matches_3d.size());
-    std::string inlierTxt =
-        "keyPoints 3dinliers num: " +
-        std::to_string(m_frame_cur->m_matches2dto3d_inliers.size());
-    cv::putText(
-        imgRGB, matchTxt, cv::Point(10, 10), cv::FONT_HERSHEY_SIMPLEX, 0.5,
-        cv::Scalar(0, 0, 0), 1, 1, 0);
-    cv::putText(
-        imgRGB, inlierTxt, cv::Point(10, 30), cv::FONT_HERSHEY_SIMPLEX, 0.5,
-        cv::Scalar(0, 0, 0), 1, 1, 0);
-
-    std::string detectionStateString;
-    if (detect_state_ == DetectionGood) {
-        detectionStateString = "DetectionGood";
-
-    } else if (detect_state_ == DetectionUnreliable) {
-        detectionStateString = "DetectionUnreliable";
-    } else {
-        detectionStateString = "DetectionBad";
-    }
-    cv::putText(
-        imgRGB, detectionStateString, cv::Point(10, 50),
-        cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0), 1, 1, 0);
     std::vector<cv::KeyPoint> matcheskeyPointsShow;
     std::vector<MapPointIndex> mapPointId;
 
@@ -493,10 +501,13 @@ void PointCloudObjDetector::ShowDetectResult() {
          iter != m_frame_cur->m_matches2dto3d_inliers.end(); iter++) {
         matcheskeyPointsInliersShow.emplace_back(keyPoints[iter->first]);
     }
+
     drawKeypoints(
         imgRGB, matcheskeyPointsInliersShow, imgRGB, cv::Scalar(0, 255, 255));
-    // GlobalPointCloudMatchViewer::SetMatchedMapPoint(mapPointId);
-    // GlobalOcvViewer::UpdateView("ObjDetectorResult", imgRGB);
+    GlobalPointCloudMatchViewer::SetMatchedMapPoint(mapPointId);
+    cv::Mat img_text;
+    DrawTextInfo(imgRGB, img_text);
+    GlobalOcvViewer::UpdateView("Detector Result", img_text);
 }
 
 // detect algorithm start
