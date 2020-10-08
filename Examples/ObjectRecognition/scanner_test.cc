@@ -22,6 +22,7 @@ public:
     bool SaveMappointFor3DObject(const std::string save_path);
     void SetBondingBox(std::vector<Eigen::Vector3d> boundingbox);
     std::vector<Eigen::Vector3d> GetBoundingbox();
+
 private:
     void LoadImages(
         const string &strImagePath, const string &strPathTimes,
@@ -49,7 +50,6 @@ private:
     cv::Mat K;
     cv::Mat DistCoef;
     std::vector<Eigen::Vector3d> m_boundingbox;
-
 };
 
 void TestViewer::SetBondingBox(std::vector<Eigen::Vector3d> boundingbox) {
@@ -67,7 +67,7 @@ bool TestViewer::SaveMappointFor3DObject(const std::string save_path) {
     SLAM->SetBoundingbox(m_boundingbox);
 
     bool save_result = SLAM->PackAtlasToMemoryFor3DObject(&buffer, buffer_size);
-    if(save_result) {
+    if (save_result) {
         std::ofstream out(save_path, std::ios::out | std::ios::binary);
         if (out.is_open()) {
             out.write(buffer, buffer_size);
@@ -97,7 +97,7 @@ void TestViewer::LoadImages(
             stringstream ss;
             ss << s;
             /*mydata*/
-            //vstrImages.push_back(strImagePath + "/" + ss.str());
+            // vstrImages.push_back(strImagePath + "/" + ss.str());
             /*euroc data*/
             vstrImages.push_back(strImagePath + "/" + ss.str() + ".png");
 
@@ -138,9 +138,9 @@ void TestViewer::LoadIMU(
             data[6] = stod(item);
 
             /* mydata*/
-            //vTimeStamps.push_back(data[0]);
+            // vTimeStamps.push_back(data[0]);
             /*euroc data*/
-            vTimeStamps.push_back(data[0]/1e9);
+            vTimeStamps.push_back(data[0] / 1e9);
             vAcc.push_back(cv::Point3f(data[4], data[5], data[6]));
             vGyro.push_back(cv::Point3f(data[1], data[2], data[3]));
         }
@@ -154,7 +154,8 @@ bool TestViewer::InitSLAM(char **argv) {
     // Load all sequences:
     int tot_images = 0;
 
-    VLOG(0) << "Loading images " << "...";
+    VLOG(0) << "Loading images "
+            << "...";
 
     string pathSeq(argv[3]);
     string pathTimeStamps(argv[4]);
@@ -167,12 +168,11 @@ bool TestViewer::InitSLAM(char **argv) {
     string pathCam0 = pathSeq + "/cam0/data";
     string pathImu = pathSeq + "/imu0/data.csv";
 
-    LoadImages(
-        pathCam0, pathTimeStamps, vstrImageFilenames,
-        vTimestampsCam);
+    LoadImages(pathCam0, pathTimeStamps, vstrImageFilenames, vTimestampsCam);
     VLOG(0) << "LOADED!";
 
-    VLOG(0) << "Loading IMU " << "...";
+    VLOG(0) << "Loading IMU "
+            << "...";
     LoadIMU(pathImu, vTimestampsImu, vAcc, vGyro);
     VLOG(0) << "LOADED!";
 
@@ -224,20 +224,18 @@ bool TestViewer::InitSLAM(char **argv) {
     cout << "Augmented Reality Demo" << endl;
     cout << "1) Translate the camera to initialize SLAM." << endl;
     cout << "2) Look at a planar region and translate the camera." << endl;
-    cout << "3) Press Insert Cube to place a virtual cube in the plane. " << endl;
-    cout << endl;
-    cout << "You can place several cubes in different planes." << endl;
-    cout << "-----------------------" << endl;
-    cout << endl;*/
+    cout << "3) Press Insert Cube to place a virtual cube in the plane. " <<
+    endl; cout << endl; cout << "You can place several cubes in different
+    planes." << endl; cout << "-----------------------" << endl; cout << endl;*/
 
     return true;
 }
 
 // click boundingbox fix button:
-//1. get the boundingbox
-//2. setboundingbox
-//3. run slam and extract more orb features
-//4. save mappoint
+// 1. get the boundingbox
+// 2. setboundingbox
+// 3. run slam and extract more orb features
+// 4. save mappoint
 bool TestViewer::RunScanner(char **argv) {
     viewerAR.SetSLAM(SLAM);
     cv::FileStorage fSettings(argv[2], cv::FileStorage::READ);
@@ -250,158 +248,148 @@ bool TestViewer::RunScanner(char **argv) {
     float cx = fSettings["Camera.cx"];
     float cy = fSettings["Camera.cy"];
 
-    viewerAR.SetCameraCalibration(fx,fy,cx,cy);
+    viewerAR.SetCameraCalibration(fx, fy, cx, cy);
 
-    K = cv::Mat::eye(3,3,CV_32F);
-    K.at<float>(0,0) = fx;
-    K.at<float>(1,1) = fy;
-    K.at<float>(0,2) = cx;
-    K.at<float>(1,2) = cy;
+    K = cv::Mat::eye(3, 3, CV_32F);
+    K.at<float>(0, 0) = fx;
+    K.at<float>(1, 1) = fy;
+    K.at<float>(0, 2) = cx;
+    K.at<float>(1, 2) = cy;
 
-    DistCoef = cv::Mat::zeros(4,1,CV_32F);
+    DistCoef = cv::Mat::zeros(4, 1, CV_32F);
     DistCoef.at<float>(0) = fSettings["Camera.k1"];
     DistCoef.at<float>(1) = fSettings["Camera.k2"];
     DistCoef.at<float>(2) = fSettings["Camera.p1"];
     DistCoef.at<float>(3) = fSettings["Camera.p2"];
     const float k3 = fSettings["Camera.k3"];
-    if(k3!=0)
-    {
+    if (k3 != 0) {
         DistCoef.resize(5);
         DistCoef.at<float>(4) = k3;
     }
 
-    thread tViewer = thread(&ORB_SLAM3::ViewerAR::Run,&viewerAR);
+    thread tViewer = thread(&ORB_SLAM3::ViewerAR::Run, &viewerAR);
 
-
-        // Main loop
-        cv::Mat im;
-        vector<ORB_SLAM3::IMU::Point> vImuMeas;
-        int proccIm = 0;
-        //nImages = 20;
-        for (int ni = 0; ni < nImages; ni++, proccIm++) {
-            if(viewerAR.GetFixFlag()) {
-                // get boundingbox in slam word coords
-                std::vector<Eigen::Vector3d> boundingbox_slam_coords = viewerAR.GetBoundingbox();
-                if(boundingbox_slam_coords.empty()) {
-                    LOG(FATAL) << "error in save boundingbox";
-                }
-
-                VLOG(0) << "boundingbox coords: \n";
-                for(auto coords: boundingbox_slam_coords) {
-                    VLOG(0) << coords;
-                }
-
-                // obstract more keypoihts
-                ORB_SLAM3::FrameObjectProcess::GetInstance()->SetBoundingBox(boundingbox_slam_coords);
-                SetBondingBox(boundingbox_slam_coords);
-                viewerAR.SetFixFlag(false);
+    // Main loop
+    cv::Mat im;
+    vector<ORB_SLAM3::IMU::Point> vImuMeas;
+    int proccIm = 0;
+    // nImages = 20;
+    for (int ni = 0; ni < nImages; ni++, proccIm++) {
+        if (viewerAR.GetFixFlag()) {
+            // get boundingbox in slam word coords
+            std::vector<Eigen::Vector3d> boundingbox_slam_coords =
+                viewerAR.GetBoundingbox();
+            if (boundingbox_slam_coords.empty()) {
+                LOG(FATAL) << "error in save boundingbox";
             }
 
-            if(viewerAR.GetStopFlag()) {
-                break;
-            }
-            while (true) {
-                if (!viewerAR.GetDebugFlag()) {
-                    break;
-                }
-                usleep(1 * 1e6); // 1e6
+            VLOG(0) << "boundingbox coords: \n";
+            for (auto coords : boundingbox_slam_coords) {
+                VLOG(0) << coords;
             }
 
-            // Read image from file
-            im = cv::imread(
-                vstrImageFilenames[ni], CV_LOAD_IMAGE_UNCHANGED);
-
-            double tframe = vTimestampsCam[ni];
-
-            if (im.empty()) {
-                cerr << endl
-                     << "Failed to load image at: "
-                     << vstrImageFilenames[ni] << endl;
-                return false;
-            }
-
-            // Load imu measurements from previous frame
-            vImuMeas.clear();
-
-            if (ni > 0) {
-                // cout << "t_cam " << tframe << endl;
-
-                while (vTimestampsImu[first_imu] <=
-                       vTimestampsCam[ni]) {
-                    vImuMeas.push_back(ORB_SLAM3::IMU::Point(
-                        vAcc[first_imu].x,
-                        vAcc[first_imu].y,
-                        vAcc[first_imu].z,
-                        vGyro[first_imu].x,
-                        vGyro[first_imu].y,
-                        vGyro[first_imu].z,
-                        vTimestampsImu[first_imu]));
-                    first_imu++;
-                }
-            }
-
-            /*cout << "first imu: " << first_imu << endl;
-            cout << "first imu time: " << fixed << vTimestampsImu[first_imu] <<
-            endl; cout << "size vImu: " << vImuMeas.size() << endl;*/
-#ifdef COMPILEDWITHC11
-            std::chrono::steady_clock::time_point t1 =
-                std::chrono::steady_clock::now();
-#else
-            std::chrono::monotonic_clock::time_point t1 =
-                std::chrono::monotonic_clock::now();
-#endif
-
-            cv::Mat Tcw = SLAM->TrackMonocular(
-                im, tframe, vImuMeas); // TODO change to monocular_inertial
-
-            cv::Mat im_clone = im.clone();
-            cv::Mat imu;
-            int state = SLAM->GetTrackingState();
-            vector<ORB_SLAM3::MapPoint*> vMPs = SLAM->GetTrackedMapPoints();
-            vector<cv::KeyPoint> vKeys = SLAM->GetTrackedKeyPointsUn();
-            cv::undistort(im_clone,imu,K,DistCoef);
-            if(bRGB)
-                viewerAR.SetImagePose(imu,Tcw,state,vKeys,vMPs);
-            else
-            {
-                cv::cvtColor(imu,imu,CV_RGB2BGR);
-                viewerAR.SetImagePose(imu,Tcw,state,vKeys,vMPs);
-            }
-
-
-#ifdef COMPILEDWITHC11
-            std::chrono::steady_clock::time_point t2 =
-                std::chrono::steady_clock::now();
-#else
-            std::chrono::monotonic_clock::time_point t2 =
-                std::chrono::monotonic_clock::now();
-#endif
-
-            double ttrack =
-                std::chrono::duration_cast<std::chrono::duration<double>>(
-                    t2 - t1)
-                    .count();
-            ttrack_tot += ttrack;
-            vTimesTrack[ni] = ttrack;
-
-            // Wait to load the next frame
-            double T = 0;
-            if (ni < nImages - 1)
-                T = vTimestampsCam[ni + 1] - tframe;
-            else if (ni > 0)
-                T = tframe - vTimestampsCam[ni - 1];
-
-            if (ttrack < T)
-                usleep((T - ttrack) * 1e6); // 1e6
+            // obstract more keypoihts
+            ORB_SLAM3::FrameObjectProcess::GetInstance()->SetBoundingBox(
+                boundingbox_slam_coords);
+            SetBondingBox(boundingbox_slam_coords);
+            viewerAR.SetFixFlag(false);
         }
 
+        if (viewerAR.GetStopFlag()) {
+            break;
+        }
+        while (true) {
+            if (!viewerAR.GetDebugFlag()) {
+                break;
+            }
+            usleep(1 * 1e6); // 1e6
+        }
 
+        // Read image from file
+        im = cv::imread(vstrImageFilenames[ni], CV_LOAD_IMAGE_UNCHANGED);
+
+        double tframe = vTimestampsCam[ni];
+
+        if (im.empty()) {
+            cerr << endl
+                 << "Failed to load image at: " << vstrImageFilenames[ni]
+                 << endl;
+            return false;
+        }
+
+        // Load imu measurements from previous frame
+        vImuMeas.clear();
+
+        if (ni > 0) {
+            // cout << "t_cam " << tframe << endl;
+
+            while (vTimestampsImu[first_imu] <= vTimestampsCam[ni]) {
+                vImuMeas.push_back(ORB_SLAM3::IMU::Point(
+                    vAcc[first_imu].x, vAcc[first_imu].y, vAcc[first_imu].z,
+                    vGyro[first_imu].x, vGyro[first_imu].y, vGyro[first_imu].z,
+                    vTimestampsImu[first_imu]));
+                first_imu++;
+            }
+        }
+
+        /*cout << "first imu: " << first_imu << endl;
+        cout << "first imu time: " << fixed << vTimestampsImu[first_imu] <<
+        endl; cout << "size vImu: " << vImuMeas.size() << endl;*/
+#ifdef COMPILEDWITHC11
+        std::chrono::steady_clock::time_point t1 =
+            std::chrono::steady_clock::now();
+#else
+        std::chrono::monotonic_clock::time_point t1 =
+            std::chrono::monotonic_clock::now();
+#endif
+
+        cv::Mat Tcw = SLAM->TrackMonocular(
+            im, tframe, vImuMeas); // TODO change to monocular_inertial
+
+        cv::Mat im_clone = im.clone();
+        cv::Mat imu;
+        int state = SLAM->GetTrackingState();
+        vector<ORB_SLAM3::MapPoint *> vMPs = SLAM->GetTrackedMapPoints();
+        vector<cv::KeyPoint> vKeys = SLAM->GetTrackedKeyPointsUn();
+        cv::undistort(im_clone, imu, K, DistCoef);
+        if (bRGB)
+            viewerAR.SetImagePose(imu, Tcw, state, vKeys, vMPs);
+        else {
+            cv::cvtColor(imu, imu, CV_RGB2BGR);
+            viewerAR.SetImagePose(imu, Tcw, state, vKeys, vMPs);
+        }
+
+#ifdef COMPILEDWITHC11
+        std::chrono::steady_clock::time_point t2 =
+            std::chrono::steady_clock::now();
+#else
+        std::chrono::monotonic_clock::time_point t2 =
+            std::chrono::monotonic_clock::now();
+#endif
+
+        double ttrack =
+            std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1)
+                .count();
+        ttrack_tot += ttrack;
+        vTimesTrack[ni] = ttrack;
+
+        // Wait to load the next frame
+        double T = 0;
+        if (ni < nImages - 1)
+            T = vTimestampsCam[ni + 1] - tframe;
+        else if (ni > 0)
+            T = tframe - vTimestampsCam[ni - 1];
+
+        if (ttrack < T)
+            usleep((T - ttrack) * 1e6); // 1e6
+    }
 
     // Stop all threads
     SLAM->Shutdown();
 
-    std::string mappoint_save_path = "/home/zhangye/data/ObjectRecognition/shoe.bin";
-    if(SaveMappointFor3DObject(mappoint_save_path)) {
+    std::string mappoint_save_path =
+        "/home/zhangye/data/ObjectRecognition/shoe.bin";
+    if (SaveMappointFor3DObject(mappoint_save_path)) {
         VLOG(0) << "save mappoint for 3dobject success!";
     }
 
@@ -428,7 +416,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-
     FLAGS_alsologtostderr = 1;
     google::InitGoogleLogging(argv[0]);
     google::ParseCommandLineFlags(&argc, &argv, true);
@@ -439,7 +426,7 @@ int main(int argc, char *argv[]) {
 
     bool initial_slam_result = testViewer.InitSLAM(argv);
 
-    if(!initial_slam_result) {
+    if (!initial_slam_result) {
         LOG(FATAL) << "slam initialize fail!";
         return 0;
     }

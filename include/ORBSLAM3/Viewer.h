@@ -27,6 +27,8 @@
 #include "Tracking.h"
 #include "System.h"
 #include <mutex>
+#include <utility>
+#include "ScannerStruct/Struct.h"
 #include "Struct/PointCloudObject.h"
 namespace ORB_SLAM3 {
 
@@ -59,15 +61,28 @@ public:
     void Release();
 
     void SetTrackingPause();
-
     void SetPointCloudModel(
         std::shared_ptr<ObjRecognition::Object> &pointCloud_model) {
         m_pointCloud_model = pointCloud_model;
     }
-
     bool both;
-
     void SetObjectRecognitionPose(Eigen::Matrix3d Row, Eigen::Vector3d tow);
+
+    // draw another window for objRecognition
+    void SwitchWindow();
+    void Draw();
+    void LoadCameraPose(const cv::Mat &Tcw);
+    void DrawImageTexture(pangolin::GlTexture &imageTexture, cv::Mat &im);
+    void SetFrame(cv::Mat img) {
+        unique_lock<mutex> lock(mMutexPoseImage);
+        img_from_objRecognition = img.clone();
+    }
+    cv::Mat GetFrame() {
+        unique_lock<mutex> lock(mMutexPoseImage);
+        return img_from_objRecognition.clone();
+    }
+    void DrawSLAMInit();
+    void DrawObjRecognitionInit();
 
 private:
     bool ParseViewerParamFile(cv::FileStorage &fSettings);
@@ -102,6 +117,31 @@ private:
     Eigen::Matrix<double, 3, 3> m_Row = Eigen::Matrix<double, 3, 3>::Identity();
     Eigen::Matrix<double, 3, 1> m_tow = Eigen::Matrix<double, 3, 1>::Zero();
     std::vector<cv::Mat> m_trajectory;
+
+    // draw another window for objRecognition
+    bool switch_window_flag;
+    pangolin::OpenGlRenderState s_cam_slam;
+    pangolin::View d_cam_slam;
+    pangolin::OpenGlRenderState s_cam_objRecognition;
+    pangolin::View d_cam_objRecognition;
+
+    Camera m_camera;
+    cv::Mat img_from_objRecognition;
+    std::mutex mMutexPoseImage;
+    std::unique_ptr<pangolin::Var<bool>> menuFollowCamera;
+    std::unique_ptr<pangolin::Var<bool>> menuCamView;
+    std::unique_ptr<pangolin::Var<bool>> menuTopView;
+    std::unique_ptr<pangolin::Var<bool>> menuShowPoints;
+    std::unique_ptr<pangolin::Var<bool>> menuShowKeyFrames;
+    std::unique_ptr<pangolin::Var<bool>> menuShowGraph;
+    std::unique_ptr<pangolin::Var<bool>> menuShowCameraTrajectory;
+    std::unique_ptr<pangolin::Var<bool>> menuShow3DObject;
+    std::unique_ptr<pangolin::Var<bool>> menuShowInertialGraph;
+    std::unique_ptr<pangolin::Var<bool>> menuLocalizationMode;
+    std::unique_ptr<pangolin::Var<bool>> menuReset;
+    std::unique_ptr<pangolin::Var<bool>> menuStepByStep; // false, true
+    std::unique_ptr<pangolin::Var<bool>> menuStep;
+    std::unique_ptr<pangolin::Var<bool>> menuStop;
 };
 
 } // namespace ORB_SLAM3

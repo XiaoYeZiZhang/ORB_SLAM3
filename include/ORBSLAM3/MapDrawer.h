@@ -45,6 +45,8 @@ public:
     void SetCurrentCameraPose(const cv::Mat &Tcw);
     void DrawCameraTrajectory(const std::vector<cv::Mat> &trajectory);
     void GetCurrentCameraPos(cv::Mat &cam_pos);
+    void
+    GetCurrentCameraPose(cv::Mat &cam_Rwc, cv::Mat &cam_twc, cv::Mat &cam_Tcw);
     void SetReferenceKeyFrame(KeyFrame *pKF);
     void GetCurrentOpenGLCameraMatrix(
         pangolin::OpenGlMatrix &M, pangolin::OpenGlMatrix &MOw);

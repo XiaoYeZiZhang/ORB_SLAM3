@@ -449,6 +449,20 @@ void MapDrawer::GetCurrentCameraPos(cv::Mat &cam_pos) {
     }
 }
 
+void MapDrawer::GetCurrentCameraPose(
+    cv::Mat &cam_Rwc, cv::Mat &cam_twc, cv::Mat &cam_Tcw) {
+    if (!mCameraPose.empty()) {
+        cam_Rwc = cv::Mat(3, 3, CV_32F);
+        cam_twc = cv::Mat(3, 1, CV_32F);
+        {
+            unique_lock<mutex> lock(mMutexCamera);
+            cam_Rwc = mCameraPose.rowRange(0, 3).colRange(0, 3).t();
+            cam_twc = -cam_Rwc * mCameraPose.rowRange(0, 3).col(3);
+        }
+        cam_Tcw = mCameraPose;
+    }
+}
+
 void MapDrawer::GetCurrentOpenGLCameraMatrix(
     pangolin::OpenGlMatrix &M, pangolin::OpenGlMatrix &MOw) {
     if (!mCameraPose.empty()) {

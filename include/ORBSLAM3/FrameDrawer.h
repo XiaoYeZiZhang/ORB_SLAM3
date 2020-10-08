@@ -40,7 +40,6 @@ class Viewer;
 class FrameDrawer {
 public:
     FrameDrawer(Atlas *pAtlas);
-
     // Update info from the last processed frame.
     void Update(Tracking *pTracker);
 
