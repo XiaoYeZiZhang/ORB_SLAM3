@@ -25,6 +25,7 @@
 #include <mutex>
 #include <cstdlib>
 #include "ORBSLAM3/ScannerStruct/Struct.h"
+#include "ORBSLAM3/ViewerCommon.h"
 #include <glm/gtc/type_ptr.hpp>
 using namespace std;
 
@@ -384,115 +385,6 @@ void ViewerAR::GetImagePose(
     vMPs = mvMPs;
 }
 
-void ViewerAR::LoadCameraPose(const cv::Mat &Tcw) {
-    if (!Tcw.empty()) {
-        pangolin::OpenGlMatrix M;
-
-        M.m[0] = Tcw.at<float>(0, 0);
-        M.m[1] = Tcw.at<float>(1, 0);
-        M.m[2] = Tcw.at<float>(2, 0);
-        M.m[3] = 0.0;
-
-        M.m[4] = Tcw.at<float>(0, 1);
-        M.m[5] = Tcw.at<float>(1, 1);
-        M.m[6] = Tcw.at<float>(2, 1);
-        M.m[7] = 0.0;
-
-        M.m[8] = Tcw.at<float>(0, 2);
-        M.m[9] = Tcw.at<float>(1, 2);
-        M.m[10] = Tcw.at<float>(2, 2);
-        M.m[11] = 0.0;
-
-        M.m[12] = Tcw.at<float>(0, 3);
-        M.m[13] = Tcw.at<float>(1, 3);
-        M.m[14] = Tcw.at<float>(2, 3);
-        M.m[15] = 1.0;
-
-        M.Load();
-    }
-}
-
-void ViewerAR::PrintStatus(
-    const int &status, const bool &bLocMode, cv::Mat &im) {
-    if (!bLocMode) {
-        switch (status) {
-        case 1: {
-            AddTextToImage("SLAM NOT INITIALIZED", im, 255, 0, 0);
-            break;
-        }
-        case 2: {
-            AddTextToImage("SLAM ON", im, 0, 255, 0);
-            break;
-        }
-        case 3: {
-            AddTextToImage("SLAM LOST", im, 255, 0, 0);
-            break;
-        }
-        }
-    } else {
-        switch (status) {
-        case 1: {
-            AddTextToImage("SLAM NOT INITIALIZED", im, 255, 0, 0);
-            break;
-        }
-        case 2: {
-            AddTextToImage("LOCALIZATION ON", im, 0, 255, 0);
-            break;
-        }
-        case 3: {
-            AddTextToImage("LOCALIZATION LOST", im, 255, 0, 0);
-            break;
-        }
-        }
-    }
-}
-
-void ViewerAR::AddTextToImage(
-    const string &s, cv::Mat &im, const int r, const int g, const int b) {
-    int l = 10;
-    // imText.rowRange(im.rows-imText.rows,imText.rows) =
-    // cv::Mat::zeros(textSize.height+10,im.cols,im.type());
-    cv::putText(
-        im, s, cv::Point(l, im.rows - l), cv::FONT_HERSHEY_PLAIN, 1.5,
-        cv::Scalar(255, 255, 255), 2, 8);
-    cv::putText(
-        im, s, cv::Point(l - 1, im.rows - l), cv::FONT_HERSHEY_PLAIN, 1.5,
-        cv::Scalar(255, 255, 255), 2, 8);
-    cv::putText(
-        im, s, cv::Point(l + 1, im.rows - l), cv::FONT_HERSHEY_PLAIN, 1.5,
-        cv::Scalar(255, 255, 255), 2, 8);
-    cv::putText(
-        im, s, cv::Point(l - 1, im.rows - (l - 1)), cv::FONT_HERSHEY_PLAIN, 1.5,
-        cv::Scalar(255, 255, 255), 2, 8);
-    cv::putText(
-        im, s, cv::Point(l, im.rows - (l - 1)), cv::FONT_HERSHEY_PLAIN, 1.5,
-        cv::Scalar(255, 255, 255), 2, 8);
-    cv::putText(
-        im, s, cv::Point(l + 1, im.rows - (l - 1)), cv::FONT_HERSHEY_PLAIN, 1.5,
-        cv::Scalar(255, 255, 255), 2, 8);
-    cv::putText(
-        im, s, cv::Point(l - 1, im.rows - (l + 1)), cv::FONT_HERSHEY_PLAIN, 1.5,
-        cv::Scalar(255, 255, 255), 2, 8);
-    cv::putText(
-        im, s, cv::Point(l, im.rows - (l + 1)), cv::FONT_HERSHEY_PLAIN, 1.5,
-        cv::Scalar(255, 255, 255), 2, 8);
-    cv::putText(
-        im, s, cv::Point(l + 1, im.rows - (l + 1)), cv::FONT_HERSHEY_PLAIN, 1.5,
-        cv::Scalar(255, 255, 255), 2, 8);
-
-    cv::putText(
-        im, s, cv::Point(l, im.rows - l), cv::FONT_HERSHEY_PLAIN, 1.5,
-        cv::Scalar(r, g, b), 2, 8);
-}
-
-void ViewerAR::DrawImageTexture(
-    pangolin::GlTexture &imageTexture, cv::Mat &im) {
-    if (!im.empty()) {
-        imageTexture.Upload(im.data, GL_RGB, GL_UNSIGNED_BYTE);
-        imageTexture.RenderToViewportFlipY();
-    }
-}
-
 Eigen::Vector3d ViewerAR::GetRay(
     const Eigen::Matrix4d &transformationMatrix,
     const Eigen::Matrix4d &projectionMatrix) {
@@ -697,7 +589,6 @@ Eigen::Vector3d ViewerAR::Change2PlaneCoords(
     Eigen::Matrix4d Twp = Change2EigenMatrix(Plane_wp);
     // WARNING: maybe some numerical problem
     Eigen::Matrix4d Tpw = Twp.inverse();
-
     if (is_point) {
         Pw_4 << world_coords[0], world_coords[1], world_coords[2], 1.0f;
         Pp_4 = Tpw * Pw_4;

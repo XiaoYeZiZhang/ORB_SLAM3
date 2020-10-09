@@ -276,10 +276,11 @@ ObjRecognition::ObjRecogResult ObjRecongManager::GetObjRecognitionResult() {
 
     Rco = R_camera * Rwo;
     tco = R_camera * two + t_camera;
+    // TODO(zhangye): check the coords
     Rslam2gl(0, 0) = 1;
     Rslam2gl(1, 2) = -1;
     Rslam2gl(2, 1) = 1;
-    Rco = Rco * Rslam2gl;
+    // Rco = Rco * Rslam2gl;
 
     Row = Rco.transpose() * (R_camera); // world -> obj
     tow = Rco.transpose() * (t_camera - tco);
@@ -359,6 +360,13 @@ ObjRecognition::ObjRecogResult ObjRecongManager::GetObjRecognitionResult() {
     objrecog_result.info_length = info_buffer_length_;
     objrecog_result.info = info_buffer_;
 
+    std::vector<Eigen::Vector3d> pointCloud_pos;
+    for (auto pointcloud : object_->GetPointClouds()) {
+        pointCloud_pos.emplace_back(pointcloud->GetPose());
+    }
+
+    objrecog_result.pointCloud_pos.clear();
+    objrecog_result.pointCloud_pos = pointCloud_pos;
     return objrecog_result;
 }
 
@@ -384,6 +392,7 @@ int ObjRecongManager::SetObjRecongInfo() {
 
     return ret;
 }
+
 char *ObjRecongManager::GetVersion() {
     //    std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
     return version_buffer;

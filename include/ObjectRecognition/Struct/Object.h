@@ -92,6 +92,8 @@ typedef struct ObjRecogResult {
 
     int info_length;
     const char *info;
+
+    std::vector<Eigen::Vector3d> pointCloud_pos;
 } ObjRecogResult;
 
 class ObjectBase {

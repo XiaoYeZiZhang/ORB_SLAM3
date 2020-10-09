@@ -174,13 +174,6 @@ public:
 private:
     // SLAM
     ORB_SLAM3::System *mpSystem;
-
-    void PrintStatus(const int &status, const bool &bLocMode, cv::Mat &im);
-    void AddTextToImage(
-        const std::string &s, cv::Mat &im, const int r = 0, const int g = 0,
-        const int b = 0);
-    void LoadCameraPose(const cv::Mat &Tcw);
-    void DrawImageTexture(pangolin::GlTexture &imageTexture, cv::Mat &im);
     void DrawCube(const float x = 0, const float y = 0, const float z = 0);
     void DrawPlane(int ndivs, float ndivsize);
     void DrawPlane(Plane *pPlane, int ndivs, float ndivsize);

@@ -71,18 +71,14 @@ public:
     // draw another window for objRecognition
     void SwitchWindow();
     void Draw();
-    void LoadCameraPose(const cv::Mat &Tcw);
-    void DrawImageTexture(pangolin::GlTexture &imageTexture, cv::Mat &im);
-    void SetFrame(cv::Mat img) {
-        unique_lock<mutex> lock(mMutexPoseImage);
-        img_from_objRecognition = img.clone();
-    }
-    cv::Mat GetFrame() {
-        unique_lock<mutex> lock(mMutexPoseImage);
-        return img_from_objRecognition.clone();
-    }
+    void SetFrameAndState(const cv::Mat &img, const int &state);
+    void GetFrameAndState(cv::Mat &img, int &state);
+
     void DrawSLAMInit();
     void DrawObjRecognitionInit();
+    void DrawBoundingboxInImage(const vector<Eigen::Vector3d> &boundingbox);
+    void
+    DrawPointCloudInImage(const std::vector<Eigen::Vector3d> &pointcloud_pos);
 
 private:
     bool ParseViewerParamFile(cv::FileStorage &fSettings);
@@ -127,6 +123,7 @@ private:
 
     Camera m_camera;
     cv::Mat img_from_objRecognition;
+    int state_from_objRecognition;
     std::mutex mMutexPoseImage;
     std::unique_ptr<pangolin::Var<bool>> menuFollowCamera;
     std::unique_ptr<pangolin::Var<bool>> menuCamView;

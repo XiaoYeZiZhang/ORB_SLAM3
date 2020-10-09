@@ -390,7 +390,7 @@ bool TestViewer::RunObjectRecognition(char **argv) {
             return false;
         }
 
-        // Load imu measurements from previous frame
+        // Load un_im measurements from previous frame
         vImuMeas.clear();
 
         if (ni > 0) {
@@ -405,8 +405,8 @@ bool TestViewer::RunObjectRecognition(char **argv) {
             }
         }
 
-        /*cout << "first imu: " << first_imu << endl;
-        cout << "first imu time: " << fixed << vTimestampsImu[first_imu] <<
+        /*cout << "first un_im: " << first_imu << endl;
+        cout << "first un_im time: " << fixed << vTimestampsImu[first_imu] <<
         endl; cout << "size vImu: " << vImuMeas.size() << endl;*/
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t1 =
@@ -422,14 +422,14 @@ bool TestViewer::RunObjectRecognition(char **argv) {
             im, tframe, vImuMeas); // TODO change to monocular_inertial
 
         cv::Mat im_clone = im.clone();
-        cv::Mat imu;
+        cv::Mat un_im;
         int state = SLAM->GetTrackingState();
-        cv::undistort(im_clone, imu, K, DistCoef);
+        cv::undistort(im_clone, un_im, K, DistCoef);
         if (bRGB)
-            SLAM->mpViewer->SetFrame(imu);
+            SLAM->mpViewer->SetFrameAndState(un_im, state);
         else {
-            cv::cvtColor(imu, imu, CV_RGB2BGR);
-            SLAM->mpViewer->SetFrame(imu);
+            cv::cvtColor(un_im, un_im, CV_RGB2BGR);
+            SLAM->mpViewer->SetFrameAndState(un_im, state);
         }
 
 #ifdef COMPILEDWITHC11

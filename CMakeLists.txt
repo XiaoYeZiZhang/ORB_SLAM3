@@ -97,6 +97,8 @@ set (ORBSLAM3_FILES
         src/CameraModels/KannalaBrandt8.cpp
         src/ORBSLAM3/OptimizableTypes.cpp
         src/ORBSLAM3/MLPnPsolver.cpp
+        src/ORBSLAM3/ViewerCommon.cc
+        include/ORBSLAM3/ViewerCommon.h
         include/ORBSLAM3/ScannerStruct/Struct.h
         include/ORBSLAM3/System.h
         include/ORBSLAM3/Tracking.h

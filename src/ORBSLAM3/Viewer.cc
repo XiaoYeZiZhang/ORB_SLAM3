@@ -22,8 +22,8 @@
 #include <pangolin/pangolin.h>
 #include <mutex>
 #include "Visualizer/GlobalImageViewer.h"
-#include "include/ORBSLAM3/Viewer.h"
-
+#include "ORBSLAM3/Viewer.h"
+#include "ORBSLAM3/ViewerCommon.h"
 namespace ORB_SLAM3 {
 
 Viewer::Viewer(
@@ -120,45 +120,10 @@ bool Viewer::ParseViewerParamFile(cv::FileStorage &fSettings) {
     return !b_miss_params;
 }
 
-void Viewer::LoadCameraPose(const cv::Mat &Tcw) {
-    if (!Tcw.empty()) {
-        pangolin::OpenGlMatrix M;
-
-        M.m[0] = Tcw.at<float>(0, 0);
-        M.m[1] = Tcw.at<float>(1, 0);
-        M.m[2] = Tcw.at<float>(2, 0);
-        M.m[3] = 0.0;
-
-        M.m[4] = Tcw.at<float>(0, 1);
-        M.m[5] = Tcw.at<float>(1, 1);
-        M.m[6] = Tcw.at<float>(2, 1);
-        M.m[7] = 0.0;
-
-        M.m[8] = Tcw.at<float>(0, 2);
-        M.m[9] = Tcw.at<float>(1, 2);
-        M.m[10] = Tcw.at<float>(2, 2);
-        M.m[11] = 0.0;
-
-        M.m[12] = Tcw.at<float>(0, 3);
-        M.m[13] = Tcw.at<float>(1, 3);
-        M.m[14] = Tcw.at<float>(2, 3);
-        M.m[15] = 1.0;
-
-        M.Load();
-    }
-}
-
 void Viewer::SetObjectRecognitionPose(
     Eigen::Matrix3d Row, Eigen::Vector3d tow) {
     m_Row = Row;
     m_tow = tow;
-}
-
-void Viewer::DrawImageTexture(pangolin::GlTexture &imageTexture, cv::Mat &im) {
-    if (!im.empty()) {
-        imageTexture.Upload(im.data, GL_RGB, GL_UNSIGNED_BYTE);
-        imageTexture.RenderToViewportFlipY();
-    }
 }
 
 void Viewer::DrawObjRecognitionInit() {
@@ -221,6 +186,69 @@ void Viewer::DrawSLAMInit() {
     d_cam_slam.show = false;
 }
 
+void Viewer::DrawBoundingboxInImage(
+    const vector<Eigen::Vector3d> &boundingbox) {
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glPointSize(4.0);
+    glBegin(GL_LINES);
+
+    Eigen::Vector3d point0 = boundingbox[0];
+    Eigen::Vector3d point1 = boundingbox[1];
+    Eigen::Vector3d point2 = boundingbox[2];
+    Eigen::Vector3d point3 = boundingbox[3];
+    Eigen::Vector3d point4 = boundingbox[4];
+    Eigen::Vector3d point5 = boundingbox[5];
+    Eigen::Vector3d point6 = boundingbox[6];
+    Eigen::Vector3d point7 = boundingbox[7];
+
+    glVertex3d(point0.x(), point0.y(), point0.z());
+    glVertex3d(point1.x(), point1.y(), point1.z());
+
+    glVertex3d(point5.x(), point5.y(), point5.z());
+    glVertex3d(point1.x(), point1.y(), point1.z());
+
+    glVertex3d(point5.x(), point5.y(), point5.z());
+    glVertex3d(point4.x(), point4.y(), point4.z());
+
+    glVertex3d(point0.x(), point0.y(), point0.z());
+    glVertex3d(point4.x(), point4.y(), point4.z());
+
+    glVertex3d(point2.x(), point2.y(), point2.z());
+    glVertex3d(point3.x(), point3.y(), point3.z());
+
+    glVertex3d(point3.x(), point3.y(), point3.z());
+    glVertex3d(point7.x(), point7.y(), point7.z());
+
+    glVertex3d(point7.x(), point7.y(), point7.z());
+    glVertex3d(point6.x(), point6.y(), point6.z());
+
+    glVertex3d(point6.x(), point6.y(), point6.z());
+    glVertex3d(point2.x(), point2.y(), point2.z());
+
+    glVertex3d(point6.x(), point6.y(), point6.z());
+    glVertex3d(point4.x(), point4.y(), point4.z());
+
+    glVertex3d(point7.x(), point7.y(), point7.z());
+    glVertex3d(point5.x(), point5.y(), point5.z());
+
+    glVertex3d(point3.x(), point3.y(), point3.z());
+    glVertex3d(point1.x(), point1.y(), point1.z());
+
+    glVertex3d(point0.x(), point0.y(), point0.z());
+    glVertex3d(point2.x(), point2.y(), point2.z());
+    glEnd();
+}
+
+void Viewer::DrawPointCloudInImage(
+    const std::vector<Eigen::Vector3d> &pointcloud_pos) {
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glBegin(GL_POINTS);
+    for (auto pos : pointcloud_pos) {
+        glVertex3f(pos.x(), pos.y(), pos.z());
+    }
+    glEnd();
+}
+
 void Viewer::Draw() {
     mbFinished = false;
     mbStopped = false;
@@ -250,17 +278,32 @@ void Viewer::Draw() {
     // for objrecognition
     int w = ObjRecognition::CameraIntrinsic::GetInstance().Width();
     int h = ObjRecognition::CameraIntrinsic::GetInstance().Height();
-    float fx =ObjRecognition::CameraIntrinsic::GetInstance().FX();
+    float fx = ObjRecognition::CameraIntrinsic::GetInstance().FX();
     float fy = ObjRecognition::CameraIntrinsic::GetInstance().FY();
     float cx = ObjRecognition::CameraIntrinsic::GetInstance().CX();
     float cy = ObjRecognition::CameraIntrinsic::GetInstance().CY();
+    pangolin::GlTexture imageTexture(
+        w, h, GL_RGB, false, 0, GL_RGB, GL_UNSIGNED_BYTE);
+    pangolin::OpenGlMatrixSpec P = pangolin::ProjectionMatrixRDF_TopLeft(
+        w, h, fx, fy, cx, cy, 0.001, 1000);
     cv::Mat im;
     int status;
 
-
-
     while (1) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if (*menuStepByStep && !bStepByStep) {
+            mpTracker->SetStepByStep(true);
+            bStepByStep = true;
+        } else if (!(*menuStepByStep) && bStepByStep) {
+            mpTracker->SetStepByStep(false);
+            bStepByStep = false;
+        }
+
+        if (*menuStep) {
+            mpTracker->mbStep = true;
+            *menuStep = false;
+        }
+
         if (!switch_window_flag) {
             d_cam_slam.show = true;
             mpMapDrawer->GetCurrentOpenGLCameraMatrix(Twc, Ow, Twwp);
@@ -341,19 +384,6 @@ void Viewer::Draw() {
                 bLocalizationMode = false;
             }
 
-            if (*menuStepByStep && !bStepByStep) {
-                mpTracker->SetStepByStep(true);
-                bStepByStep = true;
-            } else if (!(*menuStepByStep) && bStepByStep) {
-                mpTracker->SetStepByStep(false);
-                bStepByStep = false;
-            }
-
-            if (*menuStep) {
-                mpTracker->mbStep = true;
-                *menuStep = false;
-            }
-
             d_cam_slam.Activate(s_cam_slam);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             pangolin::glDrawAxis(0.6f);
@@ -398,75 +428,7 @@ void Viewer::Draw() {
                 SetFinish();
                 mpSystem->Shutdown();
             }
-        } else {
-            // draw for objectRecognition:
 
-            d_cam_objRecognition.show = true;
-            pangolin::GlTexture imageTexture(
-                w, h, GL_RGB, false, 0, GL_RGB, GL_UNSIGNED_BYTE);
-            // m_is_debug_mode = menu_debug;
-            // Activate m_camera view
-            d_cam_objRecognition.Activate(s_cam_objRecognition);
-            glColor3f(1.0, 1.0, 1.0);
-            cv::Mat Rwc, twc;
-            cv::Mat Tcw;
-            im = GetFrame();
-            if (im.empty()) {
-            } else {
-                mpMapDrawer->GetCurrentCameraPose(Rwc, twc, Tcw);
-                // Get last image and its computed pose from SLAM
-                if (!Rwc.empty() && !twc.empty()) {
-                    // set m_camera position
-                    m_camera.SetCamPos(
-                        twc.at<float>(0), twc.at<float>(1), twc.at<float>(2));
-                }
-
-                // Add text to image
-                // PrintStatus(status, im);
-                cv::cvtColor(im, im, CV_GRAY2RGB);
-                // Draw image
-                // ObjRecognition::GlobalOcvViewer::UpdateView("frame", im);
-                DrawImageTexture(imageTexture, im);
-
-                // draw boundingbox:
-                ObjRecognition::ObjRecogResult result = ObjRecognitionExd::ObjRecongManager::Instance().
-                                                        GetObjRecognitionResult();
-
-
-                Eigen::Matrix4d Two = Eigen::Matrix4d::Identity();
-                Two << result.R_obj_buffer[0],result.R_obj_buffer[1],result.R_obj_buffer[2],
-                    result.R_obj_buffer[3],result.R_obj_buffer[4],result.R_obj_buffer[5],
-                    result.t_obj_buffer[0], result.t_obj_buffer[1], result.t_obj_buffer[2];
-
-                std::vector<Eigen::Vector3d> boundingbox;
-                for(size_t i = 0; i < 8; i++) {
-                    boundingbox.emplace_back(result.bounding_box[i * 3]);
-                    boundingbox.emplace_back(result.bounding_box[i * 3 + 1]);
-                    boundingbox.emplace_back(result.bounding_box[i * 3 + 2]);
-                }
-
-                Eigen::Matrix4d Tcw_eigen ;
-                cv::cv2eigen(Tcw, Tcw_eigen);
-                Eigen::Matrix4d Tco = Tcw_eigen * Two;
-
-
-                glClear(GL_DEPTH_BUFFER_BIT);
-                // Load m_camera projection
-                glMatrixMode(GL_PROJECTION);
-                pangolin::OpenGlMatrixSpec P = pangolin::ProjectionMatrixRDF_TopLeft(w, h, fx, fy, cx, cy, 0.001, 1000);
-                P.Load();
-                // load model view matrix
-                glMatrixMode(GL_MODELVIEW);
-                // Load m_camera pose  set opengl coords, same as slam coords
-                // view matrix Tcw
-                LoadCameraPose(Tcw);
-                // draw under slam camera coords
-            }
-        }
-
-        pangolin::FinishFrame();
-
-        if (!switch_window_flag) {
             mpFrameDrawer->DrawFrame(true);
             ObjRecognition::GlobalOcvViewer::DrawAllView();
 
@@ -488,7 +450,93 @@ void Viewer::Draw() {
                 *menuReset = false;
                 *menuStop = false;
             }
+        } else {
+            // draw for objectRecognition:
+            d_cam_objRecognition.show = true;
+            // Activate m_camera view
+            d_cam_objRecognition.Activate(s_cam_objRecognition);
+            glColor3f(1.0, 1.0, 1.0);
+            cv::Mat Rwc, twc;
+            cv::Mat Tcw;
+            GetFrameAndState(im, status);
+            if (!im.empty()) {
+                mpMapDrawer->GetCurrentCameraPose(Rwc, twc, Tcw);
+                if (!Rwc.empty() && !twc.empty()) {
+                    m_camera.SetCamPos(
+                        twc.at<float>(0), twc.at<float>(1), twc.at<float>(2));
+                }
+
+                PrintStatusForViewer(status, im);
+                cv::cvtColor(im, im, CV_GRAY2RGB);
+                DrawImageTexture(imageTexture, im);
+
+                // draw boundingbox:
+                ObjRecognition::ObjRecogResult result =
+                    ObjRecognitionExd::ObjRecongManager::Instance()
+                        .GetObjRecognitionResult();
+
+                Eigen::Matrix4d Two = Eigen::Matrix4d::Identity();
+                Two << result.R_obj_buffer[0], result.R_obj_buffer[1],
+                    result.R_obj_buffer[2], result.t_obj_buffer[0],
+                    result.R_obj_buffer[3], result.R_obj_buffer[4],
+                    result.R_obj_buffer[5], result.t_obj_buffer[1],
+                    result.R_obj_buffer[6], result.R_obj_buffer[7],
+                    result.R_obj_buffer[8], result.t_obj_buffer[2], 0, 0, 0, 1;
+
+                // TODO(zhangye):  check the column priority??
+                cv::Mat Two_cv;
+                eigen2cv(Two, Two_cv);
+                pangolin::OpenGlMatrix glTwo;
+                glTwo.m[0] = Two_cv.at<float>(0, 0);
+                glTwo.m[1] = Two_cv.at<float>(1, 0);
+                glTwo.m[2] = Two_cv.at<float>(2, 0);
+                glTwo.m[3] = 0.0;
+
+                glTwo.m[4] = Two_cv.at<float>(0, 1);
+                glTwo.m[5] = Two_cv.at<float>(1, 1);
+                glTwo.m[6] = Two_cv.at<float>(2, 1);
+                glTwo.m[7] = 0.0;
+
+                glTwo.m[8] = Two_cv.at<float>(0, 2);
+                glTwo.m[9] = Two_cv.at<float>(1, 2);
+                glTwo.m[10] = Two_cv.at<float>(2, 2);
+                glTwo.m[11] = 0.0;
+
+                glTwo.m[12] = Two_cv.at<float>(0, 3);
+                glTwo.m[13] = Two_cv.at<float>(1, 3);
+                glTwo.m[14] = Two_cv.at<float>(2, 3);
+                glTwo.m[15] = 1.0;
+
+                std::vector<Eigen::Vector3d> boundingbox;
+                for (size_t i = 0; i < 8; i++) {
+                    boundingbox.emplace_back(result.bounding_box[i * 3]);
+                    boundingbox.emplace_back(result.bounding_box[i * 3 + 1]);
+                    boundingbox.emplace_back(result.bounding_box[i * 3 + 2]);
+                }
+
+                glClear(GL_DEPTH_BUFFER_BIT);
+                // Load m_camera projection
+                glMatrixMode(GL_PROJECTION);
+                P.Load();
+                // load model view matrix
+                glMatrixMode(GL_MODELVIEW);
+                // Load m_camera pose  set opengl coords, same as slam coords
+                // view matrix Tcw
+                LoadCameraPose(Tcw);
+                // draw under slam camera coords
+
+                // draw boundingbox
+                glPushMatrix();
+                // Two
+                glTwo.Multiply();
+                // TODO(zhangye): check the coords, now the result is wrong
+                DrawBoundingboxInImage(boundingbox);
+                glPopMatrix();
+                DrawPointCloudInImage(result.pointCloud_pos);
+            }
         }
+
+        pangolin::FinishFrame();
 
         if (Stop()) {
             while (isStopped()) {
@@ -503,6 +551,18 @@ void Viewer::Draw() {
     SetFinish();
 }
 
+void Viewer::SetFrameAndState(const cv::Mat &img, const int &state) {
+    unique_lock<mutex> lock(mMutexPoseImage);
+    img_from_objRecognition = img.clone();
+    state_from_objRecognition = state;
+}
+
+void Viewer::GetFrameAndState(cv::Mat &img, int &state) {
+    unique_lock<mutex> lock(mMutexPoseImage);
+    img = img_from_objRecognition.clone();
+    state = state_from_objRecognition;
+}
+
 void Viewer::SwitchWindow() {
     switch_window_flag = !switch_window_flag;
     if (!switch_window_flag) {
@@ -514,7 +574,6 @@ void Viewer::SwitchWindow() {
 
 void Viewer::Run() {
     pangolin::CreateWindowAndBind("ORB-SLAM3: Map Viewer", 1024, 768);
-
     // pangolin::CreateWindowAndBind("Viewer", w + 200, h);
     // 3D Mouse handler requires depth testing to be enabled
     glEnable(GL_DEPTH_TEST);
