@@ -322,28 +322,28 @@ void LocalMapping::Run() {
                 }
             }
 
+            // give ObjectRecognition the grey image
+            cv::Mat kf;
+#ifdef MYDATA
+            if (mbRGB) {
+                cv::cvtColor(mpCurrentKeyFrame->imgLeft, kf, CV_RGB2GRAY);
+            } else {
+                cv::cvtColor(mpCurrentKeyFrame->imgLeft, kf, CV_BGR2GRAY);
+            }
+#else
+            kf = mpCurrentKeyFrame->imgLeft;
+#endif
             ObjRecognition::ObjRecogImageCallbackData callbackImg;
-            callbackImg.height = mpCurrentKeyFrame->imgLeft.cols;
-            callbackImg.width = mpCurrentKeyFrame->imgLeft.rows;
-
+            callbackImg.height = kf.cols;
+            callbackImg.width = kf.rows;
             callbackImg.data =
                 new unsigned char[callbackImg.height * callbackImg.width];
             memcpy(
-                callbackImg.data, mpCurrentKeyFrame->imgLeft.data,
+                callbackImg.data, kf.data,
                 sizeof(unsigned char) * callbackImg.height * callbackImg.width);
             callbackData->img = callbackImg;
             callbackData->has_image = true;
-
             callbackData->timestamp = mpCurrentKeyFrame->mTimeStamp;
-
-            /*std::cout << "callback data R: " << callbackData->R[0][0] << " "
-            << callbackData->R[0][1] << " " << callbackData->R[0][2] << " " <<
-            callbackData->R[1][0] << " " << callbackData->R[1][1] << " " <<
-            callbackData->R[1][2] << " " << callbackData->R[2][0] << " " <<
-            callbackData->R[2][1] << " " << callbackData->R[2][2] << std::endl;
-            std::cout << "callback data t: " << callbackData->t[0] << " " <<
-            callbackData->t[1] << " " << callbackData->t[2] << std::endl;*/
-
             cb_(callbackData);
 #endif
         } else if (Stop() && !mbBadImu) {

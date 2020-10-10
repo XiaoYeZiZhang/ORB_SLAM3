@@ -13,7 +13,7 @@
 #include "ORBSLAM3/FrameObjectProcess.h"
 #include "ORBSLAM3/ViewerAR.h"
 #include "mode.h"
-
+#include "ORBSLAM3/Synchronizer.h"
 using namespace std;
 class TestViewer {
 public:
@@ -28,8 +28,8 @@ private:
     void LoadIMU(
         const string &strImuPath, vector<double> &vTimeStamps,
         vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro);
-
     void DebugMode();
+    std::string yaml_file_name = "xiaomi8.yaml";
     std::string m_result_dir;
     vector<string> vstrImageFilenames;
     vector<double> vTimestampsCam;
@@ -84,15 +84,18 @@ void TestViewer::LoadImages(
         string s;
         getline(fTimes, s);
         if (!s.empty()) {
-            stringstream ss;
-            ss << s;
-            /*mydata*/
-            // vstrImages.push_back(strImagePath + "/" + ss.str());
-            /*euroc data*/
-            vstrImages.push_back(strImagePath + "/" + ss.str() + ".png");
-
-            double t;
-            ss >> t;
+            string item;
+            size_t pos = 0;
+            string image_name;
+            int count = 0;
+            while ((pos = s.find(',')) != string::npos) {
+                item = s.substr(0, pos);
+                double time = stod(item);
+                s.erase(0, pos + 1);
+            }
+            item = s.substr(0, pos);
+            vstrImages.push_back(strImagePath + "/" + item);
+            double t = stod(item.substr(0, 13));
             vTimeStamps.push_back(t / 1e9);
         }
     }
@@ -101,23 +104,34 @@ void TestViewer::LoadImages(
 void TestViewer::LoadIMU(
     const string &strImuPath, vector<double> &vTimeStamps,
     vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro) {
-    ifstream fImu;
-    fImu.open(strImuPath.c_str());
+    std::string acc_path = strImuPath + "/acc.csv";
+    std::string gyr_path = strImuPath + "/gyr.csv";
+    Synchronizer synchronizer;
     vTimeStamps.reserve(5000);
     vAcc.reserve(5000);
     vGyro.reserve(5000);
     first_imu = 0;
 
-    while (!fImu.eof()) {
-        string s;
-        getline(fImu, s);
-        if (s[0] == '#')
-            continue;
+    vector<double> TimeStampsAcc;
+    vector<double> TimeStampsGyr;
+    vector<cv::Point3f> Acc;
+    vector<cv::Point3f> Gyro;
 
+    TimeStampsAcc.reserve(5000);
+    TimeStampsGyr.reserve(5000);
+    Acc.reserve(5000);
+    Gyro.reserve(5000);
+
+    ifstream fImu_gyr;
+    fImu_gyr.open(gyr_path.c_str());
+    vGyro.reserve(5000);
+    while (!fImu_gyr.eof()) {
+        string s;
+        getline(fImu_gyr, s);
         if (!s.empty()) {
             string item;
             size_t pos = 0;
-            double data[7];
+            double data[4];
             int count = 0;
             while ((pos = s.find(',')) != string::npos) {
                 item = s.substr(0, pos);
@@ -125,39 +139,86 @@ void TestViewer::LoadIMU(
                 s.erase(0, pos + 1);
             }
             item = s.substr(0, pos);
-            data[6] = stod(item);
-
-            /* mydata*/
-            // vTimeStamps.push_back(data[0]);
-            /*euroc data*/
-            vTimeStamps.push_back(data[0] / 1e9);
-            vAcc.push_back(cv::Point3f(data[4], data[5], data[6]));
-            vGyro.push_back(cv::Point3f(data[1], data[2], data[3]));
+            data[3] = stod(item);
+            TimeStampsGyr.push_back(data[0]);
+            Gyro.push_back(cv::Point3f(data[1], data[2], data[3]));
         }
+    }
+
+    ifstream fImu_acc;
+    fImu_acc.open(acc_path.c_str());
+    while (!fImu_acc.eof()) {
+        string s;
+        getline(fImu_acc, s);
+        if (!s.empty()) {
+            string item;
+            size_t pos = 0;
+            double data[4];
+            int count = 0;
+            while ((pos = s.find(',')) != string::npos) {
+                item = s.substr(0, pos);
+                data[count++] = stod(item);
+                s.erase(0, pos + 1);
+            }
+            item = s.substr(0, pos);
+            data[3] = stod(item);
+            TimeStampsAcc.push_back(data[0]);
+            Acc.push_back(cv::Point3f(data[1], data[2], data[3]));
+        }
+    }
+
+    int num = 0;
+    while (num < TimeStampsGyr.size()) {
+        Synchronizer::InputItem input;
+        input.type = Synchronizer::TYPE_INPUT_GYROSCOPE;
+        input.time = TimeStampsGyr[num];
+        input.value = Gyro[num];
+        synchronizer.consume_input(input);
+
+        input.type = Synchronizer::TYPE_INPUT_ACCELEROMETER;
+        input.time = TimeStampsAcc[num];
+        input.value = Acc[num];
+        synchronizer.consume_input(input);
+        num++;
+    }
+
+    if (num < TimeStampsAcc.size()) {
+        Synchronizer::InputItem input;
+        input.type = Synchronizer::TYPE_INPUT_ACCELEROMETER;
+        input.time = TimeStampsAcc[num];
+        input.value = Acc[num];
+        synchronizer.consume_input(input);
+        num++;
+    }
+
+    while (!synchronizer.pending_imu.empty()) {
+        std::tuple<double, cv::Point3f, cv::Point3f> data =
+            synchronizer.pending_imu.front();
+        synchronizer.pending_imu.pop();
+        vTimeStamps.emplace_back(std::get<0>(data) / 1e9);
+        vAcc.emplace_back(std::get<2>(data));
+        vGyro.emplace_back(std::get<1>(data));
+
+        VLOG(0) << std::get<0>(data) << " " << std::get<2>(data).x << " "
+                << std::get<2>(data).y << " " << std::get<2>(data).z
+                << std::get<1>(data).x << " " << std::get<1>(data).y << " "
+                << std::get<1>(data).z;
     }
 }
 
 bool TestViewer::InitSLAM(char **argv) {
-    // Load all sequences:
     int tot_images = 0;
-
     VLOG(0) << "Loading images "
             << "...";
 
-    string pathSeq(argv[3]);
-    string pathTimeStamps(argv[4]);
+    string data_path = argv[2];
+    string pathCam0 = data_path + "/camera/images";
+    string pathImu = data_path + "/imu";
 
-    /*mydata
-    string pathCam0 = pathSeq + "/camera/images";
-    string pathImu = pathSeq + "/imu/data.csv";*/
-
-    /* euroc data*/
-    string pathCam0 = pathSeq + "/cam0/data";
-    string pathImu = pathSeq + "/imu0/data.csv";
-
+    string pathTimeStamps = data_path + "/camera/data.csv";
     LoadImages(pathCam0, pathTimeStamps, vstrImageFilenames, vTimestampsCam);
-    VLOG(0) << "LOADED!";
 
+    VLOG(0) << "LOADED!";
     VLOG(0) << "Loading IMU "
             << "...";
     LoadIMU(pathImu, vTimestampsImu, vAcc, vGyro);
@@ -182,7 +243,8 @@ bool TestViewer::InitSLAM(char **argv) {
     // Vector for tracking time statistics
     vTimesTrack.resize(tot_images);
 
-    cv::FileStorage fsSettings(argv[2], cv::FileStorage::READ);
+    std::string yaml_path = data_path + "/" + yaml_file_name;
+    cv::FileStorage fsSettings(yaml_path, cv::FileStorage::READ);
     double fx = fsSettings["Camera.fx"];
     double fy = fsSettings["Camera.fy"];
     double cx = fsSettings["Camera.cx"];
@@ -204,16 +266,7 @@ bool TestViewer::InitSLAM(char **argv) {
     Parameters::GetInstance().SetFastThreathold(fastThreathold);
 
     SLAM = new ORB_SLAM3::System(
-        argv[1], argv[2], ORB_SLAM3::System::IMU_MONOCULAR, false, false);
-
-    /*cout << endl << endl;
-    cout << "-----------------------" << endl;
-    cout << "Augmented Reality Demo" << endl;
-    cout << "1) Translate the camera to initialize SLAM." << endl;
-    cout << "2) Look at a planar region and translate the camera." << endl;
-    cout << "3) Press Insert Cube to place a virtual cube in the plane. " <<
-    endl; cout << endl; cout << "You can place several cubes in different
-    planes." << endl; cout << "-----------------------" << endl; cout << endl;*/
+        argv[1], yaml_path, ORB_SLAM3::System::IMU_MONOCULAR, false, false);
 
     return true;
 }
@@ -223,10 +276,12 @@ void TestViewer::DebugMode() {
         if (!viewerAR.GetDebugFlag()) {
             return;
         }
+
         usleep(1 * 1e5); // 1e6
         if (viewerAR.GetStopFlag()) {
             return;
         }
+
         if (viewerAR.GetFixFlag()) {
             // get boundingbox in slam word coords
             m_boundingbox_w = viewerAR.GetScanBoundingbox_W();
@@ -253,7 +308,9 @@ void TestViewer::DebugMode() {
 // 4. save mappoint
 bool TestViewer::RunScanner(char **argv) {
     viewerAR.SetSLAM(SLAM);
-    cv::FileStorage fSettings(argv[2], cv::FileStorage::READ);
+    string data_path = argv[2];
+    cv::FileStorage fSettings(
+        data_path + "/" + yaml_file_name, cv::FileStorage::READ);
     bRGB = static_cast<bool>((int)fSettings["Camera.RGB"]);
     float fps = fSettings["Camera.fps"];
     viewerAR.SetFPS(fps);
@@ -306,14 +363,15 @@ bool TestViewer::RunScanner(char **argv) {
                 m_boundingbox_w);
             viewerAR.SetFixFlag(false);
         }
+
         DebugMode();
+
         if (viewerAR.GetStopFlag()) {
             break;
         }
 
         // Read image from file
         im = cv::imread(vstrImageFilenames[ni], CV_LOAD_IMAGE_UNCHANGED);
-
         double tframe = vTimestampsCam[ni];
 
         if (im.empty()) {
@@ -338,9 +396,6 @@ bool TestViewer::RunScanner(char **argv) {
             }
         }
 
-        /*cout << "first imu: " << first_imu << endl;
-        cout << "first imu time: " << fixed << vTimestampsImu[first_imu] <<
-        endl; cout << "size vImu: " << vImuMeas.size() << endl;*/
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t1 =
             std::chrono::steady_clock::now();
@@ -393,14 +448,14 @@ bool TestViewer::RunScanner(char **argv) {
     // Stop all threads
     SLAM->Shutdown();
 
-    std::string mappoint_save_path = argv[5];
+    std::string mappoint_save_path = argv[3];
     if (SaveMappointFor3DObject(mappoint_save_path)) {
         VLOG(0) << "save mappoint for 3dobject success!";
     }
 
     // Save camera trajectory
-    const string kf_file = "kf_" + string(argv[6]) + ".txt";
-    const string f_file = "f_" + string(argv[6]) + ".txt";
+    const string kf_file = "kf_" + string(argv[4]) + ".txt";
+    const string f_file = "f_" + string(argv[4]) + ".txt";
     SLAM->SaveTrajectoryEuRoC(f_file);
     SLAM->SaveKeyFrameTrajectoryEuRoC(kf_file);
 
@@ -410,13 +465,11 @@ bool TestViewer::RunScanner(char **argv) {
 
 int main(int argc, char *argv[]) {
 
-    if (argc < 6) {
+    if (argc < 3) {
         cerr << endl
              << "Usage: ./mono_inertial_euroc path_to_vocabulary "
-                "path_to_settings path_to_sequence_folder_1 "
-                "path_to_times_file_1 (path_to_image_folder_2 "
-                "path_to_times_file_2 ... path_to_image_folder_N "
-                "path_to_times_file_N) "
+                "path to data"
+                "dataset name"
              << endl;
         return 1;
     }

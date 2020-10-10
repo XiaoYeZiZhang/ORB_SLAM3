@@ -220,6 +220,10 @@ System::System(
     mpTracker->SetLoopClosing(mpLoopCloser);
 
     mpLocalMapper->SetTracker(mpTracker);
+#ifdef OBJECTRECOGNITION
+    mpLocalMapper->mbRGB = mpTracker->mbRGB;
+#endif
+
     mpLocalMapper->SetLoopCloser(mpLoopCloser);
 
     mpLoopCloser->SetTracker(mpTracker);
@@ -800,8 +804,9 @@ void System::ChangeDataset() {
     mpTracker->NewDataset();
 }
 
-void System::SetBoundingbox(const std::vector<Eigen::Vector3d> &boundingbox) {
-    mpAtlas->SetBoundingboxFor3DObject(boundingbox);
+void System::SetScanBoundingbox_W(
+    const std::vector<Eigen::Vector3d> &boundingbox) {
+    mpAtlas->SetScanBoundingbox_W(boundingbox);
 }
 
 bool System::PackAtlasToMemoryFor3DObject(

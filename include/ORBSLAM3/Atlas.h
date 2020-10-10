@@ -141,14 +141,10 @@ public:
     void GetBoundingBoxCoordsRange();
     bool WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem);
     unsigned int GetMemSizeFor3DObject(const std::string &version);
-    void
-    SetBoundingboxFor3DObject(const std::vector<Eigen::Vector3d> &boundingbox) {
-        m_boundingbox_.clear();
-        m_boundingbox_ = boundingbox;
-    }
+    void SetScanBoundingbox_W(const std::vector<Eigen::Vector3d> &boundingbox);
+    std::set<Map *> mspMaps;
 
 protected:
-    std::set<Map *> mspMaps;
     std::set<Map *> mspBadMaps;
     // Its necessary change the container from set to vector because
     // libboost 1.58 and Ubuntu 16.04 have an error with this cointainer
@@ -174,7 +170,7 @@ protected:
     std::string m_3dobject_version_ = "V1.0.0.0";
     std::vector<MapPoint *> m_saved_mappoint_for_3dobject_;
     std::vector<KeyFrame *> m_saved_keyframe_for_3dobject_;
-    std::vector<Eigen::Vector3d> m_boundingbox_;
+    std::vector<Eigen::Vector3d> m_boundingbox_w_;
     double m_bbx_xmin;
     double m_bbx_ymin;
     double m_bbx_zmin;

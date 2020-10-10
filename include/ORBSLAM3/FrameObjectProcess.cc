@@ -4,6 +4,7 @@
 #include "FrameObjectProcess.h"
 #include "glog/logging.h"
 #include "QuickHull.h"
+#include "mode.h"
 #include "Visualizer/GlobalImageViewer.h"
 
 namespace ORB_SLAM3 {
@@ -154,7 +155,12 @@ void FrameObjectProcess::ProcessFrame(ORB_SLAM3::KeyFrame *&pKF) {
     std::string featureInfo = std::string("2d feature num: ");
     featureInfo += std::to_string(keypoints_new.size()) + " ";
     cv::Mat show = img.clone();
+
+#ifdef MYDATA
+#else
     cv::cvtColor(show, show, CV_GRAY2BGR);
+#endif
+
     cv::drawKeypoints(show, keypoints_new, show);
 
     cv::Mat img_txt;
@@ -171,7 +177,6 @@ void FrameObjectProcess::ProcessFrame(ORB_SLAM3::KeyFrame *&pKF) {
         img_txt, s.str(), cv::Point(5, img_txt.rows - 5),
         cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 255, 255), 1, 8);
 
-    VLOG(0) << "here!!!!!!!!!!!!!!!!!!!";
     ObjRecognition::GlobalOcvViewer::UpdateView(
         "New Keypoints to Extract:", img_txt);
 
@@ -190,9 +195,7 @@ void FrameObjectProcess::ProcessFrame(ORB_SLAM3::KeyFrame *&pKF) {
 } // FrameObjectProcess::ProcessFrame
 
 void FrameObjectProcess::AddObjectModel(const int obj_id) {
-
     VLOG(5) << "[STObject] add the object id: " << obj_id;
-    // m_obj_corner_points = GetBoundingBox();
 } // FrameObjectProcess::AddObjectModel()
 
 void FrameObjectProcess::SetBoundingBox(

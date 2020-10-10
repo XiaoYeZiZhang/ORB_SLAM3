@@ -241,26 +241,26 @@ void Atlas::GetBoundingBoxCoordsRange() {
     m_bbx_ymax = -10000;
     m_bbx_zmax = -10000;
 
-    for (int i = 0; i < m_boundingbox_.size(); i++) {
-        if (m_boundingbox_[i](0) < m_bbx_xmin) {
-            m_bbx_xmin = m_boundingbox_[i](0);
+    for (int i = 0; i < m_boundingbox_w_.size(); i++) {
+        if (m_boundingbox_w_[i](0) < m_bbx_xmin) {
+            m_bbx_xmin = m_boundingbox_w_[i](0);
         }
-        if (m_boundingbox_[i](0) > m_bbx_xmax) {
-            m_bbx_xmax = m_boundingbox_[i](0);
-        }
-
-        if (m_boundingbox_[i](1) < m_bbx_ymin) {
-            m_bbx_ymin = m_boundingbox_[i](1);
-        }
-        if (m_boundingbox_[i](1) > m_bbx_ymax) {
-            m_bbx_ymax = m_boundingbox_[i](1);
+        if (m_boundingbox_w_[i](0) > m_bbx_xmax) {
+            m_bbx_xmax = m_boundingbox_w_[i](0);
         }
 
-        if (m_boundingbox_[i](2) < m_bbx_zmin) {
-            m_bbx_zmin = m_boundingbox_[i](2);
+        if (m_boundingbox_w_[i](1) < m_bbx_ymin) {
+            m_bbx_ymin = m_boundingbox_w_[i](1);
         }
-        if (m_boundingbox_[i](2) > m_bbx_zmax) {
-            m_bbx_zmax = m_boundingbox_[i](2);
+        if (m_boundingbox_w_[i](1) > m_bbx_ymax) {
+            m_bbx_ymax = m_boundingbox_w_[i](1);
+        }
+
+        if (m_boundingbox_w_[i](2) < m_bbx_zmin) {
+            m_bbx_zmin = m_boundingbox_w_[i](2);
+        }
+        if (m_boundingbox_w_[i](2) > m_bbx_zmax) {
+            m_bbx_zmax = m_boundingbox_w_[i](2);
         }
     }
 }
@@ -320,6 +320,10 @@ unsigned int Atlas::GetMemSizeFor3DObject(const std::string &version) {
             }
         }
 
+        if (m_saved_mappoint_for_3dobject_.size() == 0) {
+            LOG(ERROR) << "There is no mappoint in boundingbox, exit";
+        }
+
         VLOG(10) << "getmemsize2" << nTotalSize;
         for (Map *pMi : saved_map) {
             for (KeyFrame *pKFi : pMi->GetAllKeyFrames()) {
@@ -362,11 +366,12 @@ bool Atlas::WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem) {
 
     // bounding box
     // TODO(zhangye): check bbx data
+    // in scan slam coords
     double bounding_box[24];
-    for (int i = 0; i < m_boundingbox_.size(); i++) {
-        bounding_box[i * 3] = m_boundingbox_[i](0);
-        bounding_box[i * 3 + 1] = m_boundingbox_[i](1);
-        bounding_box[i * 3 + 2] = m_boundingbox_[i](2);
+    for (int i = 0; i < m_boundingbox_w_.size(); i++) {
+        bounding_box[i * 3] = m_boundingbox_w_[i](0);
+        bounding_box[i * 3 + 1] = m_boundingbox_w_[i](1);
+        bounding_box[i * 3 + 2] = m_boundingbox_w_[i](2);
     }
 
     ObjRecognition::PutDataToMem(
@@ -413,6 +418,12 @@ bool Atlas::WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem) {
 
     VLOG(10) << "writememsize3" << mem_pos;
     return mem_pos == mem_size;
+}
+
+void Atlas::SetScanBoundingbox_W(
+    const std::vector<Eigen::Vector3d> &boundingbox) {
+    m_boundingbox_w_.clear();
+    m_boundingbox_w_ = boundingbox;
 }
 
 void Atlas::PreSave() {

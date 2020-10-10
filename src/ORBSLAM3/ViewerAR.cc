@@ -27,6 +27,7 @@
 #include "ORBSLAM3/ScannerStruct/Struct.h"
 #include "ORBSLAM3/ViewerCommon.h"
 #include <glm/gtc/type_ptr.hpp>
+#include "mode.h"
 using namespace std;
 
 namespace ORB_SLAM3 {
@@ -55,59 +56,60 @@ ViewerAR::ViewerAR() {
 }
 
 void ViewerAR::decrease_shape() {
-    m_boundingbox.SetChangeShapeOffset(-0.05);
+    m_boundingbox_p.SetChangeShapeOffset(-0.05);
 }
 
 void ViewerAR::increase_shape() {
-    m_boundingbox.SetChangeShapeOffset(0.05);
+    m_boundingbox_p.SetChangeShapeOffset(0.05);
 }
 
 void ViewerAR::up_move() {
-    m_boundingbox.MoveObject(-0.03, 1);
-    m_boundingbox.SetChangeShapeOffset(0.0);
+    m_boundingbox_p.MoveObject(-0.03, 1);
+    m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::down_move() {
-    m_boundingbox.MoveObject(+0.03, 1);
-    m_boundingbox.SetChangeShapeOffset(0.0);
+    m_boundingbox_p.MoveObject(+0.03, 1);
+    m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::left_move() {
-    m_boundingbox.MoveObject(-0.03, 0);
-    m_boundingbox.SetChangeShapeOffset(0.0);
+    m_boundingbox_p.MoveObject(-0.03, 0);
+    m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::right_move() {
-    m_boundingbox.MoveObject(0.03, 0);
-    m_boundingbox.SetChangeShapeOffset(0.0);
+    m_boundingbox_p.MoveObject(0.03, 0);
+    m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::front_move() {
-    m_boundingbox.MoveObject(0.03, 2);
-    m_boundingbox.SetChangeShapeOffset(0.0);
+    m_boundingbox_p.MoveObject(0.03, 2);
+    m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::back_move() {
-    m_boundingbox.MoveObject(-0.03, 2);
-    m_boundingbox.SetChangeShapeOffset(0.0);
+    m_boundingbox_p.MoveObject(-0.03, 2);
+    m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
-void ViewerAR::ComputeAndSetBoundingbox(
-    const pangolin::OpenGlMatrix &Twp_opengl) {
-    m_boundingbox_vertices.clear();
+std::vector<Eigen::Vector3d>
+ViewerAR::ComputeBoundingbox_W(const pangolin::OpenGlMatrix &Twp_opengl) {
+    std::vector<Eigen::Vector3d> boundingbox_w;
     for (size_t i = 0; i < 8; i++) {
         Eigen::Vector3d point_p = Eigen::Vector3d(
-            m_boundingbox.m_vertex_list_p[i][0],
-            m_boundingbox.m_vertex_list_p[i][1],
-            m_boundingbox.m_vertex_list_p[i][2]);
+            m_boundingbox_p.m_vertex_list_p[i][0],
+            m_boundingbox_p.m_vertex_list_p[i][1],
+            m_boundingbox_p.m_vertex_list_p[i][2]);
         // TODO(zhangye): transpose???
         Eigen::Vector4d p_4 =
             Eigen::Vector4d(point_p(0), point_p(1), point_p(2), 1.0f);
         Eigen::Matrix4d Twp = Change2EigenMatrix(Twp_opengl);
         Eigen::Vector4d bbx_4 = Twp * p_4;
-        m_boundingbox_vertices.emplace_back(Eigen::Vector3d(
+        boundingbox_w.emplace_back(Eigen::Vector3d(
             bbx_4[0] / bbx_4[3], bbx_4[1] / bbx_4[3], bbx_4[2] / bbx_4[3]));
     }
+    return boundingbox_w;
 }
 
 void ViewerAR::SetCameraCalibration(
@@ -116,6 +118,74 @@ void ViewerAR::SetCameraCalibration(
     fy = fy_;
     cx = cx_;
     cy = cy_;
+}
+
+int ViewerAR::GetCurrentMapPointNumInBBX(
+    const vector<Plane *> &vpPlane, const bool &is_insert_cube) {
+    int mappoint_num = -1;
+    if (!is_insert_cube) {
+        return mappoint_num;
+    }
+    if (!vpPlane.empty()) {
+        mappoint_num = 0;
+        Plane *pPlane = vpPlane[0];
+        std::vector<Map *> saved_map;
+        struct compFunctor {
+            inline bool operator()(Map *elem1, Map *elem2) {
+                return elem1->GetId() < elem2->GetId();
+            }
+        };
+        std::copy(
+            mpSystem->mpAtlas->mspMaps.begin(),
+            mpSystem->mpAtlas->mspMaps.end(), std::back_inserter(saved_map));
+        sort(saved_map.begin(), saved_map.end(), compFunctor());
+        vector<Eigen::Vector3d> boundingbox_w =
+            ComputeBoundingbox_W(pPlane->glTpw);
+        double bbx_xmin = 10000;
+        double bbx_ymin = 10000;
+        double bbx_zmin = 10000;
+        double bbx_xmax = -10000;
+        double bbx_ymax = -10000;
+        double bbx_zmax = -10000;
+        for (int i = 0; i < boundingbox_w.size(); i++) {
+            if (boundingbox_w[i](0) < bbx_xmin) {
+                bbx_xmin = boundingbox_w[i](0);
+            }
+            if (boundingbox_w[i](0) > bbx_xmax) {
+                bbx_xmax = boundingbox_w[i](0);
+            }
+
+            if (boundingbox_w[i](1) < bbx_ymin) {
+                bbx_ymin = boundingbox_w[i](1);
+            }
+            if (boundingbox_w[i](1) > bbx_ymax) {
+                bbx_ymax = boundingbox_w[i](1);
+            }
+
+            if (boundingbox_w[i](2) < bbx_zmin) {
+                bbx_zmin = boundingbox_w[i](2);
+            }
+            if (boundingbox_w[i](2) > bbx_zmax) {
+                bbx_zmax = boundingbox_w[i](2);
+            }
+        }
+
+        for (Map *pMi : saved_map) {
+            for (MapPoint *pMPi : pMi->GetAllMapPoints()) {
+                cv::Mat tmpPos = pMPi->GetWorldPos();
+                // condition???
+                if (tmpPos.at<float>(0) >= bbx_xmin &&
+                    tmpPos.at<float>(0) <= bbx_xmax &&
+                    tmpPos.at<float>(1) >= bbx_ymin &&
+                    tmpPos.at<float>(1) <= bbx_ymax &&
+                    tmpPos.at<float>(2) >= bbx_zmin &&
+                    tmpPos.at<float>(2) <= bbx_zmax) {
+                    mappoint_num++;
+                }
+            }
+        }
+    }
+    return mappoint_num;
 }
 
 void ViewerAR::Run() {
@@ -155,7 +225,7 @@ void ViewerAR::Run() {
     pangolin::Var<bool> menu_drawim("menu.Draw Image", true, true);
     pangolin::Var<bool> menu_drawcube("menu.Draw Cube", true, true);
     pangolin::Var<float> menu_cubesize("menu. Cube Size", 0.05, 0.01, 0.3);
-    m_boundingbox.SetSize(menu_cubesize);
+    m_boundingbox_p.SetSize(menu_cubesize);
     // if draw plane
     pangolin::Var<bool> menu_drawgrid("menu.Draw Grid", true, true);
     // plane grid number
@@ -242,9 +312,14 @@ void ViewerAR::Run() {
                 twc.at<float>(0), twc.at<float>(1), twc.at<float>(2));
         }
 
+        // get mappoint num in boundingbox
+        int current_num = GetCurrentMapPointNumInBBX(vpPlane, menu_insertcube);
         // Add text to image
-        PrintStatus(status, bLocalizationMode, im);
+        PrintStatus(status, bLocalizationMode, current_num, im);
+#ifdef MYDATA
+#else
         cv::cvtColor(im, im, CV_GRAY2RGB);
+#endif
 
         if (menu_drawpoints)
             DrawTrackedPoints(vKeys, vMPs, im);
@@ -276,8 +351,8 @@ void ViewerAR::Run() {
                 vpPlane.clear();
                 m_is_fix = false;
                 m_is_stop = false;
-                m_boundingbox.Reset();
-                m_boundingbox.SetSize(menu_cubesize);
+                m_boundingbox_p.Reset();
+                m_boundingbox_p.SetSize(menu_cubesize);
                 VLOG(0) << "ORBSLAM3: All cubes erased!";
             }
             menu_clear = false;
@@ -285,27 +360,16 @@ void ViewerAR::Run() {
         // Draw virtual things
         // can only insert cube when slam state is fine
         if (status == 2) {
-            if (menu_insertcube) {
-                Plane *pPlane = DetectPlane(Tcw, vMPs, 50);
-                if (pPlane && vpPlane.empty()) {
-                    VLOG(0) << "ORBSLAM3: New virtual cube inserted!";
-                    vpPlane.push_back(pPlane);
-                } else if (!pPlane) {
-                    VLOG(0) << "ORBSLAM3: No plane detected. Point the "
-                               "m_camera to a planar "
-                               "region.";
-                } else {
-                    VLOG(0) << "ORBSLAM3: There is alreay a plane here. Please "
-                               "click clear "
-                               "and insert another cube";
-                }
-                menu_insertcube = false;
+            Plane *pPlane = DetectPlane(Tcw, vMPs, 50);
+            if (pPlane && vpPlane.empty()) {
+                VLOG(0) << "ORBSLAM3: New virtual plane is detected!";
+                vpPlane.push_back(pPlane);
             }
         }
 
         // draw cube no mater what slam state is
         if (!vpPlane.empty()) {
-            m_boundingbox.SetExist(true);
+            m_boundingbox_p.SetExist(true);
             bool bRecompute = false;
             if (!bLocalizationMode) {
                 if (mpSystem->MapChanged()) {
@@ -323,8 +387,8 @@ void ViewerAR::Run() {
             Plane *pPlane = vpPlane[0];
             if (pPlane) {
                 if (menu_fixcube) {
-                    // get m_boundingbox in slam word coords:
-                    ComputeAndSetBoundingbox(pPlane->glTpw);
+                    // get m_boundingbox_w
+                    m_boundingbox_w = ComputeBoundingbox_W(pPlane->glTpw);
                     m_is_fix = true;
                     menu_fixcube = false;
                 }
@@ -345,7 +409,7 @@ void ViewerAR::Run() {
                 pPlane->glTpw.Multiply();
 
                 // Draw cube
-                if (menu_drawcube) {
+                if (menu_drawcube && menu_insertcube) {
                     DrawCube();
                 }
 
@@ -441,18 +505,18 @@ bool IsIntersectWithTriangle(
 }
 
 void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
-    if (m_boundingbox.IsExist()) {
+    if (m_boundingbox_p.IsExist()) {
         Eigen::Vector2d left_button;
         if (mp_handler3d->GetLeftButtonPos(left_button)) {
-            m_boundingbox.minTriangleIndex = -1;
+            m_boundingbox_p.minTriangleIndex = -1;
             m_mouseState.SetMousePoseX(
                 left_button.x() - m_scene.GetSceneBarWidth());
             m_mouseState.SetMousePoseY(
                 ObjRecognition::CameraIntrinsic::GetInstance().Height() -
                 left_button.y());
             m_scene.SetIsChangingPlane(false);
-            m_boundingbox.minTriangleIndex = -1;
-            m_boundingbox.SetChangeShapeOffset(0.0);
+            m_boundingbox_p.minTriangleIndex = -1;
+            m_boundingbox_p.SetChangeShapeOffset(0.0);
 
             Eigen::Matrix4d transformationMatrix = Eigen::Matrix4d::Identity();
             Eigen::Matrix4d projectionMatrix = Eigen::Matrix4d::Identity();
@@ -495,12 +559,12 @@ void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
                 Change2PlaneCoords(Twp, CameraPosition_w, true);
             Eigen::Vector3d RayDir_p = Change2PlaneCoords(Twp, RayDir_w, false);
 
-            // m_boundingbox: under plane coords
+            // m_boundingbox_p: under plane coords
             //      intersection
             float minDistance = INT_MAX;
-            for (size_t i = 0; i < m_boundingbox.GetAllTriangles().size();
+            for (size_t i = 0; i < m_boundingbox_p.GetAllTriangles().size();
                  i++) {
-                Triangle thisTriangle = m_boundingbox.GetAllTriangles()[i];
+                Triangle thisTriangle = m_boundingbox_p.GetAllTriangles()[i];
                 if (i == 0) {
                     auto pts = thisTriangle.GetVertex();
                 }
@@ -525,13 +589,13 @@ void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
                         pow((intersectionPoint(2) - CameraPosition_p[2]), 2);
                     if (distance < minDistance) {
                         minDistance = distance;
-                        m_boundingbox.minTriangleIndex = i;
+                        m_boundingbox_p.minTriangleIndex = i;
                     }
                 }
             }
 
             // draw this intersection plane
-            if (m_boundingbox.minTriangleIndex != -1) {
+            if (m_boundingbox_p.minTriangleIndex != -1) {
                 m_scene.SetIsChangingPlane(true);
 
                 // draw: under plane coords:
@@ -539,18 +603,22 @@ void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
                 Twp.Multiply();
                 glBegin(GL_QUADS);
                 glColor3f(0.0f, 0.0f, 1.0f);
-                glVertex3fv(m_boundingbox.m_vertex_list_p
-                                [m_boundingbox.triangle_plane
-                                     [m_boundingbox.minTriangleIndex + 1][0]]);
-                glVertex3fv(m_boundingbox.m_vertex_list_p
-                                [m_boundingbox.triangle_plane
-                                     [m_boundingbox.minTriangleIndex + 1][1]]);
-                glVertex3fv(m_boundingbox.m_vertex_list_p
-                                [m_boundingbox.triangle_plane
-                                     [m_boundingbox.minTriangleIndex + 1][2]]);
-                glVertex3fv(m_boundingbox.m_vertex_list_p
-                                [m_boundingbox.triangle_plane
-                                     [m_boundingbox.minTriangleIndex + 1][3]]);
+                glVertex3fv(
+                    m_boundingbox_p.m_vertex_list_p
+                        [m_boundingbox_p.triangle_plane
+                             [m_boundingbox_p.minTriangleIndex + 1][0]]);
+                glVertex3fv(
+                    m_boundingbox_p.m_vertex_list_p
+                        [m_boundingbox_p.triangle_plane
+                             [m_boundingbox_p.minTriangleIndex + 1][1]]);
+                glVertex3fv(
+                    m_boundingbox_p.m_vertex_list_p
+                        [m_boundingbox_p.triangle_plane
+                             [m_boundingbox_p.minTriangleIndex + 1][2]]);
+                glVertex3fv(
+                    m_boundingbox_p.m_vertex_list_p
+                        [m_boundingbox_p.triangle_plane
+                             [m_boundingbox_p.minTriangleIndex + 1][3]]);
                 glEnd();
                 glPopMatrix();
             } else {
@@ -559,10 +627,10 @@ void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
         }
 
         if (m_scene.GetIsChangingPlane()) {
-            float offset = m_boundingbox.GetChangeShapeOffset();
-            m_boundingbox.ChangePlane(
-                m_boundingbox.minTriangleIndex / 2, offset);
-            m_boundingbox.SetChangeShapeOffset(0.0);
+            float offset = m_boundingbox_p.GetChangeShapeOffset();
+            m_boundingbox_p.ChangePlane(
+                m_boundingbox_p.minTriangleIndex / 2, offset);
+            m_boundingbox_p.SetChangeShapeOffset(0.0);
         }
     }
 }
@@ -610,8 +678,9 @@ void ViewerAR::DrawCube(const float x, const float y, const float z) {
     glBegin(GL_LINES);
     for (i = 0; i < 12; ++i) {
         for (j = 0; j < 2; ++j) {
-            glVertex3fv(m_boundingbox
-                            .m_vertex_list_p[m_boundingbox.m_index_list[i][j]]);
+            glVertex3fv(
+                m_boundingbox_p
+                    .m_vertex_list_p[m_boundingbox_p.m_index_list[i][j]]);
         }
     }
     glEnd();

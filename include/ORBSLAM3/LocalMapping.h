@@ -119,6 +119,7 @@ public:
     // not consider far points (clouds)
     bool mbFarPoints;
     float mThFarPoints;
+    bool mbRGB;
 
 protected:
     bool CheckNewKeyFrames();

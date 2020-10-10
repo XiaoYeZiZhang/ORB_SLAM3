@@ -70,6 +70,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include/PoseSolver)
 include_directories(${PROJECT_SOURCE_DIR}/Thirdparty)
 
 set (ORBSLAM3_FILES
+        include/ORBSLAM3/Synchronizer.h
         src/ORBSLAM3/ScannerStruct/Struct.cc
         src/ORBSLAM3/System.cc
         src/ORBSLAM3/Tracking.cc
@@ -346,6 +347,14 @@ add_executable(objectRecognition_test
         Examples/ObjectRecognition/objectRecognition_test.cc)
 target_link_libraries(objectRecognition_test ${PROJECT_NAME})
 
+add_executable(objectRecognition_test_mydata
+        Examples/ObjectRecognition/objectRecognition_test_mydata.cc)
+target_link_libraries(objectRecognition_test_mydata ${PROJECT_NAME})
+
 add_executable(scanner_test
         Examples/ObjectRecognition/scanner_test.cc)
 target_link_libraries(scanner_test ${PROJECT_NAME})
+
+add_executable(scanner_test_mydata
+        Examples/ObjectRecognition/scanner_test_mydata.cc)
+target_link_libraries(scanner_test_mydata ${PROJECT_NAME})

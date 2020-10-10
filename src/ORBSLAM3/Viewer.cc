@@ -467,7 +467,10 @@ void Viewer::Draw() {
                 }
 
                 PrintStatusForViewer(status, im);
+#ifdef MYDATA
+#else
                 cv::cvtColor(im, im, CV_GRAY2RGB);
+#endif
                 DrawImageTexture(imageTexture, im);
 
                 // draw boundingbox:

@@ -171,6 +171,8 @@ public:
     // cv::Mat M1r, M2r;
 
     bool mbWriteStats;
+    // Color order (true RGB, false BGR, ignored if grayscale)
+    bool mbRGB;
 
 protected:
     // Main tracking function. It is independent of the input sensor.
@@ -313,9 +315,6 @@ protected:
 
     // Motion Model
     cv::Mat mVelocity;
-
-    // Color order (true RGB, false BGR, ignored if grayscale)
-    bool mbRGB;
 
     list<MapPoint *> mlpTemporalPoints;
 

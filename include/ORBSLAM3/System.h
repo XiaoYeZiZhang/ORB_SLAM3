@@ -171,7 +171,7 @@ public:
     // void SaveAtlas(int type);
 
     bool PackAtlasToMemoryFor3DObject(char **buffer_out, int &buffer_out_len);
-    void SetBoundingbox(const std::vector<Eigen::Vector3d> &boundingbox);
+    void SetScanBoundingbox_W(const std::vector<Eigen::Vector3d> &boundingbox);
 
     // ObjectRecognition
     void SetPointCloudModel(
@@ -181,6 +181,7 @@ public:
 
     // The viewer draws the map and the current camera pose. It uses Pangolin.
     Viewer *mpViewer;
+    Atlas *mpAtlas;
 
 private:
     // bool LoadAtlas(string filename, int type);
@@ -199,7 +200,6 @@ private:
 
     // Map structure that stores the pointers to all KeyFrames and MapPoints.
     // Map* mpMap;
-    Atlas *mpAtlas;
 
     // Tracker. It receives a frame and computes the associated camera pose.
     // It also decides when to insert a new keyframe, create some new MapPoints
