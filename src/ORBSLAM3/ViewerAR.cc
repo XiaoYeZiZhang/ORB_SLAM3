@@ -120,25 +120,32 @@ void ViewerAR::SetCameraCalibration(
     cy = cy_;
 }
 
-int ViewerAR::GetCurrentMapPointNumInBBX(
-    const vector<Plane *> &vpPlane, const bool &is_insert_cube) {
-    int mappoint_num = -1;
+std::vector<Map *> ViewerAR::GetAllMapPoints() {
+    std::vector<Map *> saved_map;
+    struct compFunctor {
+        inline bool operator()(Map *elem1, Map *elem2) {
+            return elem1->GetId() < elem2->GetId();
+        }
+    };
+    std::copy(
+        mpSystem->mpAtlas->mspMaps.begin(), mpSystem->mpAtlas->mspMaps.end(),
+        std::back_inserter(saved_map));
+    sort(saved_map.begin(), saved_map.end(), compFunctor());
+    return saved_map;
+}
+
+std::vector<double> ViewerAR::GetCurrentMapPointNumInBBX(
+    const vector<Plane *> &vpPlane, const bool &is_insert_cube,
+    int &mappoint_num_inbbx) {
+    mappoint_num_inbbx = -1;
     if (!is_insert_cube) {
-        return mappoint_num;
+        return std::vector<double>();
     }
+    std::vector<double> result;
     if (!vpPlane.empty()) {
-        mappoint_num = 0;
+        mappoint_num_inbbx = 0;
         Plane *pPlane = vpPlane[0];
-        std::vector<Map *> saved_map;
-        struct compFunctor {
-            inline bool operator()(Map *elem1, Map *elem2) {
-                return elem1->GetId() < elem2->GetId();
-            }
-        };
-        std::copy(
-            mpSystem->mpAtlas->mspMaps.begin(),
-            mpSystem->mpAtlas->mspMaps.end(), std::back_inserter(saved_map));
-        sort(saved_map.begin(), saved_map.end(), compFunctor());
+
         vector<Eigen::Vector3d> boundingbox_w =
             ComputeBoundingbox_W(pPlane->glTpw);
         double bbx_xmin = 10000;
@@ -170,6 +177,8 @@ int ViewerAR::GetCurrentMapPointNumInBBX(
             }
         }
 
+        result = {bbx_xmin, bbx_ymin, bbx_zmin, bbx_xmax, bbx_ymax, bbx_zmax};
+        std::vector<Map *> saved_map = GetAllMapPoints();
         for (Map *pMi : saved_map) {
             for (MapPoint *pMPi : pMi->GetAllMapPoints()) {
                 cv::Mat tmpPos = pMPi->GetWorldPos();
@@ -180,12 +189,61 @@ int ViewerAR::GetCurrentMapPointNumInBBX(
                     tmpPos.at<float>(1) <= bbx_ymax &&
                     tmpPos.at<float>(2) >= bbx_zmin &&
                     tmpPos.at<float>(2) <= bbx_zmax) {
-                    mappoint_num++;
+                    mappoint_num_inbbx++;
                 }
             }
         }
     }
-    return mappoint_num;
+    return result;
+}
+
+void ViewerAR::ProjectMapPointInImage(
+    const cv::Mat &Tcw, const std::vector<double> &bbx,
+    std::vector<cv::KeyPoint> &keypoints_outbbx,
+    std::vector<cv::KeyPoint> &keypoints_inbbx) {
+
+    keypoints_outbbx.clear();
+    keypoints_inbbx.clear();
+    if (Tcw.empty()) {
+        VLOG(0) << "Tcw is null";
+        return;
+    }
+
+    std::vector<Map *> saved_map = GetAllMapPoints();
+    for (Map *pMi : saved_map) {
+        for (MapPoint *pMPi : pMi->GetAllMapPoints()) {
+            cv::Mat tmpPos = pMPi->GetWorldPos();
+            Eigen::Vector3d pos_w;
+            Eigen::Matrix4d Tcw_eigen;
+            cv2eigen(tmpPos, pos_w);
+            cv2eigen(Tcw, Tcw_eigen);
+            Eigen::Vector4d pos_w_4 =
+                Eigen::Vector4d(pos_w(0), pos_w(1), pos_w(2), 1.0);
+            Eigen::Vector4d pos_c = Tcw_eigen * pos_w_4;
+            Eigen::Vector3d pos_c_3 = Eigen::Vector3d(
+                pos_c(0) / pos_c(3), pos_c(1) / pos_c(3), pos_c(2) / pos_c(3));
+            // TODO(zhangye): distort???
+            Eigen::Vector3d pos_i =
+                ObjRecognition::CameraIntrinsic::GetInstance().GetEigenK() *
+                pos_c_3;
+            Eigen::Vector2d pos_i_2 =
+                Eigen::Vector2d(pos_i(0) / pos_i(2), pos_i(1) / pos_i(2));
+            // change cv::point2f to cv::keypoint
+            cv::KeyPoint kp(cv::Point2f(pos_i_2(0), pos_i_2(1)), 8);
+
+            if (!bbx.empty() && tmpPos.at<float>(0) >= bbx[0] &&
+                tmpPos.at<float>(0) <= bbx[3] &&
+                tmpPos.at<float>(1) >= bbx[1] &&
+                tmpPos.at<float>(1) <= bbx[4] &&
+                tmpPos.at<float>(2) >= bbx[2] &&
+                tmpPos.at<float>(2) <= bbx[5]) {
+                keypoints_inbbx.emplace_back(kp);
+            } else {
+                keypoints_outbbx.emplace_back(kp);
+            }
+        }
+    }
+    return;
 }
 
 void ViewerAR::Run() {
@@ -225,6 +283,7 @@ void ViewerAR::Run() {
     pangolin::Var<bool> menu_drawim("menu.Draw Image", true, true);
     pangolin::Var<bool> menu_drawcube("menu.Draw Cube", true, true);
     pangolin::Var<float> menu_cubesize("menu. Cube Size", 0.05, 0.01, 0.3);
+
     m_boundingbox_p.SetSize(menu_cubesize);
     // if draw plane
     pangolin::Var<bool> menu_drawgrid("menu.Draw Grid", true, true);
@@ -233,7 +292,8 @@ void ViewerAR::Run() {
     // plane gird size
     pangolin::Var<float> menu_sizegrid("menu. Element Size", 0.05, 0.01, 0.3);
     pangolin::Var<bool> menu_drawpoints("menu.Draw Points", false, true);
-
+    pangolin::Var<bool> menu_drawMappoints(
+        "menu. Draw Projected Mappoints", true, true);
     // handle keyboard event
     std::function<void(void)> decrease_shape_key_callback =
         std::bind(&ViewerAR::decrease_shape, this);
@@ -313,9 +373,13 @@ void ViewerAR::Run() {
         }
 
         // get mappoint num in boundingbox
-        int current_num = GetCurrentMapPointNumInBBX(vpPlane, menu_insertcube);
+        int current_num_inbbx = 0;
+        std::vector<double> bbx;
+        bbx = GetCurrentMapPointNumInBBX(
+            vpPlane, menu_insertcube, current_num_inbbx);
+
         // Add text to image
-        PrintStatus(status, bLocalizationMode, current_num, im);
+        PrintStatus(status, bLocalizationMode, current_num_inbbx, im);
 #ifdef MYDATA
 #else
         cv::cvtColor(im, im, CV_GRAY2RGB);
@@ -325,11 +389,22 @@ void ViewerAR::Run() {
             DrawTrackedPoints(vKeys, vMPs, im);
 
         // Draw image
-        if (menu_drawim)
+        if (menu_drawim) {
+            if (menu_drawMappoints) {
+                std::vector<cv::KeyPoint> keypoints_outbbx;
+                std::vector<cv::KeyPoint> keypoints_inbbx;
+                ProjectMapPointInImage(
+                    Tcw, bbx, keypoints_outbbx, keypoints_inbbx);
+                cv::drawKeypoints(
+                    im, keypoints_outbbx, im, cv::Scalar(255, 0, 255));
+                cv::drawKeypoints(
+                    im, keypoints_inbbx, im, cv::Scalar(0, 255, 255));
+            }
+
             DrawImageTexture(imageTexture, im);
+        }
 
         ObjRecognition::GlobalOcvViewer::DrawAllView();
-
         glClear(GL_DEPTH_BUFFER_BIT);
 
         // Load m_camera projection

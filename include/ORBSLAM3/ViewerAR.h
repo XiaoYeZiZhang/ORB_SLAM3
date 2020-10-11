@@ -158,8 +158,14 @@ public:
 
     // Main thread function.
     void Run();
-    int GetCurrentMapPointNumInBBX(
-        const vector<Plane *> &vpPlane, const bool &is_insert_cube);
+    std::vector<Map *> GetAllMapPoints();
+    void ProjectMapPointInImage(
+        const cv::Mat &Tcw, const std::vector<double> &bbx,
+        std::vector<cv::KeyPoint> &keypoints_outbbx,
+        std::vector<cv::KeyPoint> &keypoints_inbbx);
+    std::vector<double> GetCurrentMapPointNumInBBX(
+        const vector<Plane *> &vpPlane, const bool &is_insert_cube,
+        int &mappoint_num_inbbx);
 
     void ChangeShape(pangolin::OpenGlMatrix);
     void SetCameraCalibration(

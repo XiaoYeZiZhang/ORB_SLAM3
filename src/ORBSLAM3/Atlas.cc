@@ -322,6 +322,7 @@ unsigned int Atlas::GetMemSizeFor3DObject(const std::string &version) {
 
         if (m_saved_mappoint_for_3dobject_.size() == 0) {
             LOG(ERROR) << "There is no mappoint in boundingbox, exit";
+            return 0;
         }
 
         VLOG(10) << "getmemsize2" << nTotalSize;

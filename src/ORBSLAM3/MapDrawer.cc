@@ -424,8 +424,8 @@ void MapDrawer::SetCurrentCameraPose(const cv::Mat &Tcw) {
 
 void MapDrawer::DrawCameraTrajectory(const std::vector<cv::Mat> &trajectory) {
     glPointSize(mPointSize);
-    glBegin(GL_LINE_STRIP);
     glColor3f(1.0, 1.0, 0.0);
+    glBegin(GL_LINE_STRIP);
     for (const auto &p : trajectory) {
         if (p.cols > 0 && p.rows > 0) {
             glVertex3f(p.at<float>(0), p.at<float>(1), p.at<float>(2));
