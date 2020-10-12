@@ -26,8 +26,9 @@
 
 #include<opencv2/core/core.hpp>
 
-#include<System.h>
 #include "ImuTypes.h"
+#include <System.h>
+#include <cxeigen.hpp>
 
 using namespace std;
 
@@ -37,6 +38,8 @@ void LoadImages(const string &strImagePath, const string &strPathTimes,
 void LoadIMU(const string &strImuPath, vector<double> &vTimeStamps, vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro);
 
 double ttrack_tot = 0;
+
+
 int main(int argc, char *argv[])
 {
 
@@ -82,8 +85,8 @@ int main(int argc, char *argv[])
         string pathSeq(argv[(2*seq) + 3]);
         string pathTimeStamps(argv[(2*seq) + 4]);
 
-        string pathCam0 = pathSeq + "/mav0/cam0/data";
-        string pathImu = pathSeq + "/mav0/imu0/data.csv";
+        string pathCam0 = pathSeq + "/cam0/data";
+        string pathImu = pathSeq + "/imu0/data.csv";
 
         LoadImages(pathCam0, pathTimeStamps, vstrImageFilenames[seq], vTimestampsCam[seq]);
         cout << "LOADED!" << endl;
@@ -103,9 +106,9 @@ int main(int argc, char *argv[])
         }
 
         // Find first imu to be considered, supposing imu measurements start first
-
-        while(vTimestampsImu[seq][first_imu[seq]]<=vTimestampsCam[seq][0])
-            first_imu[seq]++;
+        while(vTimestampsImu[seq][first_imu[seq]]<=vTimestampsCam[seq][0]) {
+          first_imu[seq]++;
+        }
         first_imu[seq]--; // first imu measurement to be considered
 
     }
@@ -122,10 +125,10 @@ int main(int argc, char *argv[])
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::IMU_MONOCULAR, true);
-
     int proccIm=0;
     for (seq = 0; seq<num_seq; seq++)
     {
+
 
         // Main loop
         cv::Mat im;
@@ -239,7 +242,8 @@ void LoadImages(const string &strImagePath, const string &strPathTimes,
         {
             stringstream ss;
             ss << s;
-            vstrImages.push_back(strImagePath + "/" + ss.str() + ".png");
+//            vstrImages.push_back(strImagePath + "/" + ss.str() + ".png");
+          vstrImages.push_back(strImagePath + "/" + ss.str());
             double t;
             ss >> t;
             vTimeStamps.push_back(t/1e9);

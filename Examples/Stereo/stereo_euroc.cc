@@ -70,8 +70,8 @@ int main(int argc, char **argv)
         string pathSeq(argv[(2*seq) + 3]);
         string pathTimeStamps(argv[(2*seq) + 4]);
 
-        string pathCam0 = pathSeq + "/mav0/cam0/data";
-        string pathCam1 = pathSeq + "/mav0/cam1/data";
+        string pathCam0 = pathSeq + "/cam0/data";
+        string pathCam1 = pathSeq + "/cam1/data";
 
         LoadImages(pathCam0, pathCam1, pathTimeStamps, vstrImageLeft[seq], vstrImageRight[seq], vTimestampsCam[seq]);
         cout << "LOADED!" << endl;
@@ -250,8 +250,8 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, const str
         {
             stringstream ss;
             ss << s;
-            vstrImageLeft.push_back(strPathLeft + "/" + ss.str() + ".png");
-            vstrImageRight.push_back(strPathRight + "/" + ss.str() + ".png");
+            vstrImageLeft.push_back(strPathLeft + "/" + ss.str());
+            vstrImageRight.push_back(strPathRight + "/" + ss.str());
             double t;
             ss >> t;
             vTimeStamps.push_back(t/1e9);

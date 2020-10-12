@@ -2607,8 +2607,10 @@ bool Tracking::TrackLocalMap()
     // Decide if the tracking was succesful
     // More restrictive if there was a relocalization recently
     mpLocalMapper->mnMatchesInliers=mnMatchesInliers;
-    if(mCurrentFrame.mnId<mnLastRelocFrameId+mMaxFrames && mnMatchesInliers<50)
-        return false;
+    if(mCurrentFrame.mnId<mnLastRelocFrameId+mMaxFrames && mnMatchesInliers<50) {
+      std::cout << "inlier smaller than 50" << std::endl;
+      return false;
+    }
 
     if((mnMatchesInliers>10)&&(mState==RECENTLY_LOST))
         return true;
@@ -2627,6 +2629,7 @@ bool Tracking::TrackLocalMap()
     {
         if(mnMatchesInliers<15)
         {
+          std::cout << "inlier smaller than 15" << std::endl;
             return false;
         }
         else

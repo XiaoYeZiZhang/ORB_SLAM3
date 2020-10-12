@@ -26,10 +26,10 @@
 
 #include <opencv2/core/core.hpp>
 
-
-#include<System.h>
 #include "ImuTypes.h"
 #include "Optimizer.h"
+#include <System.h>
+#include <cxeigen.hpp>
 
 using namespace std;
 
@@ -38,9 +38,81 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, const str
 
 void LoadIMU(const string &strImuPath, vector<double> &vTimeStamps, vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro);
 
+void GetRectify(char** argv) {
+  cv::FileStorage fsSettings(argv[2], cv::FileStorage::READ);
+  double fx = fsSettings["Camera.fx"];
+  double fy = fsSettings["Camera.fy"];
+  double cx = fsSettings["Camera.cx"];
+  double cy = fsSettings["Camera.cy"];
+  cv::Mat cameraMatrix1;
+  cameraMatrix1 = cv::Mat::zeros(cv::Size(3, 3), CV_64FC1);
+  cameraMatrix1.at<double>(0, 0) = fx;
+  cameraMatrix1.at<double>(1, 1) = fy;
+  cameraMatrix1.at<double>(0, 2) = cx;
+  cameraMatrix1.at<double>(1, 2) = cy;
+  cameraMatrix1.at<double>(2, 2) = 1;
+
+
+  cv::Mat distcoeffs1;
+   fsSettings["LEFT.D"] >> distcoeffs1;
+
+  cv::Mat cameraMatrix2;
+  cameraMatrix2 = cv::Mat::zeros(cv::Size(3, 3), CV_64FC1);
+  cameraMatrix2.at<double>(0, 0) = fx;
+  cameraMatrix2.at<double>(1, 1) = fy;
+  cameraMatrix2.at<double>(0, 2) = cx;
+  cameraMatrix2.at<double>(1, 2) = cy;
+  cameraMatrix2.at<double>(2, 2) = 1;
+
+  cv::Mat distcoeffs2;
+  fsSettings["RIGHT.D"] >> distcoeffs2;
+
+  int height = fsSettings["LEFT.height"];
+  int width = fsSettings["LEFT.width"];
+  cv::Size imageSize = cv::Size(width, height);
+
+  cv::Mat Tbl_cv;
+  fsSettings["Tbc"] >> Tbl_cv;
+  cv::Mat Tbr_cv;
+  fsSettings["slave_T_BS"] >> Tbr_cv;
+
+
+  Eigen::Matrix4d Tbl = Eigen::Matrix4d::Identity();
+  Eigen::Matrix4d Tbr = Eigen::Matrix4d::Identity();
+
+  cv::cv2eigen(Tbl_cv, Tbl);
+  cv::cv2eigen(Tbr_cv, Tbr);
+
+  Eigen::Matrix4d Trl = Tbr.inverse() * Tbl;
+  Eigen::Matrix3d Rrl = Trl.block<3,3>(0,0);
+  Eigen::Vector3d trl = Trl.block<3,1>(0,3);
+
+  std::cout << "baseline times fx:" << sqrt(trl(0) * trl(0)
+                                            + trl(1) * trl(1) + trl(2) * trl(2)) * 384.35386606462447 << std::endl;
+  cv::Mat R;
+  cv::Mat T;
+
+  cv::eigen2cv(Rrl, R);
+  cv::eigen2cv(trl, T);
+
+  cv::Mat R1;
+  cv::Mat R2;
+  cv::Mat p1;
+  cv::Mat p2;
+  cv::Mat Q;
+
+  cv::stereoRectify(cameraMatrix1, distcoeffs1, cameraMatrix2, distcoeffs2,
+                    imageSize, R, T, R1, R2, p1, p2, Q);
+
+  std::cout << "R1:" << R1 << std::endl;
+  std::cout << "R2: " << R2 << std::endl;
+  std::cout << "P1:" << p1 << std::endl;
+  std::cout << "P2: " << p2 << std::endl;
+}
 
 int main(int argc, char **argv)
 {
+    GetRectify(argv);
     if(argc < 5)
     {
         cerr << endl << "Usage: ./stereo_inertial_euroc path_to_vocabulary path_to_settings path_to_sequence_folder_1 path_to_times_file_1 (path_to_image_folder_2 path_to_times_file_2 ... path_to_image_folder_N path_to_times_file_N) " << endl;
@@ -85,9 +157,9 @@ int main(int argc, char **argv)
         string pathSeq(argv[(2*seq) + 3]);
         string pathTimeStamps(argv[(2*seq) + 4]);
 
-        string pathCam0 = pathSeq + "/mav0/cam0/data";
-        string pathCam1 = pathSeq + "/mav0/cam1/data";
-        string pathImu = pathSeq + "/mav0/imu0/data.csv";
+        string pathCam0 = pathSeq + "/cam0/data";
+        string pathCam1 = pathSeq + "/cam1/data";
+        string pathImu = pathSeq + "/imu0/data.csv";
 
         LoadImages(pathCam0, pathCam1, pathTimeStamps, vstrImageLeft[seq], vstrImageRight[seq], vTimestampsCam[seq]);
         cout << "LOADED!" << endl;
@@ -295,8 +367,8 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, const str
         {
             stringstream ss;
             ss << s;
-            vstrImageLeft.push_back(strPathLeft + "/" + ss.str() + ".png");
-            vstrImageRight.push_back(strPathRight + "/" + ss.str() + ".png");
+            vstrImageLeft.push_back(strPathLeft + "/" + ss.str());
+            vstrImageRight.push_back(strPathRight + "/" + ss.str());
             double t;
             ss >> t;
             vTimeStamps.push_back(t/1e9);

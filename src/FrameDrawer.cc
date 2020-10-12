@@ -372,9 +372,9 @@ void FrameDrawer::DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText)
     else if(nState==Tracking::OK)
     {
         if(!mbOnlyTracking)
-            s << "SLAM MODE |  ";
+            s << "SLAM MODE | OK |  ";
         else
-            s << "LOCALIZATION | ";
+            s << "LOCALIZATION | OK | ";
         int nMaps = mpAtlas->CountMaps();
         int nKFs = mpAtlas->KeyFramesInMap();
         int nMPs = mpAtlas->MapPointsInMap();
@@ -389,6 +389,9 @@ void FrameDrawer::DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText)
     else if(nState==Tracking::SYSTEM_NOT_READY)
     {
         s << " LOADING ORB VOCABULARY. PLEASE WAIT...";
+    }
+    else if(nState == Tracking::RECENTLY_LOST) {
+        s << "TRACK RECENTLY LOST.";
     }
 
     int baseline=0;
