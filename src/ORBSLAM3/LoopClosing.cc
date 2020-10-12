@@ -68,7 +68,8 @@ void LoopClosing::Run() {
             }
             if (NewDetectCommonRegions()) {
                 if (mbMergeDetected) {
-                    if ((mpTracker->mSensor == System::IMU_MONOCULAR) &&
+                    if ((mpTracker->mSensor == System::IMU_MONOCULAR ||
+                         mpTracker->mSensor == System::IMU_STEREO) &&
                         (!mpCurrentKF->GetMap()->isImuInitialized())) {
                         cout << "IMU is not initilized, merge is aborted"
                              << endl;
@@ -114,7 +115,8 @@ void LoopClosing::Run() {
                                 continue;
                             }
                             // If inertial, force only yaw
-                            if ((mpTracker->mSensor == System::IMU_MONOCULAR) &&
+                            if ((mpTracker->mSensor == System::IMU_MONOCULAR ||
+                                 mpTracker->mSensor == System::IMU_STEREO) &&
                                 mpCurrentKF->GetMap()
                                     ->GetIniertialBA1()) // TODO, maybe with
                                                          // GetIniertialBA1
@@ -144,7 +146,8 @@ void LoopClosing::Run() {
                         mg2oMergeScw = mg2oMergeSlw;
 
                         // TODO UNCOMMENT
-                        if (mpTracker->mSensor == System::IMU_MONOCULAR)
+                        if (mpTracker->mSensor == System::IMU_MONOCULAR ||
+                            mpTracker->mSensor == System::IMU_STEREO)
                             MergeLocal2();
                         else
                             MergeLocal();
@@ -208,7 +211,9 @@ void LoopClosing::Run() {
                             if (mpCurrentKF->GetMap()->IsInertial()) {
                                 // If inertial, force only yaw
                                 if ((mpTracker->mSensor ==
-                                     System::IMU_MONOCULAR) &&
+                                         System::IMU_MONOCULAR ||
+                                     mpTracker->mSensor ==
+                                         System::IMU_STEREO) &&
                                     mpCurrentKF->GetMap()
                                         ->GetIniertialBA2()) // TODO, maybe with
                                                              // GetIniertialBA1
@@ -296,6 +301,14 @@ bool LoopClosing::NewDetectCommonRegions() {
     }
 
     if (mpLastMap->IsInertial() && !mpLastMap->GetIniertialBA1()) {
+        mpKeyFrameDB->add(mpCurrentKF);
+        mpCurrentKF->SetErase();
+        return false;
+    }
+
+    if (mpTracker->mSensor == System::STEREO &&
+        mpLastMap->GetAllKeyFrames().size() < 5) // 12
+    {
         mpKeyFrameDB->add(mpCurrentKF);
         mpCurrentKF->SetErase();
         return false;
@@ -1877,7 +1890,8 @@ void LoopClosing::MergeLocal() {
     std::copy(
         spMergeConnectedKFs.begin(), spMergeConnectedKFs.end(),
         std::back_inserter(vpMergeConnectedKFs));
-    if (mpTracker->mSensor == System::IMU_MONOCULAR) {
+    if (mpTracker->mSensor == System::IMU_MONOCULAR ||
+        mpTracker->mSensor == System::IMU_STEREO) {
         Verbose::PrintMess(
             "MERGE-VISUAL: Visual-Inertial", Verbose::VERBOSITY_DEBUG);
         Optimizer::MergeInertialBA(
@@ -2236,7 +2250,8 @@ void LoopClosing::MergeLocal2() {
 
     const int numKFnew = pCurrentMap->KeyFramesInMap();
 
-    if ((mpTracker->mSensor == System::IMU_MONOCULAR) &&
+    if ((mpTracker->mSensor == System::IMU_MONOCULAR ||
+         mpTracker->mSensor == System::IMU_STEREO) &&
         !pCurrentMap->GetIniertialBA2()) {
         // Map is not completly initialized
         Eigen::Vector3d bg, ba;

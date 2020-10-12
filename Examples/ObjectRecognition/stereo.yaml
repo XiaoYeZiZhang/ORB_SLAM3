@@ -1,0 +1,7 @@
+%YAML:1.0
+Mappoint_saved_filename: "box.bin"
+SLAM_saved_path: "/home/zhangye/data/saved"
+Voc_path: "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/ORBvoc.txt"
+Data_path: "/home/zhangye/data/objectRecognition/scan_realsense/1602479931"
+Config_path: "/home/zhangye/data/objectRecognition/scan_realsense/realsense_stereo_params.yaml"
+Dataset_name: "dataset_box"

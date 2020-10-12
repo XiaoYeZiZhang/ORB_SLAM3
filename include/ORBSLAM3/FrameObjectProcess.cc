@@ -156,11 +156,7 @@ void FrameObjectProcess::ProcessFrame(ORB_SLAM3::KeyFrame *&pKF) {
     featureInfo += std::to_string(keypoints_new.size()) + " ";
     cv::Mat show = img.clone();
 
-#ifdef MYDATA
-#else
     cv::cvtColor(show, show, CV_GRAY2BGR);
-#endif
-
     cv::drawKeypoints(show, keypoints_new, show);
 
     cv::Mat img_txt;

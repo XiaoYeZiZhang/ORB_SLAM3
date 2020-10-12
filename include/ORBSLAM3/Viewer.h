@@ -76,7 +76,8 @@ public:
 
     void DrawSLAMInit();
     void DrawObjRecognitionInit();
-    void DrawBoundingboxInImage(const vector<Eigen::Vector3d> &boundingbox);
+    static void
+    DrawBoundingboxInImage(const vector<Eigen::Vector3d> &boundingbox);
     void
     DrawPointCloudInImage(const std::vector<Eigen::Vector3d> &pointcloud_pos);
 

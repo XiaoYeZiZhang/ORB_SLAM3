@@ -24,6 +24,7 @@
 #include "Visualizer/GlobalImageViewer.h"
 #include "ORBSLAM3/Viewer.h"
 #include "ORBSLAM3/ViewerCommon.h"
+#include "mode.h"
 namespace ORB_SLAM3 {
 
 Viewer::Viewer(
@@ -266,7 +267,9 @@ void Viewer::Draw() {
     bool bStepByStep = false;
     bool bCameraView = true;
 
-    if (mpTracker->mSensor == mpSystem->MONOCULAR) {
+    if (mpTracker->mSensor == mpSystem->MONOCULAR ||
+        mpTracker->mSensor == mpSystem->STEREO ||
+        mpTracker->mSensor == mpSystem->RGBD) {
         *menuShowGraph = true;
     }
 
@@ -275,6 +278,7 @@ void Viewer::Draw() {
         *menuShowCameraTrajectory = true;
     }
 
+#ifdef OBJECTRECOGNITION
     // for objrecognition
     int w = ObjRecognition::CameraIntrinsic::GetInstance().Width();
     int h = ObjRecognition::CameraIntrinsic::GetInstance().Height();
@@ -288,6 +292,7 @@ void Viewer::Draw() {
         w, h, fx, fy, cx, cy, 0.001, 1000);
     cv::Mat im;
     int status;
+#endif
 
     while (1) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -451,6 +456,7 @@ void Viewer::Draw() {
                 *menuStop = false;
             }
         } else {
+#ifdef OBJECTRECOGNITION
             // draw for objectRecognition:
             d_cam_objRecognition.show = true;
             // Activate m_camera view
@@ -467,10 +473,7 @@ void Viewer::Draw() {
                 }
 
                 PrintStatusForViewer(status, im);
-#ifdef MYDATA
-#else
                 cv::cvtColor(im, im, CV_GRAY2RGB);
-#endif
                 DrawImageTexture(imageTexture, im);
 
                 // draw boundingbox:
@@ -537,6 +540,7 @@ void Viewer::Draw() {
                 glPopMatrix();
                 DrawPointCloudInImage(result.pointCloud_pos);
             }
+#endif
         }
 
         pangolin::FinishFrame();
@@ -589,7 +593,9 @@ void Viewer::Run() {
     pangolin::RegisterKeyPressCallback('s', switch_win_callback);
 
     DrawSLAMInit();
+#ifdef OBJECTRECOGNITION
     DrawObjRecognitionInit();
+#endif
     Draw();
     // DrawObjRecognition();
 }

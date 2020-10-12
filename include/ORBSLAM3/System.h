@@ -80,7 +80,10 @@ public:
     // Input sensor
     enum eSensor {
         MONOCULAR = 0,
+        STEREO = 1,
+        RGBD = 2,
         IMU_MONOCULAR = 3,
+        IMU_STEREO = 4
     };
 
     // File type
@@ -98,6 +101,23 @@ public:
         bool isObjRecognition = false, const int initFr = 0,
         const string &strSequence = std::string(),
         const string &strLoadingFile = std::string());
+
+    // Proccess the given stereo frame. Images must be synchronized and
+    // rectified. Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is
+    // converted to grayscale. Returns the camera pose (empty if tracking
+    // fails).
+    cv::Mat TrackStereo(
+        const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp,
+        const vector<IMU::Point> &vImuMeas = vector<IMU::Point>(),
+        string filename = "");
+
+    // Process the given rgbd frame. Depthmap must be registered to the RGB
+    // frame. Input image: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted
+    // to grayscale. Input depthmap: Float (CV_32F). Returns the camera pose
+    // (empty if tracking fails).
+    cv::Mat TrackRGBD(
+        const cv::Mat &im, const cv::Mat &depthmap, const double &timestamp,
+        string filename = "");
 
     // Proccess the given monocular frame and optionally imu data
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to

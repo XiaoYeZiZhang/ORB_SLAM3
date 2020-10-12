@@ -278,7 +278,7 @@ void ViewerAR::Run() {
     pangolin::Var<bool> menu_insertcube("menu.Insert Cube", false, false);
     pangolin::Var<bool> menu_fixcube("menu.Fix Cube", false, false);
     pangolin::Var<bool> menu_stop("menu.Finish Scan", false, false);
-    pangolin::Var<bool> menu_clear("menu.Clear All", false, false);
+    pangolin::Var<bool> menu_clear("menu.Choose Another Plane", false, false);
     pangolin::Var<bool> menu_debug("menu.Debug", false, false);
     pangolin::Var<bool> menu_drawim("menu.Draw Image", true, true);
     pangolin::Var<bool> menu_drawcube("menu.Draw Cube", true, true);
@@ -380,11 +380,7 @@ void ViewerAR::Run() {
 
         // Add text to image
         PrintStatus(status, bLocalizationMode, current_num_inbbx, im);
-#ifdef MYDATA
-#else
         cv::cvtColor(im, im, CV_GRAY2RGB);
-#endif
-
         if (menu_drawpoints)
             DrawTrackedPoints(vKeys, vMPs, im);
 

@@ -4,7 +4,6 @@
 
 #ifndef ORB_SLAM3_MODE_H
 #define ORB_SLAM3_MODE_H
-#define SCANNER ; // run mono_inertial_ar_test
-//#define OBJECTRECOGNITION ; // run mono_inertial_objectRecognition_test
-#define MYDATA
-#endif // ORB_SLAM3_MODE_H
+//#define SCANNER ; // scanning
+#define OBJECTRECOGNITION ; // object detection and tracking
+#endif                      // ORB_SLAM3_MODE_H

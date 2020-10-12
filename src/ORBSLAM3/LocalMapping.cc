@@ -324,15 +324,7 @@ void LocalMapping::Run() {
 
             // give ObjectRecognition the grey image
             cv::Mat kf;
-#ifdef MYDATA
-            if (mbRGB) {
-                cv::cvtColor(mpCurrentKeyFrame->imgLeft, kf, CV_RGB2GRAY);
-            } else {
-                cv::cvtColor(mpCurrentKeyFrame->imgLeft, kf, CV_BGR2GRAY);
-            }
-#else
             kf = mpCurrentKeyFrame->imgLeft;
-#endif
             ObjRecognition::ObjRecogImageCallbackData callbackImg;
             callbackImg.height = kf.cols;
             callbackImg.width = kf.rows;
@@ -390,6 +382,10 @@ void LocalMapping::ProcessNewKeyFrame() {
         unique_lock<mutex> lock(mMutexNewKFs);
         mpCurrentKeyFrame = mlNewKeyFrames.front();
         mlNewKeyFrames.pop_front();
+    }
+
+    if (mpCurrentKeyFrame->imgLeft.empty()) {
+        LOG(FATAL) << "keyframe for scanner is null";
     }
 
 #ifdef SCANNER

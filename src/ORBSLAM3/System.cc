@@ -59,8 +59,14 @@ System::System(
     m_recognition_mode_ = isObjRecogMode;
     if (mSensor == MONOCULAR)
         VLOG(0) << "ORBSLAM3: Monocular";
+    else if (mSensor == STEREO)
+        VLOG(0) << "ORBSLAM3: Stereo";
+    else if (mSensor == RGBD)
+        VLOG(0) << "ORBSLAM3: RGB-D";
     else if (mSensor == IMU_MONOCULAR)
         VLOG(0) << "ORBSLAM3: Monocular-Inertial";
+    else if (mSensor == IMU_STEREO)
+        VLOG(0) << "ORBSLAM3: Stereo-Inertial";
 
     // Check settings file
     cv::FileStorage fsSettings(strSettingsFile.c_str(), cv::FileStorage::READ);
@@ -162,7 +168,7 @@ System::System(
         //usleep(10*1000*1000);
     }*/
 
-    if (mSensor == IMU_MONOCULAR)
+    if (mSensor == IMU_STEREO || mSensor == IMU_MONOCULAR)
         mpAtlas->SetInertialSensor();
 
     // Create Drawers. These are used by the Viewer
@@ -180,10 +186,9 @@ System::System(
     // Initialize the Local Mapping thread and launch
     mpLocalMapper = new LocalMapping(
         this, mpAtlas, mSensor == MONOCULAR || mSensor == IMU_MONOCULAR,
-        mSensor == IMU_MONOCULAR, strSequence);
+        mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO, strSequence);
 
 #ifdef OBJECTRECOGNITION
-    // set data callback for objectRecognition
     mpLocalMapper->SetObjRecogCallback(ObjRecognitionExd::ObjRecogCallback_V3);
 #endif
 
@@ -231,6 +236,119 @@ System::System(
 
     // Fix verbosity
     Verbose::SetTh(Verbose::VERBOSITY_QUIET);
+}
+
+cv::Mat System::TrackStereo(
+    const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp,
+    const vector<IMU::Point> &vImuMeas, string filename) {
+    if (mSensor != STEREO && mSensor != IMU_STEREO) {
+        cerr << "ERROR: you called TrackStereo but input sensor was not set to "
+                "Stereo nor Stereo-Inertial."
+             << endl;
+        exit(-1);
+    }
+
+    // Check mode change
+    {
+        unique_lock<mutex> lock(mMutexMode);
+        if (mbActivateLocalizationMode) {
+            mpLocalMapper->RequestStop();
+
+            // Wait until Local Mapping has effectively stopped
+            while (!mpLocalMapper->isStopped()) {
+                usleep(1000);
+            }
+
+            mpTracker->InformOnlyTracking(true);
+            mbActivateLocalizationMode = false;
+        }
+        if (mbDeactivateLocalizationMode) {
+            mpTracker->InformOnlyTracking(false);
+            mpLocalMapper->Release();
+            mbDeactivateLocalizationMode = false;
+        }
+    }
+
+    // Check reset
+    {
+        unique_lock<mutex> lock(mMutexReset);
+        if (mbReset) {
+            mpTracker->Reset();
+            cout << "Reset stereo..." << endl;
+            mbReset = false;
+            mbResetActiveMap = false;
+        } else if (mbResetActiveMap) {
+            mpTracker->ResetActiveMap();
+            mbResetActiveMap = false;
+        }
+    }
+
+    if (mSensor == System::IMU_STEREO)
+        for (size_t i_imu = 0; i_imu < vImuMeas.size(); i_imu++)
+            mpTracker->GrabImuData(vImuMeas[i_imu]);
+
+    cv::Mat Tcw =
+        mpTracker->GrabImageStereo(imLeft, imRight, timestamp, filename);
+
+    unique_lock<mutex> lock2(mMutexState);
+    mTrackingState = mpTracker->mState;
+    mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
+    mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
+
+    return Tcw;
+}
+
+cv::Mat System::TrackRGBD(
+    const cv::Mat &im, const cv::Mat &depthmap, const double &timestamp,
+    string filename) {
+    if (mSensor != RGBD) {
+        cerr << "ERROR: you called TrackRGBD but input sensor was not set to "
+                "RGBD."
+             << endl;
+        exit(-1);
+    }
+
+    // Check mode change
+    {
+        unique_lock<mutex> lock(mMutexMode);
+        if (mbActivateLocalizationMode) {
+            mpLocalMapper->RequestStop();
+
+            // Wait until Local Mapping has effectively stopped
+            while (!mpLocalMapper->isStopped()) {
+                usleep(1000);
+            }
+
+            mpTracker->InformOnlyTracking(true);
+            mbActivateLocalizationMode = false;
+        }
+        if (mbDeactivateLocalizationMode) {
+            mpTracker->InformOnlyTracking(false);
+            mpLocalMapper->Release();
+            mbDeactivateLocalizationMode = false;
+        }
+    }
+
+    // Check reset
+    {
+        unique_lock<mutex> lock(mMutexReset);
+        if (mbReset) {
+            mpTracker->Reset();
+            mbReset = false;
+            mbResetActiveMap = false;
+        } else if (mbResetActiveMap) {
+            mpTracker->ResetActiveMap();
+            mbResetActiveMap = false;
+        }
+    }
+
+    cv::Mat Tcw = mpTracker->GrabImageRGBD(im, depthmap, timestamp, filename);
+
+    unique_lock<mutex> lock2(mMutexState);
+    mTrackingState = mpTracker->mState;
+    mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
+    mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
+    return Tcw;
 }
 
 cv::Mat System::TrackMonocular(
@@ -468,7 +586,7 @@ void System::SaveTrajectoryEuRoC(const string &filename) {
     // Transform all keyframes so that the first keyframe is at the origin.
     // After a loop closure the first keyframe might not be at the origin.
     cv::Mat Twb; // Can be word to cam0 or world to b dependingo on IMU or not.
-    if (mSensor == IMU_MONOCULAR)
+    if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO)
         Twb = vpKFs[0]->GetImuPose();
     else
         Twb = vpKFs[0]->GetPoseInverse();
@@ -541,7 +659,7 @@ void System::SaveTrajectoryEuRoC(const string &filename) {
 
         // cout << "4" << endl;
 
-        if (mSensor == IMU_MONOCULAR) {
+        if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO) {
             cv::Mat Tbw = pKF->mImuCalib.Tbc * (*lit) * Trw;
             cv::Mat Rwb = Tbw.rowRange(0, 3).colRange(0, 3).t();
             cv::Mat twb = -Rwb * Tbw.rowRange(0, 3).col(3);
@@ -599,7 +717,7 @@ void System::SaveKeyFrameTrajectoryEuRoC(const string &filename) {
 
         if (pKF->isBad())
             continue;
-        if (mSensor == IMU_MONOCULAR) {
+        if (mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO) {
             cv::Mat R = pKF->GetImuRotation().t();
             vector<float> q = Converter::toQuaternion(R);
             cv::Mat twb = pKF->GetImuPosition();
