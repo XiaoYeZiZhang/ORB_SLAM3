@@ -48,7 +48,7 @@ private:
         const std::vector<cv::Point2f> &points_cur);
     void ShowOpticalFlowpoints(
         const std::vector<cv::Point2d> &opticalFlowKeyPointsPre);
-    void ShowTrackResultAndInliers();
+    void ShowTrackerResult();
     void DrawTextInfo(const cv::Mat &img, cv::Mat &img_txt);
 
 private:
@@ -77,7 +77,8 @@ private:
     std::map<int, MapPointIndex> m_projection_matches2dTo3d_inlier;
     std::map<int, MapPointIndex> m_opticalFlow_matches2dTo3d_inlier;
 
-    std::string info_;
+    std::string m_info;
+    bool m_first_detection_good;
 };
 } // namespace ObjRecognition
 #endif // ORB_SLAM3_TRACKERPOINTCLOUD_H

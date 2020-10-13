@@ -275,7 +275,7 @@ bool Object::LoadPointCloud(const int &mem_size, const char *mem) {
         m_box_scale.data(), mem + mem_pos, 3 * sizeof(double), mem_pos);
 
     GetDataFromMem(&mapPointNum, mem + mem_pos, sizeof(mapPointNum), mem_pos);
-    VLOG(3) << "MapPoint num: " << mapPointNum;
+    VLOG(0) << "MapPoint num: " << mapPointNum;
     m_pointclouds.reserve(mapPointNum);
 
     for (int i = 0; i < mapPointNum; i++) {

@@ -35,9 +35,9 @@ void GetBoxPoint(
     const std::shared_ptr<Object> &mObj,
     std::vector<Eigen::Vector3d> &pointBoxs) {
     std::vector<Eigen::Vector3d> pointsCloud;
-    double xMin = 99999, xMax = -99999;
-    double yMin = 99999, yMax = -99999;
-    double zMin = 99999, zMax = -99999;
+    double xMin = INT_MAX, xMax = INT_MIN;
+    double yMin = INT_MAX, yMax = INT_MIN;
+    double zMin = INT_MAX, zMax = INT_MIN;
     Eigen::Vector3d temp;
     std::vector<MapPoint::Ptr> allMPs = mObj->GetPointClouds();
     for (int i = 0; i < allMPs.size(); i++) {
@@ -63,13 +63,13 @@ void GetBoxPoint(
     }
 
     pointBoxs[0] = Eigen::Vector3d(xMin, yMin, zMin);
-    pointBoxs[1] = Eigen::Vector3d(xMin, yMax, zMin);
+    pointBoxs[1] = Eigen::Vector3d(xMax, yMin, zMin);
     pointBoxs[2] = Eigen::Vector3d(xMin, yMin, zMax);
-    pointBoxs[3] = Eigen::Vector3d(xMin, yMax, zMax);
+    pointBoxs[3] = Eigen::Vector3d(xMax, yMin, zMax);
 
-    pointBoxs[4] = Eigen::Vector3d(xMax, yMin, zMin);
+    pointBoxs[4] = Eigen::Vector3d(xMin, yMax, zMin);
     pointBoxs[5] = Eigen::Vector3d(xMax, yMax, zMin);
-    pointBoxs[6] = Eigen::Vector3d(xMax, yMin, zMax);
+    pointBoxs[6] = Eigen::Vector3d(xMin, yMax, zMax);
     pointBoxs[7] = Eigen::Vector3d(xMax, yMax, zMax);
 }
 
@@ -90,7 +90,7 @@ void FindMatchByKNN(
         const float distanceRatio = bestMatch.distance / betterMatch.distance;
         VLOG(50) << "distanceRatio = " << distanceRatio;
         // the farest distance, the better result
-        const float kMinDistanceRatioThreshld = 0.75;
+        const float kMinDistanceRatioThreshld = 0.70;
         if (distanceRatio < kMinDistanceRatioThreshld) {
             matches.push_back(bestMatch);
         }
@@ -206,76 +206,65 @@ GetTMatrix(const Eigen::Matrix3d &R, const Eigen::Vector3d &t) {
     return T;
 }
 
-void DrawBox(
-    cv::Mat &imgRGB, const Eigen::Isometry3f &T,
-    const std::vector<Eigen::Vector3d> &pointBoxs) {
+void GetPointCloudBoundingBox(
+    const std::shared_ptr<Object> &obj,
+    std::vector<Eigen::Vector3d> &mapPointBoundingBox) {
+    const std::vector<MapPoint::Ptr> pointClouds = obj->GetPointClouds();
+    double xmin = INT_MAX;
+    double ymin = INT_MAX;
+    double zmin = INT_MAX;
+    double xmax = INT_MIN;
+    double ymax = INT_MIN;
+    double zmax = INT_MIN;
+    for (int i = 0; i < pointClouds.size(); i++) {
+        Eigen::Vector3d mapPointPose = pointClouds[i]->GetPose();
+        if (xmin > mapPointPose(0))
+            xmin = mapPointPose(0);
+        if (ymin > mapPointPose(1))
+            ymin = mapPointPose(1);
+        if (zmin > mapPointPose(2))
+            zmin = mapPointPose(2);
+        if (xmax < mapPointPose(0))
+            xmax = mapPointPose(0);
+        if (ymax < mapPointPose(1))
+            ymax = mapPointPose(1);
+        if (zmax < mapPointPose(2))
+            zmax = mapPointPose(2);
+    }
+    Eigen::Vector3d corner0 = Eigen::Vector3d(xmin, ymin, zmin);
+    Eigen::Vector3d corner1 = Eigen::Vector3d(xmax, ymin, zmin);
+    Eigen::Vector3d corner2 = Eigen::Vector3d(xmax, ymax, zmin);
+    Eigen::Vector3d corner3 = Eigen::Vector3d(xmin, ymax, zmin);
+    Eigen::Vector3d corner4 = Eigen::Vector3d(xmin, ymin, zmax);
+    Eigen::Vector3d corner5 = Eigen::Vector3d(xmax, ymin, zmax);
+    Eigen::Vector3d corner6 = Eigen::Vector3d(xmax, ymax, zmax);
+    Eigen::Vector3d corner7 = Eigen::Vector3d(xmin, ymax, zmax);
+    mapPointBoundingBox.emplace_back(corner0);
+    mapPointBoundingBox.emplace_back(corner1);
+    mapPointBoundingBox.emplace_back(corner2);
+    mapPointBoundingBox.emplace_back(corner3);
+    mapPointBoundingBox.emplace_back(corner4);
+    mapPointBoundingBox.emplace_back(corner5);
+    mapPointBoundingBox.emplace_back(corner6);
+    mapPointBoundingBox.emplace_back(corner7);
+}
 
-    const cv::Mat &cameraMatrix = CameraIntrinsic::GetInstance().GetCVK();
-    double fx = cameraMatrix.at<double>(0, 0);
-    double fy = cameraMatrix.at<double>(1, 1);
-    double cx = cameraMatrix.at<double>(0, 2);
-    double cy = cameraMatrix.at<double>(1, 2);
+void DrawBoundingBox(
+    const cv::Mat &showResult, std::vector<cv::Point2d> &boxProjResult,
+    cv::Scalar &color) {
 
-    Eigen::Vector3f tempCameraBox;
-    tempCameraBox = (T * pointBoxs[0].cast<float>());
-    cv::Point2f point2fXiyizi(
-        fx * tempCameraBox.x() / tempCameraBox.z() + cx,
-        fy * tempCameraBox.y() / tempCameraBox.z() + cy);
-    tempCameraBox = (T * pointBoxs[1].cast<float>());
-    cv::Point2f point2fXiyxzi(
-        fx * tempCameraBox.x() / tempCameraBox.z() + cx,
-        fy * tempCameraBox.y() / tempCameraBox.z() + cy);
-    tempCameraBox = (T * pointBoxs[2].cast<float>());
-    cv::Point2f point2fXiyizx(
-        fx * tempCameraBox.x() / tempCameraBox.z() + cx,
-        fy * tempCameraBox.y() / tempCameraBox.z() + cy);
-    tempCameraBox = (T * pointBoxs[3].cast<float>());
-    cv::Point2f point2fXiyxzx(
-        fx * tempCameraBox.x() / tempCameraBox.z() + cx,
-        fy * tempCameraBox.y() / tempCameraBox.z() + cy);
-
-    tempCameraBox = (T * pointBoxs[4].cast<float>());
-    cv::Point2f point2fXxyizi(
-        fx * tempCameraBox.x() / tempCameraBox.z() + cx,
-        fy * tempCameraBox.y() / tempCameraBox.z() + cy);
-    tempCameraBox = (T * pointBoxs[5].cast<float>());
-    cv::Point2f point2fXxyxzi(
-        fx * tempCameraBox.x() / tempCameraBox.z() + cx,
-        fy * tempCameraBox.y() / tempCameraBox.z() + cy);
-    tempCameraBox = (T * pointBoxs[6].cast<float>());
-    cv::Point2f point2fXxyizx(
-        fx * tempCameraBox.x() / tempCameraBox.z() + cx,
-        fy * tempCameraBox.y() / tempCameraBox.z() + cy);
-    tempCameraBox = (T * pointBoxs[7].cast<float>());
-    cv::Point2f point2fXxyxzx(
-        fx * tempCameraBox.x() / tempCameraBox.z() + cx,
-        fy * tempCameraBox.y() / tempCameraBox.z() + cy);
-
-    CvScalar color = CV_RGB(255, 255, 0);
-    cv::line(imgRGB, point2fXiyizi, point2fXiyxzi, color);
-    cv::line(imgRGB, point2fXiyizi, point2fXiyizx, color);
-    cv::line(imgRGB, point2fXiyizi, point2fXxyizi, color);
-    cv::line(imgRGB, point2fXiyxzi, point2fXiyxzx, color);
-
-    cv::line(imgRGB, point2fXiyxzi, point2fXxyxzi, color);
-    cv::line(imgRGB, point2fXiyizx, point2fXiyxzx, color);
-    cv::line(imgRGB, point2fXiyizx, point2fXxyizx, color);
-    cv::line(imgRGB, point2fXiyxzx, point2fXxyxzx, color);
-
-    cv::line(imgRGB, point2fXxyizi, point2fXxyxzi, color);
-    cv::line(imgRGB, point2fXxyizi, point2fXxyizx, color);
-    cv::line(imgRGB, point2fXxyxzi, point2fXxyxzx, color);
-    cv::line(imgRGB, point2fXxyizx, point2fXxyxzx, color);
-
-    drawMarker(imgRGB, point2fXiyizi, cvScalar(255, 255, 0));
-    drawMarker(imgRGB, point2fXiyxzi, cvScalar(255, 255, 0));
-    drawMarker(imgRGB, point2fXiyizx, cvScalar(255, 255, 0));
-    drawMarker(imgRGB, point2fXiyxzx, cvScalar(255, 255, 0));
-
-    drawMarker(imgRGB, point2fXxyizi, cvScalar(255, 255, 0));
-    drawMarker(imgRGB, point2fXxyxzi, cvScalar(255, 255, 0));
-    drawMarker(imgRGB, point2fXxyizx, cvScalar(255, 255, 0));
-    drawMarker(imgRGB, point2fXxyxzx, cvScalar(255, 255, 0));
+    cv::line(showResult, boxProjResult[0], boxProjResult[1], color);
+    cv::line(showResult, boxProjResult[1], boxProjResult[2], color);
+    cv::line(showResult, boxProjResult[2], boxProjResult[3], color);
+    cv::line(showResult, boxProjResult[3], boxProjResult[0], color);
+    cv::line(showResult, boxProjResult[4], boxProjResult[5], color);
+    cv::line(showResult, boxProjResult[5], boxProjResult[6], color);
+    cv::line(showResult, boxProjResult[6], boxProjResult[7], color);
+    cv::line(showResult, boxProjResult[7], boxProjResult[4], color);
+    cv::line(showResult, boxProjResult[0], boxProjResult[4], color);
+    cv::line(showResult, boxProjResult[1], boxProjResult[5], color);
+    cv::line(showResult, boxProjResult[2], boxProjResult[6], color);
+    cv::line(showResult, boxProjResult[3], boxProjResult[7], color);
 }
 
 void GetMaskKeypointAndDesp(

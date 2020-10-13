@@ -46,11 +46,9 @@ static PS::Point2D NormalizePoint2D(
 void MatchKeyFramesShow(
     const std::shared_ptr<DetectorFrame> &frm,
     const std::vector<KeyFrame::Ptr> &kf_matches) {
-#ifdef MOBILE_PLATFORM
-    return;
-#endif
     for (int index = 0; index < kf_matches.size(); index++) {
         cv::Mat kf_raw_image = kf_matches.at(index)->GetRawImage();
+        // keyframs selected from database using dbow2
         if (!kf_raw_image.empty()) {
             cv::Mat imshow;
             cv::drawMatches(
@@ -59,7 +57,7 @@ void MatchKeyFramesShow(
                 frm->m_dmatches_2d.at(index), imshow);
             const std::string kf_match_result_name =
                 "match 2D: " + std::to_string(index);
-            // GlobalOcvViewer::UpdateView(kf_match_result_name, imshow);
+            GlobalOcvViewer::UpdateView(kf_match_result_name, imshow);
         }
     }
 }
@@ -388,18 +386,21 @@ bool PointCloudObjDetector::PoseSolver(
 void PointCloudObjDetector::PnPResultHandle() {
 
 #ifdef OBJ_WITH_KF
-    const int kPNPInliersThresholdGood =
+    const int kDetectorPnPInliersThGood =
         Parameters::GetInstance().kDetectorPnPInliersGoodWithKFNumTh;
-    const int kPNPInliersThresholdUnreliable =
+    const int kDetectorPnP3DInliersThGood =
+        Parameters::GetInstance().kDetectorPnP3DInliersGoodWithKFNumTh;
+    const int kDetectorPnPInliersThUnreliable =
         Parameters::GetInstance().kDetectorPnPInliersUnreliableWithKFNumTh;
 #else
-    const int kPNPInliersThresholdGood =
+    const int kDetectorPnPInliersThGood =
         Parameters::GetInstance().kDetectorPnPInliersGoodNumTh;
-    const int kPNPInliersThresholdUnreliable =
+    const int kDetectorPnPInliersThUnreliable =
         Parameters::GetInstance().kDetectorPnPInliersUnreliableNumTh;
 #endif
 
-    if (pnp_solver_result_ && pnp_inliers_num_ >= kPNPInliersThresholdGood) {
+    if (pnp_solver_result_ && pnp_inliers_num_ >= kDetectorPnPInliersThGood &&
+        pnp_inliers_3d_num_ >= kDetectorPnP3DInliersThGood) {
         VLOG(5) << "detector PnP inlier num success:" << pnp_inliers_num_;
         detect_state_ = DetectionGood;
         VLOG(5) << "detectionObjPosePoseR: " << Rco_cur_;
@@ -410,7 +411,7 @@ void PointCloudObjDetector::PnPResultHandle() {
             m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
             detect_state_, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
     } else {
-        if (pnp_inliers_num_ >= kPNPInliersThresholdUnreliable) {
+        if (pnp_inliers_num_ >= kDetectorPnPInliersThUnreliable) {
             VLOG(5) << "detector PnP fail but has enough inliers";
             detect_state_ = DetectionUnreliable;
             mObj->SetPose(
@@ -427,12 +428,17 @@ void PointCloudObjDetector::PnPResultHandle() {
 }
 
 void PointCloudObjDetector::DrawTextInfo(const cv::Mat &img, cv::Mat &img_txt) {
-    std::string matchTxt = "keyPoints 3dmatch num:" +
-                           std::to_string(m_frame_cur->m_matches_3d.size()) +
-                           "| ";
+    // 2d-3d暴力匹配上的关键点
+    std::string matchTxt =
+        "3dmatch num:" + std::to_string(m_frame_cur->m_matches_3d.size()) +
+        "| ";
+
+    //经过2d-3d, 2d-2d联合求解pose过后inlier的三维点对应的keypoint
     std::string inlierTxt =
-        "keyPoints 3dinliers num: " +
-        std::to_string(m_frame_cur->m_matches2dto3d_inliers.size()) + "| ";
+        "3d|2d inliers num: " +
+        std::to_string(m_frame_cur->m_matches2dto3d_inliers.size()) + "|" +
+        std::to_string(m_frame_cur->m_matches_3d.size()) + "| ";
+
     std::string detectionStateString;
     if (detect_state_ == DetectionGood) {
         detectionStateString = "Good";
@@ -462,28 +468,52 @@ void PointCloudObjDetector::DrawTextInfo(const cv::Mat &img, cv::Mat &img_txt) {
 }
 
 void PointCloudObjDetector::ShowDetectResult() {
-    const Eigen::Isometry3f T =
+    const Eigen::Isometry3f Tco =
         ObjDetectionCommon::GetTMatrix(Rco_cur_, tco_cur_);
-    cv::Mat imgRGB = m_frame_cur->m_raw_image.clone();
     const std::vector<MapPoint::Ptr> pointClouds = mObj->GetPointClouds();
     if (pointClouds.empty()) {
         LOG(ERROR) << "No pointclouds model here!";
     }
     const std::vector<cv::KeyPoint> keyPoints = m_frame_cur->m_kpts;
-    std::vector<Eigen::Vector3d> pointBoxs; // the 8 point of box
-    pointBoxs.resize(8);
 
     const cv::Mat &cameraMatrix = CameraIntrinsic::GetInstance().GetCVK();
     std::vector<cv::Point3f> point3f;
     std::vector<cv::Point2f> point2f;
     std::vector<cv::Point2f> imagePoint2f;
-    cv::Point2f tempPoint2f;
     Eigen::Vector3f tempPoint3f;
     Eigen::Vector3f tempCameraPoint3f;
+    cv::Mat showResult;
+    cv::Mat imageCur = m_frame_cur->m_raw_image.clone();
+    cv::cvtColor(imageCur, showResult, cv::COLOR_GRAY2BGR);
 
+    std::vector<Eigen::Vector3d> mapPointBoundingBox;
+    mapPointBoundingBox.reserve(8);
+    ObjDetectionCommon::GetPointCloudBoundingBox(mObj, mapPointBoundingBox);
+    std::vector<cv::Point2d> boxProjResult;
+    for (int i = 0; i < mapPointBoundingBox.size(); i++) {
+        const Eigen::Matrix3d K = CameraIntrinsic::GetInstance().GetEigenK();
+        Eigen::Vector3d p = K * (Rco_cur_ * mapPointBoundingBox[i] + tco_cur_);
+        cv::Point2d pResult;
+        pResult.x = p(0) / p(2);
+        pResult.y = p(1) / p(2);
+        boxProjResult.emplace_back(pResult);
+    }
+
+    cv::Scalar corner_color = cv::Scalar(0, 255, 255);
+    cv::Scalar edge_color;
     if (detect_state_ == DetectionGood) {
-        ObjDetectionCommon::GetBoxPoint(mObj, pointBoxs);
-        ObjDetectionCommon::DrawBox(imgRGB, T, pointBoxs);
+        edge_color = cv::Scalar(224, 24, 255);
+    } else {
+        edge_color = cv::Scalar(0, 0, 0);
+    }
+
+    for (int i = 0; i < boxProjResult.size(); i++) {
+        if (i < 4)
+            cv::drawMarker(showResult, boxProjResult[i], corner_color);
+        else
+            cv::drawMarker(showResult, boxProjResult[i], corner_color);
+        ObjDetectionCommon::DrawBoundingBox(
+            showResult, boxProjResult, edge_color);
     }
 
     std::vector<cv::KeyPoint> matcheskeyPointsShow;
@@ -494,7 +524,10 @@ void PointCloudObjDetector::ShowDetectResult() {
         matcheskeyPointsShow.emplace_back(keyPoints[iter->first]);
         mapPointId.emplace_back(iter->second);
     }
-    drawKeypoints(imgRGB, matcheskeyPointsShow, imgRGB, cv::Scalar(0, 0, 255));
+
+    // red circle  2d-3d暴力匹配上的关键点
+    drawKeypoints(
+        showResult, matcheskeyPointsShow, showResult, cv::Scalar(0, 0, 255));
 
     std::vector<cv::KeyPoint> matcheskeyPointsInliersShow;
     for (auto iter = m_frame_cur->m_matches2dto3d_inliers.begin();
@@ -502,11 +535,16 @@ void PointCloudObjDetector::ShowDetectResult() {
         matcheskeyPointsInliersShow.emplace_back(keyPoints[iter->first]);
     }
 
+    // yellow circle 经过2d-3d,
+    // 2d-2d联合求解pose过后inlier的三维点对应的keypoint
     drawKeypoints(
-        imgRGB, matcheskeyPointsInliersShow, imgRGB, cv::Scalar(0, 255, 255));
+        showResult, matcheskeyPointsInliersShow, showResult,
+        cv::Scalar(0, 255, 255));
+
+    // 2d-3d暴力匹配上的地图点 white points
     GlobalPointCloudMatchViewer::SetMatchedMapPoint(mapPointId);
     cv::Mat img_text;
-    DrawTextInfo(imgRGB, img_text);
+    DrawTextInfo(showResult, img_text);
     GlobalOcvViewer::UpdateView("Detector Result", img_text);
 }
 

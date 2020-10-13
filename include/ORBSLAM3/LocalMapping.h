@@ -52,11 +52,6 @@ public:
         cb_ = callback;
     }
 
-    /*void SetObjRecogCallback(
-        std::function<void (const ObjRecogFrameCallbackData* &)> callback) {
-
-    }*/
-
     // Main function
     void Run();
 

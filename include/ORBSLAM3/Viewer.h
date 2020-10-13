@@ -66,13 +66,16 @@ public:
         m_pointCloud_model = pointCloud_model;
     }
     bool both;
-    void SetObjectRecognitionPose(Eigen::Matrix3d Row, Eigen::Vector3d tow);
+    void SetObjectRecognitionPose(
+        const Eigen::Matrix3d &Row, const Eigen::Vector3d &tow);
 
     // draw another window for objRecognition
     void SwitchWindow();
     void Draw();
-    void SetFrameAndState(const cv::Mat &img, const int &state);
-    void GetFrameAndState(cv::Mat &img, int &state);
+    void SetSLAMInfo(
+        const cv::Mat &img, const int &slam_state, const int &image_num,
+        const cv::Mat &camPos);
+    void GetSLAMInfo(cv::Mat &img, int &state, int &image_num);
 
     void DrawSLAMInit();
     void DrawObjRecognitionInit();
@@ -80,6 +83,7 @@ public:
     DrawBoundingboxInImage(const vector<Eigen::Vector3d> &boundingbox);
     void
     DrawPointCloudInImage(const std::vector<Eigen::Vector3d> &pointcloud_pos);
+    void DrawMatchedMappoints();
 
 private:
     bool ParseViewerParamFile(cv::FileStorage &fSettings);
@@ -124,7 +128,9 @@ private:
 
     Camera m_camera;
     cv::Mat img_from_objRecognition;
-    int state_from_objRecognition;
+    int slam_state_from_objRecognition;
+    int img_num;
+    cv::Mat Tcw_;
     std::mutex mMutexPoseImage;
     std::unique_ptr<pangolin::Var<bool>> menuFollowCamera;
     std::unique_ptr<pangolin::Var<bool>> menuCamView;
@@ -134,12 +140,16 @@ private:
     std::unique_ptr<pangolin::Var<bool>> menuShowGraph;
     std::unique_ptr<pangolin::Var<bool>> menuShowCameraTrajectory;
     std::unique_ptr<pangolin::Var<bool>> menuShow3DObject;
+    std::unique_ptr<pangolin::Var<bool>> menuShowMatched3DObject;
     std::unique_ptr<pangolin::Var<bool>> menuShowInertialGraph;
     std::unique_ptr<pangolin::Var<bool>> menuLocalizationMode;
     std::unique_ptr<pangolin::Var<bool>> menuReset;
     std::unique_ptr<pangolin::Var<bool>> menuStepByStep; // false, true
     std::unique_ptr<pangolin::Var<bool>> menuStep;
     std::unique_ptr<pangolin::Var<bool>> menuStop;
+    pangolin::GlTexture imageTexture;
+    int image_width;
+    int image_height;
 };
 
 } // namespace ORB_SLAM3

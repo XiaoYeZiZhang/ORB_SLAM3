@@ -26,24 +26,30 @@ public:
         const Eigen::Vector3d &Two, const Eigen::Vector3d &Tcw,
         const ObjRecogState &State, const FrameIndex &FrmIndex,
         const double &TimeStamp)
-        : mRwo(Rwo), mRcw(Rcw), mTwo(Two), mTcw(Tcw), mState(State),
+        : mRwo(Rwo), mRcw(Rcw), mtwo(Two), mtcw(Tcw), mState(State),
           mFrmIndex(FrmIndex), mTimeStamp(TimeStamp) {
     }
 
     ObjStateStruct() {
+        mRwo = Eigen::Matrix3d::Identity();
+        mRcw = Eigen::Matrix3d::Identity();
+        mtwo = Eigen::Vector3d::Zero();
+        mtcw = Eigen::Vector3d::Zero();
+        mFrmIndex = -1;
+        mTimeStamp = -1;
     }
 
     ~ObjStateStruct() {
     }
 
     void GetData(
-        Eigen::Matrix3d &Rwo, Eigen::Matrix3d &Rcw, Eigen::Vector3d &Two,
-        Eigen::Vector3d &Tcw, ObjRecogState &State, FrameIndex &FrmIndex,
+        Eigen::Matrix3d &Rwo, Eigen::Matrix3d &Rcw, Eigen::Vector3d &two,
+        Eigen::Vector3d &tcw, ObjRecogState &State, FrameIndex &frmIndex,
         double &TimeStamp);
 
     void SetData(
         const Eigen::Matrix3d &Rwo, const Eigen::Matrix3d &Rcw,
-        const Eigen::Vector3d &Two, const Eigen::Vector3d &Tcw,
+        const Eigen::Vector3d &two, const Eigen::Vector3d &tcw,
         const ObjRecogState &State, const FrameIndex &FrmIndex,
         const double &TimeStamp);
 
@@ -53,7 +59,7 @@ public:
 
 private:
     Eigen::Matrix3d mRwo, mRcw;
-    Eigen::Vector3d mTwo, mTcw;
+    Eigen::Vector3d mtwo, mtcw;
     ObjRecogState mState;
     FrameIndex mFrmIndex;
     double mTimeStamp;
@@ -113,25 +119,25 @@ public:
     void TrackingStateSetPose(
         const ObjRecogState &trackerState, const FrameIndex &frmIndex,
         const double &timeStamp, const Eigen::Matrix3d &Rcw,
-        const Eigen::Vector3d &Tcw, const Eigen::Matrix3d &Rwo,
-        const Eigen::Vector3d &Two);
+        const Eigen::Vector3d &tcw, const Eigen::Matrix3d &Rwo,
+        const Eigen::Vector3d &two);
 
     void DetectionStateSetPose(
         const ObjRecogState &detectionState, const FrameIndex &frmIndex,
         const double &timeStamp, const Eigen::Matrix3d &Rcw,
-        const Eigen::Vector3d &Tcw, const Eigen::Matrix3d &Rwo,
-        const Eigen::Vector3d &Two);
+        const Eigen::Vector3d &tcw, const Eigen::Matrix3d &Rwo,
+        const Eigen::Vector3d &two);
 
     void SetPose(
         const FrameIndex &frmIndex, const double &timeStamp,
         const ObjRecogState &state, const Eigen::Matrix3d &Rcw,
-        const Eigen::Vector3d &Tcw, const Eigen::Matrix3d &Rwo,
-        const Eigen::Vector3d &Two);
+        const Eigen::Vector3d &tcw, const Eigen::Matrix3d &Rwo,
+        const Eigen::Vector3d &two);
 
     void GetPose(
         FrameIndex &frmIndex, double &timeStamp, ObjRecogState &state,
-        Eigen::Matrix3d &Rcw, Eigen::Vector3d &Tcw, Eigen::Matrix3d &Rwo,
-        Eigen::Vector3d &Two);
+        Eigen::Matrix3d &Rcw, Eigen::Vector3d &tcw, Eigen::Matrix3d &Rwo,
+        Eigen::Vector3d &two);
 
     std::vector<Eigen::Vector3d> GetBoundingBox();
 

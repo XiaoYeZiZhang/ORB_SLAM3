@@ -3,28 +3,29 @@
 //
 
 #include "Struct/Object.h"
+#include <glog/logging.h>
 
 namespace ObjRecognition {
 
 void ObjStateStruct::GetData(
-    Eigen::Matrix3d &Rwo, Eigen::Matrix3d &Rcw, Eigen::Vector3d &Two,
-    Eigen::Vector3d &Tcw, ObjRecogState &State, FrameIndex &FrmIndex,
+    Eigen::Matrix3d &Rwo, Eigen::Matrix3d &Rcw, Eigen::Vector3d &two,
+    Eigen::Vector3d &tcw, ObjRecogState &State, FrameIndex &frmIndex,
     double &TimeStamp) {
 
     std::lock_guard<std::mutex> lck(mStateMutex);
 
     Rwo = mRwo;
     Rcw = mRcw;
-    Two = mTwo;
-    Tcw = mTcw;
+    two = mtwo;
+    tcw = mtcw;
     State = mState;
-    FrmIndex = mFrmIndex;
+    frmIndex = mFrmIndex;
     TimeStamp = mTimeStamp;
 }
 
 void ObjStateStruct::SetData(
     const Eigen::Matrix3d &Rwo, const Eigen::Matrix3d &Rcw,
-    const Eigen::Vector3d &Two, const Eigen::Vector3d &Tcw,
+    const Eigen::Vector3d &two, const Eigen::Vector3d &tcw,
     const ObjRecogState &State, const FrameIndex &FrmIndex,
     const double &TimeStamp) {
 
@@ -32,8 +33,8 @@ void ObjStateStruct::SetData(
 
     mRwo = Rwo;
     mRcw = Rcw;
-    mTwo = Two;
-    mTcw = Tcw;
+    mtwo = two;
+    mtcw = tcw;
     mState = State;
     mFrmIndex = FrmIndex;
     mTimeStamp = TimeStamp;
@@ -50,8 +51,8 @@ void ObjStateStruct::Reset(const ObjRecogState &state) {
 
     mRwo = Eigen::Matrix3d::Identity();
     mRcw = Eigen::Matrix3d::Identity();
-    mTwo = Eigen::Vector3d::Zero();
-    mTcw = Eigen::Vector3d::Zero();
+    mtwo = Eigen::Vector3d::Zero();
+    mtcw = Eigen::Vector3d::Zero();
     mState = state;
     mFrmIndex = -1;
     mTimeStamp = -1;
@@ -69,34 +70,28 @@ ObjectBase::ObjectBase(int id) : mId(id) {
 void ObjectBase::TrackingStateSetPose(
     const ObjRecogState &trackerState, const FrameIndex &frmIndex,
     const double &timeStamp, const Eigen::Matrix3d &Rcw,
-    const Eigen::Vector3d &Tcw, const Eigen::Matrix3d &Rwo,
-    const Eigen::Vector3d &Two) {
-
-    int bad_voting_param = 2;
-    int unreliable_voting_param = 1;
-
-    unreliable_voting_param = 1;
-    bad_voting_param = 2;
+    const Eigen::Vector3d &tcw, const Eigen::Matrix3d &Rwo,
+    const Eigen::Vector3d &two) {
 
     if (trackerState == TrackingGood) {
         tracking_bad_voting_count_ = 0;
         tracker_state_.SetData(
-            Rwo, Rcw, Two, Tcw, TrackingGood, frmIndex, timeStamp);
+            Rwo, Rcw, two, tcw, TrackingGood, frmIndex, timeStamp);
     } else if (
         trackerState == TrackingUnreliable &&
         tracker_state_.GetState() != TrackingGood) {
         tracker_state_.SetData(
-            Rwo, Rcw, Two, Tcw, TrackingUnreliable, frmIndex, timeStamp);
+            Rwo, Rcw, two, tcw, TrackingUnreliable, frmIndex, timeStamp);
     } else {
         if (tracking_bad_voting_count_ >= 4) {
             tracker_state_.SetData(
-                Rwo, Rcw, Two, Tcw, trackerState, frmIndex, timeStamp);
+                Rwo, Rcw, two, tcw, trackerState, frmIndex, timeStamp);
             tracking_bad_voting_count_ = 0;
         } else {
             if (trackerState == TrackingUnreliable)
-                tracking_bad_voting_count_ += unreliable_voting_param;
+                tracking_bad_voting_count_ += 1;
             if (trackerState == TrackingBad)
-                tracking_bad_voting_count_ += bad_voting_param;
+                tracking_bad_voting_count_ += 2;
         }
     }
 }
@@ -104,22 +99,22 @@ void ObjectBase::TrackingStateSetPose(
 void ObjectBase::DetectionStateSetPose(
     const ObjRecogState &detectionState, const FrameIndex &frmIndex,
     const double &timeStamp, const Eigen::Matrix3d &Rcw,
-    const Eigen::Vector3d &Tcw, const Eigen::Matrix3d &Rwo,
-    const Eigen::Vector3d &Two) {
+    const Eigen::Vector3d &tcw, const Eigen::Matrix3d &Rwo,
+    const Eigen::Vector3d &two) {
 
     if (detectionState == DetectionGood) {
         detection_bad_voting_count_ = 0;
         detector_state_.SetData(
-            Rwo, Rcw, Two, Tcw, DetectionGood, frmIndex, timeStamp);
+            Rwo, Rcw, two, tcw, DetectionGood, frmIndex, timeStamp);
     } else if (
         detectionState == DetectionUnreliable &&
         detector_state_.GetState() != DetectionGood) {
         detector_state_.SetData(
-            Rwo, Rcw, Two, Tcw, DetectionUnreliable, frmIndex, timeStamp);
+            Rwo, Rcw, two, tcw, DetectionUnreliable, frmIndex, timeStamp);
     } else {
         if (detection_bad_voting_count_ >= 4) {
             detector_state_.SetData(
-                Rwo, Rcw, Two, Tcw, detectionState, frmIndex, timeStamp);
+                Rwo, Rcw, two, tcw, detectionState, frmIndex, timeStamp);
             detection_bad_voting_count_ = 0;
         } else {
             if (detectionState == DetectionUnreliable)
@@ -133,33 +128,35 @@ void ObjectBase::DetectionStateSetPose(
 void ObjectBase::SetPose(
     const FrameIndex &frmIndex, const double &timeStamp,
     const ObjRecogState &state, const Eigen::Matrix3d &Rcw,
-    const Eigen::Vector3d &Tcw, const Eigen::Matrix3d &Rwo,
-    const Eigen::Vector3d &Two) {
+    const Eigen::Vector3d &tcw, const Eigen::Matrix3d &Rwo,
+    const Eigen::Vector3d &two) {
     std::lock_guard<std::mutex> lck(mPoseMutex);
     if (state == TrackingGood || state == TrackingBad ||
         state == TrackingUnreliable) {
-        TrackingStateSetPose(state, frmIndex, timeStamp, Rcw, Tcw, Rwo, Two);
+        TrackingStateSetPose(state, frmIndex, timeStamp, Rcw, tcw, Rwo, two);
     } else {
-        DetectionStateSetPose(state, frmIndex, timeStamp, Rcw, Tcw, Rwo, Two);
+        DetectionStateSetPose(state, frmIndex, timeStamp, Rcw, tcw, Rwo, two);
     }
 }
 
 void ObjectBase::GetPose(
     FrameIndex &frmIndex, double &timeStamp, ObjRecogState &state,
-    Eigen::Matrix3d &Rcw, Eigen::Vector3d &Tcw, Eigen::Matrix3d &Rwo,
-    Eigen::Vector3d &Two) {
+    Eigen::Matrix3d &Rcw, Eigen::Vector3d &tcw, Eigen::Matrix3d &Rwo,
+    Eigen::Vector3d &two) {
     std::lock_guard<std::mutex> lck(mPoseMutex);
 
     if (tracker_state_.GetState() == TrackingGood ||
         (tracker_state_.GetState() == TrackingUnreliable &&
          detector_state_.GetState() != DetectionGood)) {
-        tracker_state_.GetData(Rwo, Rcw, Two, Tcw, state, frmIndex, timeStamp);
+        tracker_state_.GetData(Rwo, Rcw, two, tcw, state, frmIndex, timeStamp);
     } else if (
         detector_state_.GetState() == DetectionGood ||
         detector_state_.GetState() == DetectionUnreliable) {
-        detector_state_.GetData(Rwo, Rcw, Two, Tcw, state, frmIndex, timeStamp);
+        detector_state_.GetData(Rwo, Rcw, two, tcw, state, frmIndex, timeStamp);
+        VLOG(0) << "Get Detector Pose: " << Rwo;
     } else {
-        detector_state_.GetData(Rwo, Rcw, Two, Tcw, state, frmIndex, timeStamp);
+        detector_state_.GetData(Rwo, Rcw, two, tcw, state, frmIndex, timeStamp);
+        VLOG(0) << "Get Detector Pose: " << Rwo;
         state = DetectionBad;
     }
 }

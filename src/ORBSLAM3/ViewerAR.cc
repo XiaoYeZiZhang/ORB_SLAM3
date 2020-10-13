@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include "ORBSLAM3/ScannerStruct/Struct.h"
 #include "ORBSLAM3/ViewerCommon.h"
+#include "ObjectRecognition/Utility/Tools.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "mode.h"
 using namespace std;
@@ -104,7 +105,7 @@ ViewerAR::ComputeBoundingbox_W(const pangolin::OpenGlMatrix &Twp_opengl) {
         // TODO(zhangye): transpose???
         Eigen::Vector4d p_4 =
             Eigen::Vector4d(point_p(0), point_p(1), point_p(2), 1.0f);
-        Eigen::Matrix4d Twp = Change2EigenMatrix(Twp_opengl);
+        Eigen::Matrix4d Twp = ChangeOpenglMatrix2EigenMatrix(Twp_opengl);
         Eigen::Vector4d bbx_4 = Twp * p_4;
         boundingbox_w.emplace_back(Eigen::Vector3d(
             bbx_4[0] / bbx_4[3], bbx_4[1] / bbx_4[3], bbx_4[2] / bbx_4[3]));
@@ -707,7 +708,7 @@ void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
 }
 
 Eigen::Matrix4d
-ViewerAR::Change2EigenMatrix(pangolin::OpenGlMatrix opengl_matrix) {
+ViewerAR::ChangeOpenglMatrix2EigenMatrix(pangolin::OpenGlMatrix opengl_matrix) {
     Eigen::Matrix4d eigen_matrix = Eigen::Matrix4d::Identity();
     eigen_matrix << opengl_matrix.m[0], opengl_matrix.m[1], opengl_matrix.m[2],
         opengl_matrix.m[3], opengl_matrix.m[4], opengl_matrix.m[5],
@@ -725,7 +726,7 @@ Eigen::Vector3d ViewerAR::Change2PlaneCoords(
 
     Eigen::Vector4d Pp_4, Pw_4;
     Eigen::Vector3d Pp;
-    Eigen::Matrix4d Twp = Change2EigenMatrix(Plane_wp);
+    Eigen::Matrix4d Twp = ChangeOpenglMatrix2EigenMatrix(Plane_wp);
     // WARNING: maybe some numerical problem
     Eigen::Matrix4d Tpw = Twp.inverse();
     if (is_point) {
@@ -968,26 +969,7 @@ void Plane::Recompute() {
     Tpw.rowRange(0, 3).colRange(0, 3) =
         ExpSO3(v * ang / sa) * ExpSO3(up * rang);
     o.copyTo(Tpw.col(3).rowRange(0, 3));
-
-    glTpw.m[0] = Tpw.at<float>(0, 0);
-    glTpw.m[1] = Tpw.at<float>(1, 0);
-    glTpw.m[2] = Tpw.at<float>(2, 0);
-    glTpw.m[3] = 0.0;
-
-    glTpw.m[4] = Tpw.at<float>(0, 1);
-    glTpw.m[5] = Tpw.at<float>(1, 1);
-    glTpw.m[6] = Tpw.at<float>(2, 1);
-    glTpw.m[7] = 0.0;
-
-    glTpw.m[8] = Tpw.at<float>(0, 2);
-    glTpw.m[9] = Tpw.at<float>(1, 2);
-    glTpw.m[10] = Tpw.at<float>(2, 2);
-    glTpw.m[11] = 0.0;
-
-    glTpw.m[12] = Tpw.at<float>(0, 3);
-    glTpw.m[13] = Tpw.at<float>(1, 3);
-    glTpw.m[14] = Tpw.at<float>(2, 3);
-    glTpw.m[15] = 1.0;
+    ObjRecognition::ChangeCV44ToGLMatrixFloat(Tpw, glTpw);
 }
 
 Plane::Plane(
@@ -1006,26 +988,7 @@ Plane::Plane(
     const float rang = -3.14f / 2 + ((float)rand() / RAND_MAX) * 3.14f;
     Tpw.rowRange(0, 3).colRange(0, 3) = ExpSO3(v * a / s) * ExpSO3(up * rang);
     o.copyTo(Tpw.col(3).rowRange(0, 3));
-
-    glTpw.m[0] = Tpw.at<float>(0, 0);
-    glTpw.m[1] = Tpw.at<float>(1, 0);
-    glTpw.m[2] = Tpw.at<float>(2, 0);
-    glTpw.m[3] = 0.0;
-
-    glTpw.m[4] = Tpw.at<float>(0, 1);
-    glTpw.m[5] = Tpw.at<float>(1, 1);
-    glTpw.m[6] = Tpw.at<float>(2, 1);
-    glTpw.m[7] = 0.0;
-
-    glTpw.m[8] = Tpw.at<float>(0, 2);
-    glTpw.m[9] = Tpw.at<float>(1, 2);
-    glTpw.m[10] = Tpw.at<float>(2, 2);
-    glTpw.m[11] = 0.0;
-
-    glTpw.m[12] = Tpw.at<float>(0, 3);
-    glTpw.m[13] = Tpw.at<float>(1, 3);
-    glTpw.m[14] = Tpw.at<float>(2, 3);
-    glTpw.m[15] = 1.0;
+    ObjRecognition::ChangeCV44ToGLMatrixFloat(Tpw, glTpw);
 }
 
 } // namespace ORB_SLAM3

@@ -205,7 +205,8 @@ private:
         pangolin::OpenGlMatrix Plane_wp, Eigen::Vector3d word_coords,
         bool is_point = true);
 
-    Eigen::Matrix4d Change2EigenMatrix(pangolin::OpenGlMatrix opengl_matrix);
+    static Eigen::Matrix4d
+    ChangeOpenglMatrix2EigenMatrix(pangolin::OpenGlMatrix opengl_matrix);
 
     virtual void RegistEvents() {
     }

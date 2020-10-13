@@ -5,6 +5,7 @@
 #include <pangolin/display/opengl_render_state.h>
 #include <pangolin/gl/gl.h>
 #include "ORBSLAM3/ViewerCommon.h"
+#include "ObjectRecognition/Utility/Tools.h"
 
 void AddTextToImage(
     const std::string &s, cv::Mat &im, const int r, const int g, const int b) {
@@ -44,18 +45,20 @@ void AddTextToImage(
         cv::Scalar(r, g, b), 2, 8);
 }
 
-void PrintStatusForViewer(const int &status, cv::Mat &img) {
+void PrintSLAMStatusForViewer(
+    const int &status, const int &image_num, cv::Mat &img) {
+    std::string img_str = "IMAGE: " + std::to_string(image_num);
     switch (status) {
     case 1: {
-        AddTextToImage("SLAM NOT INITIALIZED", img, 255, 0, 0);
+        AddTextToImage(img_str + " | SLAM NOT INITIALIZED", img, 255, 0, 0);
         break;
     }
     case 2: {
-        AddTextToImage("SLAM ON", img, 0, 255, 0);
+        AddTextToImage(img_str + " | SLAM ON", img, 0, 255, 0);
         break;
     }
     case 3: {
-        AddTextToImage("SLAM LOST", img, 255, 0, 0);
+        AddTextToImage(img_str + " | SLAM LOST", img, 255, 0, 0);
         break;
     }
     }
@@ -111,27 +114,7 @@ void PrintStatus(
 void LoadCameraPose(const cv::Mat &Tcw) {
     if (!Tcw.empty()) {
         pangolin::OpenGlMatrix M;
-
-        M.m[0] = Tcw.at<float>(0, 0);
-        M.m[1] = Tcw.at<float>(1, 0);
-        M.m[2] = Tcw.at<float>(2, 0);
-        M.m[3] = 0.0;
-
-        M.m[4] = Tcw.at<float>(0, 1);
-        M.m[5] = Tcw.at<float>(1, 1);
-        M.m[6] = Tcw.at<float>(2, 1);
-        M.m[7] = 0.0;
-
-        M.m[8] = Tcw.at<float>(0, 2);
-        M.m[9] = Tcw.at<float>(1, 2);
-        M.m[10] = Tcw.at<float>(2, 2);
-        M.m[11] = 0.0;
-
-        M.m[12] = Tcw.at<float>(0, 3);
-        M.m[13] = Tcw.at<float>(1, 3);
-        M.m[14] = Tcw.at<float>(2, 3);
-        M.m[15] = 1.0;
-
+        ObjRecognition::ChangeCV44ToGLMatrixFloat(Tcw, M);
         M.Load();
     }
 }

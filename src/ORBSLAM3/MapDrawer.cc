@@ -25,6 +25,7 @@
 #include <pangolin/pangolin.h>
 #include <mutex>
 #include <cxeigen.hpp>
+#include "ObjectRecognition/Utility/Tools.h"
 
 namespace ORB_SLAM3 {
 
@@ -449,20 +450,6 @@ void MapDrawer::GetCurrentCameraPos(cv::Mat &cam_pos) {
     }
 }
 
-void MapDrawer::GetCurrentCameraPose(
-    cv::Mat &cam_Rwc, cv::Mat &cam_twc, cv::Mat &cam_Tcw) {
-    if (!mCameraPose.empty()) {
-        cam_Rwc = cv::Mat(3, 3, CV_32F);
-        cam_twc = cv::Mat(3, 1, CV_32F);
-        {
-            unique_lock<mutex> lock(mMutexCamera);
-            cam_Rwc = mCameraPose.rowRange(0, 3).colRange(0, 3).t();
-            cam_twc = -cam_Rwc * mCameraPose.rowRange(0, 3).col(3);
-        }
-        cam_Tcw = mCameraPose;
-    }
-}
-
 void MapDrawer::GetCurrentOpenGLCameraMatrix(
     pangolin::OpenGlMatrix &M, pangolin::OpenGlMatrix &MOw) {
     if (!mCameraPose.empty()) {
@@ -474,26 +461,7 @@ void MapDrawer::GetCurrentOpenGLCameraMatrix(
             twc = -Rwc * mCameraPose.rowRange(0, 3).col(3);
         }
 
-        M.m[0] = Rwc.at<float>(0, 0);
-        M.m[1] = Rwc.at<float>(1, 0);
-        M.m[2] = Rwc.at<float>(2, 0);
-        M.m[3] = 0.0;
-
-        M.m[4] = Rwc.at<float>(0, 1);
-        M.m[5] = Rwc.at<float>(1, 1);
-        M.m[6] = Rwc.at<float>(2, 1);
-        M.m[7] = 0.0;
-
-        M.m[8] = Rwc.at<float>(0, 2);
-        M.m[9] = Rwc.at<float>(1, 2);
-        M.m[10] = Rwc.at<float>(2, 2);
-        M.m[11] = 0.0;
-
-        M.m[12] = twc.at<float>(0);
-        M.m[13] = twc.at<float>(1);
-        M.m[14] = twc.at<float>(2);
-        M.m[15] = 1.0;
-
+        ObjRecognition::ChangeCV44ToGLMatrixFloat(Rwc, M);
         MOw.SetIdentity();
         MOw.m[12] = twc.at<float>(0);
         MOw.m[13] = twc.at<float>(1);
@@ -517,47 +485,14 @@ void MapDrawer::GetCurrentOpenGLCameraMatrix(
             twc = -Rwc * mCameraPose.rowRange(0, 3).col(3);
         }
 
-        M.m[0] = Rwc.at<float>(0, 0);
-        M.m[1] = Rwc.at<float>(1, 0);
-        M.m[2] = Rwc.at<float>(2, 0);
-        M.m[3] = 0.0;
-
-        M.m[4] = Rwc.at<float>(0, 1);
-        M.m[5] = Rwc.at<float>(1, 1);
-        M.m[6] = Rwc.at<float>(2, 1);
-        M.m[7] = 0.0;
-
-        M.m[8] = Rwc.at<float>(0, 2);
-        M.m[9] = Rwc.at<float>(1, 2);
-        M.m[10] = Rwc.at<float>(2, 2);
-        M.m[11] = 0.0;
-
-        M.m[12] = twc.at<float>(0);
-        M.m[13] = twc.at<float>(1);
-        M.m[14] = twc.at<float>(2);
-        M.m[15] = 1.0;
-
+        ObjRecognition::ChangeCV44ToGLMatrixFloat(Rwc, M);
         MOw.SetIdentity();
         MOw.m[12] = twc.at<float>(0);
         MOw.m[13] = twc.at<float>(1);
         MOw.m[14] = twc.at<float>(2);
 
         MTwwp.SetIdentity();
-        MTwwp.m[0] = Rwwp.at<float>(0, 0);
-        MTwwp.m[1] = Rwwp.at<float>(1, 0);
-        MTwwp.m[2] = Rwwp.at<float>(2, 0);
-
-        MTwwp.m[4] = Rwwp.at<float>(0, 1);
-        MTwwp.m[5] = Rwwp.at<float>(1, 1);
-        MTwwp.m[6] = Rwwp.at<float>(2, 1);
-
-        MTwwp.m[8] = Rwwp.at<float>(0, 2);
-        MTwwp.m[9] = Rwwp.at<float>(1, 2);
-        MTwwp.m[10] = Rwwp.at<float>(2, 2);
-
-        MTwwp.m[12] = twc.at<float>(0);
-        MTwwp.m[13] = twc.at<float>(1);
-        MTwwp.m[14] = twc.at<float>(2);
+        ObjRecognition::ChangeCV44ToGLMatrixFloat(Rwwp, MTwwp);
     } else {
         M.SetIdentity();
         MOw.SetIdentity();

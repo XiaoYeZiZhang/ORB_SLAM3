@@ -17,7 +17,6 @@
 typedef long unsigned int KeyFrameIndex;
 namespace ObjRecognition {
 #define OBJ_WITH_KF
-#define OBJ_KF_WITH_IMAGE_BITE 0x01 //(1<<0)
 #define INVALID_FRAME_INDEX -1
 
 enum ObjModelVersion { NormalModel = 0, ModelWithImage = 1 };

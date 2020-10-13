@@ -219,8 +219,8 @@ int ObjRecogThread::Process() {
         cur_frame->mTcw(i) = platformFrame->t[i];
     }
 
-    GlobalOcvViewer::UpdateView(
-        "Frame for Detector and Tracker", cur_frame->img);
+    //    GlobalOcvViewer::UpdateView(
+    //        "Frame for Detector and Tracker", cur_frame->img);
     detector_thread_.PushData(cur_frame);
     tracker_thread_.PushData(cur_frame);
     ret = 0;

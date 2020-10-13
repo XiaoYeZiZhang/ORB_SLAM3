@@ -320,6 +320,7 @@ void ExtractKeyPointsAndDes(
     imgKeyPoints = frm->mKpts;
     imgDescriptor = frm->mDesp;
 }
+
 void GetPointCloudBoundingBox(
     const std::shared_ptr<Object> &obj,
     std::vector<Eigen::Vector3d> &mapPointBoundingBox) {

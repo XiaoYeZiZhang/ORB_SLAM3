@@ -335,8 +335,7 @@ ObjRecognition::ObjRecogResult ObjRecongManager::GetObjRecognitionResult() {
     if (object_ != nullptr) {
         bounding_box = object_->GetBoundingBox();
         for (size_t index = 0; index < bounding_box.size(); index++) {
-            bounding_box.at(index) = Rwo * bounding_box.at(index) + two;
-
+            // bounding_box.at(index) = Rwo * bounding_box.at(index) + two;
             model_bounding_box_[index * 3] = bounding_box.at(index)[0];
             model_bounding_box_[index * 3 + 1] = bounding_box.at(index)[1];
             model_bounding_box_[index * 3 + 2] = bounding_box.at(index)[2];
@@ -347,6 +346,7 @@ ObjRecognition::ObjRecogResult ObjRecongManager::GetObjRecognitionResult() {
         objrecog_result.num = 0;
     }
 
+    // if the pose is not good or the pointcloud is empty, the num is zero
     VLOG(5) << "objrecog result num: " << objrecog_result.num;
 
     SetObjRecongInfo();
@@ -355,8 +355,8 @@ ObjRecognition::ObjRecogResult ObjRecongManager::GetObjRecognitionResult() {
     objrecog_result.state_buffer = obj_state_buffer_;
     objrecog_result.t_obj_buffer = obj_translation_buffer_;
     objrecog_result.R_obj_buffer = obj_rotation_buffer_;
+    // read from scanning
     objrecog_result.bounding_box = model_bounding_box_;
-
     objrecog_result.info_length = info_buffer_length_;
     objrecog_result.info = info_buffer_;
 

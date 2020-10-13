@@ -573,7 +573,6 @@ unsigned int MapPoint::GetMemSizeFor3DObject() {
 void MapPoint::WriteToMemoryFor3DObject(
     unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two) {
     ObjRecognition::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
-    Eigen::Matrix4d Tow = Two.inverse();
     Eigen::Vector3d pos = Eigen::Vector3d(
         mWorldPos.at<float>(0), mWorldPos.at<float>(1), mWorldPos.at<float>(2));
     // TODO(zhangye): check coords

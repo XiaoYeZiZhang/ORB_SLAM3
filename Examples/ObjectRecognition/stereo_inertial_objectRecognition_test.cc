@@ -70,7 +70,7 @@ private:
     std::ofstream object_pose_result_stream_;
     ObjRecognition::ObjRecogResult m_objrecog_result;
     Eigen::Matrix<double, 3, 3> m_Row = Eigen::Matrix<double, 3, 3>::Identity();
-    Eigen::Matrix<double, 3, 1> m_Tow = Eigen::Matrix<double, 3, 1>::Zero();
+    Eigen::Matrix<double, 3, 1> m_tow = Eigen::Matrix<double, 3, 1>::Zero();
     std::string objrecog_info_str;
 };
 
@@ -338,12 +338,12 @@ void TestViewer::ObjectResultParse(
     Eigen::Matrix<float, 3, 3> Rcw =
         ObjRecognition::TypeConverter::Mat3Array2Mat3Eigen(
             m_objrecog_result.R_camera);
-    Eigen::Vector3f Tcw = Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
+    Eigen::Vector3f tcw = Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
     Eigen::Matrix<float, 3, 3> Rwo;
     Rwo.col(0) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[0], 3);
     Rwo.col(1) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[3], 3);
     Rwo.col(2) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[6], 3);
-    Eigen::Vector3f Two =
+    Eigen::Vector3f two =
         Eigen::Vector3f::Map(&m_objrecog_result.t_obj_buffer[0], 3);
 
     Eigen::Matrix3f Rco = Eigen::Matrix3f::Identity();
@@ -353,22 +353,22 @@ void TestViewer::ObjectResultParse(
     Rslam2gl(0, 0) = 1;
     Rslam2gl(1, 2) = -1;
     Rslam2gl(2, 1) = 1;
-    Rco = Rco * Rslam2gl.transpose();
+    Rco = Rco; // * Rslam2gl.transpose();
     Rwo = Rcw.transpose() * Rco;
     Eigen::Matrix3f Row = Eigen::Matrix3f::Identity();
-    Eigen::Vector3f Tow = Eigen::Vector3f::Zero();
+    Eigen::Vector3f tow = Eigen::Vector3f::Zero();
     Row = Rwo.transpose();
-    Tow = -Row * Two;
+    tow = -Row * two;
 
     if (result.num == 1) {
         m_Row = Row.cast<double>(); // world -> obj
-        m_Tow = Tow.cast<double>();
+        m_tow = tow.cast<double>();
     } else {
         m_Row = Eigen::Matrix3d::Identity();
-        m_Tow = Eigen::Vector3d::Zero();
+        m_tow = Eigen::Vector3d::Zero();
     }
 
-    SLAM->mpViewer->SetObjectRecognitionPose(m_Row, m_Tow);
+    SLAM->mpViewer->SetObjectRecognitionPose(m_Row, m_tow);
     int info_size = m_objrecog_result.info_length;
     const char *info_char = m_objrecog_result.info;
     objrecog_info_str = std::string(info_char);
@@ -427,19 +427,19 @@ bool TestViewer::RunObjectRecognition() {
             std::chrono::monotonic_clock::now();
 #endif
 
-        SLAM->TrackStereo(
+        cv::Mat camPos = SLAM->TrackStereo(
             imLeftRect, imRightRect, tframe,
             vImuMeas); // TODO change to monocular_inertial
 
         // TODO(zhangye): imLeft or imLeftRect?????
         cv::Mat im_clone_left = imLeftRect.clone();
-        int state = SLAM->GetTrackingState();
+        int slam_state = SLAM->GetTrackingState();
 
         if (mRGB)
-            SLAM->mpViewer->SetFrameAndState(im_clone_left, state);
+            SLAM->mpViewer->SetSLAMInfo(im_clone_left, slam_state, ni, camPos);
         else {
             cv::cvtColor(im_clone_left, im_clone_left, CV_RGB2BGR);
-            SLAM->mpViewer->SetFrameAndState(im_clone_left, state);
+            SLAM->mpViewer->SetSLAMInfo(im_clone_left, slam_state, ni, camPos);
         }
 
 #ifdef COMPILEDWITHC11
@@ -517,12 +517,12 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    fsSettings["Voc_path"] >> testViewer.voc_path;
-    fsSettings["Data_path"] >> testViewer.data_path;
-    fsSettings["Config_path"] >> testViewer.config_path;
-    fsSettings["SLAM_saved_path"] >> testViewer.slam_saved_path;
-    fsSettings["Mappoint_saved_filename"] >> testViewer.mappoint_filename;
-    fsSettings["Dataset_name"] >> testViewer.dataset_name;
+    fsSettings["voc_path"] >> testViewer.voc_path;
+    fsSettings["data_path"] >> testViewer.data_path;
+    fsSettings["config_path"] >> testViewer.config_path;
+    fsSettings["saved_path"] >> testViewer.slam_saved_path;
+    fsSettings["mappoint_filename"] >> testViewer.mappoint_filename;
+    fsSettings["dataset_name"] >> testViewer.dataset_name;
     bool initial_slam_result = testViewer.InitSLAM();
 
     if (!initial_slam_result) {

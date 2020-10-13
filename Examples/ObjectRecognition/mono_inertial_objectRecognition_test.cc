@@ -53,7 +53,7 @@ private:
     std::ofstream object_pose_result_stream_;
     ObjRecognition::ObjRecogResult m_objrecog_result;
     Eigen::Matrix<double, 3, 3> m_Row = Eigen::Matrix<double, 3, 3>::Identity();
-    Eigen::Matrix<double, 3, 1> m_Tow = Eigen::Matrix<double, 3, 1>::Zero();
+    Eigen::Matrix<double, 3, 1> m_tow = Eigen::Matrix<double, 3, 1>::Zero();
     std::string objrecog_info_str;
 };
 
@@ -308,7 +308,7 @@ void TestViewer::ObjectResultParse(
     Rslam2gl(0, 0) = 1;
     Rslam2gl(1, 2) = -1;
     Rslam2gl(2, 1) = 1;
-    Rco = Rco * Rslam2gl.transpose();
+    Rco = Rco; // * Rslam2gl.transpose();
     Rwo = Rcw.transpose() * Rco;
     Eigen::Matrix3f Row = Eigen::Matrix3f::Identity();
     Eigen::Vector3f Tow = Eigen::Vector3f::Zero();
@@ -317,13 +317,13 @@ void TestViewer::ObjectResultParse(
 
     if (result.num == 1) {
         m_Row = Row.cast<double>(); // world -> obj
-        m_Tow = Tow.cast<double>();
+        m_tow = Tow.cast<double>();
     } else {
         m_Row = Eigen::Matrix3d::Identity();
-        m_Tow = Eigen::Vector3d::Zero();
+        m_tow = Eigen::Vector3d::Zero();
     }
 
-    SLAM->mpViewer->SetObjectRecognitionPose(m_Row, m_Tow);
+    SLAM->mpViewer->SetObjectRecognitionPose(m_Row, m_tow);
     int info_size = m_objrecog_result.info_length;
     const char *info_char = m_objrecog_result.info;
     objrecog_info_str = std::string(info_char);
@@ -397,18 +397,18 @@ bool TestViewer::RunObjectRecognition(char **argv) {
 
         // Pass the image to the SLAM system
         // cout << "tframe = " << tframe << endl;
-        SLAM->TrackMonocular(
+        cv::Mat camPos = SLAM->TrackMonocular(
             im, tframe, vImuMeas); // TODO change to monocular_inertial
 
         cv::Mat im_clone = im.clone();
         cv::Mat un_im;
-        int state = SLAM->GetTrackingState();
+        int slam_state = SLAM->GetTrackingState();
         cv::undistort(im_clone, un_im, K, DistCoef);
         if (bRGB)
-            SLAM->mpViewer->SetFrameAndState(un_im, state);
+            SLAM->mpViewer->SetSLAMInfo(un_im, slam_state, ni, camPos);
         else {
             cv::cvtColor(un_im, un_im, CV_RGB2BGR);
-            SLAM->mpViewer->SetFrameAndState(un_im, state);
+            SLAM->mpViewer->SetSLAMInfo(un_im, slam_state, ni, camPos);
         }
 
 #ifdef COMPILEDWITHC11

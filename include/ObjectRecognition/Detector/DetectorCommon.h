@@ -13,9 +13,12 @@
 namespace ObjRecognition {
 namespace ObjDetectionCommon {
 cv::Mat GetPointCloudDesp(const std::shared_ptr<Object> &pc);
-void GetBoxPoint(
-    const std::shared_ptr<Object> &mObj,
-    std::vector<Eigen::Vector3d> &pointBoxs);
+void DrawBoundingBox(
+    const cv::Mat &showResult, std::vector<cv::Point2d> &boxProjResult,
+    cv::Scalar &color);
+void GetPointCloudBoundingBox(
+    const std::shared_ptr<Object> &obj,
+    std::vector<Eigen::Vector3d> &mapPointBoundingBox);
 void FindMatchByKNN(
     const cv::Mat &frmDesp, const cv::Mat &pcDesp,
     std::vector<cv::DMatch> &goodMatches);
@@ -26,7 +29,7 @@ std::vector<cv::Mat> ToDescriptorVector(const cv::Mat &Descriptors);
 Eigen::Isometry3f
 GetTMatrix(const Eigen::Matrix3d &R, const Eigen::Vector3d &t);
 void DrawBox(
-    cv::Mat &imgRGB, const Eigen::Isometry3f &T,
+    cv::Mat &imgRGB, const Eigen::Isometry3f &Tco,
     const std::vector<Eigen::Vector3d> &pointBoxs);
 void GetMaskKeypointAndDesp(
     const cv::Mat &image,

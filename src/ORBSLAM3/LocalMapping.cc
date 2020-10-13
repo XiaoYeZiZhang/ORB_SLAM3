@@ -297,46 +297,49 @@ void LocalMapping::Run() {
 
             // for objectRecognition
 #ifdef OBJECTRECOGNITION
-            if (mpCurrentKeyFrame) {
-                ObjRecognition::GlobalOcvViewer::UpdateView(
-                    "ORBSLAM3-KeyFrame", mpCurrentKeyFrame->imgLeft);
-            }
+            if (mpTracker->mState == Tracking::OK) {
 
-            // objectRecognition callback
-            ObjRecognition::ObjRecogFrameCallbackData *callbackData =
-                new ObjRecognition::ObjRecogFrameCallbackData();
-            callbackData->id = mpCurrentKeyFrame->mnId;
+                //            if (mpCurrentKeyFrame) {
+                //                ObjRecognition::GlobalOcvViewer::UpdateView(
+                //                    "ORBSLAM3-KeyFrame",
+                //                    mpCurrentKeyFrame->imgLeft);
+                //            }
 
-            // TODO(zhangye): CHECK Tcw is the right pose after opt
-            cv::Mat Tcw = mpCurrentKeyFrame->GetPose();
+                // objectRecognition callback
+                ObjRecognition::ObjRecogFrameCallbackData *callbackData =
+                    new ObjRecognition::ObjRecogFrameCallbackData();
+                callbackData->id = mpCurrentKeyFrame->mnId;
 
-            Eigen::Matrix4d Tcw_eigen;
-            cv::cv2eigen(Tcw, Tcw_eigen);
-            /*std::cout << "Tcw_cv: " << Tcw;
-            std::cout << "Tcw_eigen: " << Tcw_eigen;*/
+                // TODO(zhangye): CHECK Tcw is the right pose after opt
+                cv::Mat Tcw = mpCurrentKeyFrame->GetPose();
 
-            for (size_t i = 0; i < 3; i++) {
-                callbackData->t[i] = Tcw_eigen(i, 3);
-                for (size_t j = 0; j < 3; j++) {
-                    callbackData->R[i][j] = Tcw_eigen(i, j);
+                Eigen::Matrix4d Tcw_eigen;
+                cv::cv2eigen(Tcw, Tcw_eigen);
+
+                for (size_t i = 0; i < 3; i++) {
+                    callbackData->t[i] = Tcw_eigen(i, 3);
+                    for (size_t j = 0; j < 3; j++) {
+                        callbackData->R[i][j] = Tcw_eigen(i, j);
+                    }
                 }
-            }
 
-            // give ObjectRecognition the grey image
-            cv::Mat kf;
-            kf = mpCurrentKeyFrame->imgLeft;
-            ObjRecognition::ObjRecogImageCallbackData callbackImg;
-            callbackImg.height = kf.cols;
-            callbackImg.width = kf.rows;
-            callbackImg.data =
-                new unsigned char[callbackImg.height * callbackImg.width];
-            memcpy(
-                callbackImg.data, kf.data,
-                sizeof(unsigned char) * callbackImg.height * callbackImg.width);
-            callbackData->img = callbackImg;
-            callbackData->has_image = true;
-            callbackData->timestamp = mpCurrentKeyFrame->mTimeStamp;
-            cb_(callbackData);
+                // give ObjectRecognition the grey image
+                cv::Mat kf;
+                kf = mpCurrentKeyFrame->imgLeft;
+                ObjRecognition::ObjRecogImageCallbackData callbackImg;
+                callbackImg.height = kf.cols;
+                callbackImg.width = kf.rows;
+                callbackImg.data =
+                    new unsigned char[callbackImg.height * callbackImg.width];
+                memcpy(
+                    callbackImg.data, kf.data,
+                    sizeof(unsigned char) * callbackImg.height *
+                        callbackImg.width);
+                callbackData->img = callbackImg;
+                callbackData->has_image = true;
+                callbackData->timestamp = mpCurrentKeyFrame->mTimeStamp;
+                cb_(callbackData);
+            }
 #endif
         } else if (Stop() && !mbBadImu) {
             // Safe area to stop

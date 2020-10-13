@@ -1509,7 +1509,7 @@ void Tracking::Track() {
                              << endl;
                         mState = RECENTLY_LOST;
                         mTimeStampLost = mCurrentFrame.mTimeStamp;
-                        // mCurrentFrame.SetPose(mLastFrame.mTcw);
+                        // mCurrentFrame.SetPose(mLastFrame.mtcw);
                     } else {
                         mState = LOST;
                     }
@@ -1767,6 +1767,7 @@ void Tracking::Track() {
             }
             mlpTemporalPoints.clear();
 
+            // judge if there is need a keyframe
 #ifdef SAVE_TIMES
             std::chrono::steady_clock::time_point timeStartNewKF =
                 std::chrono::steady_clock::now();
@@ -2266,7 +2267,7 @@ bool Tracking::TrackReferenceKeyFrame() {
 
     // mCurrentFrame.PrintPointDistribution();
 
-    // cout << " TrackReferenceKeyFrame mLastFrame.mTcw:  " << mLastFrame.mTcw
+    // cout << " TrackReferenceKeyFrame mLastFrame.mtcw:  " << mLastFrame.mtcw
     // << endl;
     Optimizer::PoseOptimization(&mCurrentFrame);
 
@@ -2616,6 +2617,8 @@ bool Tracking::NeedNewKeyFrame() {
             }
         }
     }
+
+    return true;
 
     bool bNeedToInsertClose;
     bNeedToInsertClose = (nTrackedClose < 100) && (nNonTrackedClose > 70);

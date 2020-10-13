@@ -447,12 +447,12 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    fsSettings["Voc_path"] >> testViewer.voc_path;
-    fsSettings["Data_path"] >> testViewer.data_path;
-    fsSettings["Config_path"] >> testViewer.config_path;
-    fsSettings["SLAM_saved_path"] >> testViewer.slam_saved_path;
-    fsSettings["Mappoint_saved_filename"] >> testViewer.mappoint_filename;
-    fsSettings["Dataset_name"] >> testViewer.dataset_name;
+    fsSettings["voc_path"] >> testViewer.voc_path;
+    fsSettings["data_path"] >> testViewer.data_path;
+    fsSettings["config_path"] >> testViewer.config_path;
+    fsSettings["saved_path"] >> testViewer.slam_saved_path;
+    fsSettings["mappoint_filename"] >> testViewer.mappoint_filename;
+    fsSettings["dataset_name"] >> testViewer.dataset_name;
     bool initial_slam_result = testViewer.InitSLAM();
     if (!initial_slam_result) {
         LOG(FATAL) << "slam initialize fail!";
