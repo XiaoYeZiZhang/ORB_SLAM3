@@ -475,6 +475,11 @@ public:
     const std::vector<float> mvDepth;  // negative value for monocular points
     cv::Mat mDescriptors;
 
+    // for superpoint in SFM
+    std::vector<cv::KeyPoint> mvKeys_superpoint;
+    std::vector<cv::KeyPoint> mvKeysUn_superpoint;
+    cv::Mat mDescriptors_superpoint;
+
     // BoW
     DBoW2::BowVector mBowVec;
     DBoW2::FeatureVector mFeatVec;

@@ -4,6 +4,7 @@
 #include <ctime>
 #include <opencv2/core/core.hpp>
 #include <Eigen/Dense>
+#include <include/ORBSLAM3/SPextractor.h>
 #include "ORBSLAM3/System.h"
 #include "Utility/GlobalSummary.h"
 #include "Utility/FileIO.h"
@@ -41,7 +42,7 @@ private:
     void LoadIMU(
         const string &strImuPath, vector<double> &vTimeStamps,
         vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro);
-
+    void SfMIfSp();
     void DebugMode();
     std::string m_result_dir;
     vector<string> vstrImageLeft;
@@ -248,6 +249,7 @@ void TestViewer::DebugMode() {
         }
         usleep(1 * 1e5);
         if (viewerAR.GetStopFlag()) {
+            SfMIfSp();
             return;
         }
         if (viewerAR.GetFixFlag()) {
@@ -261,14 +263,33 @@ void TestViewer::DebugMode() {
             for (const auto &coords : m_boundingbox_w) {
                 VLOG(0) << coords;
             }
+#ifdef ORBPOINT
             // extract more keypoihts
             ORB_SLAM3::FrameObjectProcess::GetInstance()->SetBoundingBox(
                 m_boundingbox_w);
+#endif
             viewerAR.SetFixFlag(false);
         }
     }
 }
 
+void TestViewer::SfMIfSp() {
+#ifdef SUPERPOINT
+    // TODO(zhangye): DO SFM USING SUPERPOINT
+    VLOG(0) << "DOING SFM USING SUPERPOINT, PLEASE WAIT...";
+    std::vector<ORB_SLAM3::KeyFrame *> keyframes =
+        SLAM->mpAtlas->GetAllKeyFrames();
+
+    ORB_SLAM3::SPextractor *SPextractor =
+        new ORB_SLAM3::SPextractor(1000, 1.2, 3, 0.015, 0.007, true);
+    for (size_t i = 0; i < keyframes.size(); i++) {
+        ORB_SLAM3::KeyFrame *keyframe = keyframes[i];
+        (*SPextractor)(
+            keyframe->imgLeft, cv::Mat(), keyframe->mvKeys_superpoint,
+            keyframe->mDescriptors_superpoint);
+    }
+#endif
+}
 // click boundingbox fix button:
 // 1. get the boundingbox
 // 2. setboundingbox
@@ -314,6 +335,7 @@ bool TestViewer::RunScanner() {
         DebugMode();
 
         if (viewerAR.GetStopFlag()) {
+            SfMIfSp();
             break;
         }
 

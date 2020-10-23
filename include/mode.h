@@ -6,5 +6,8 @@
 #define ORB_SLAM3_MODE_H
 //#define SCANNER ; // scanning
 #define OBJECTRECOGNITION ; // object detection and tracking
-#define SUPERPOINT
+
+// feature point mode
+//#define SUPERPOINT
+#define ORBPOINT
 #endif // ORB_SLAM3_MODE_H

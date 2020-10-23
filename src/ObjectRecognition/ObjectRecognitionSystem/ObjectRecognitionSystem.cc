@@ -2,12 +2,14 @@
 // Created by zhangye on 2020/9/15.
 //
 #include <iostream>
-#include <cv.hpp>
 #include <iomanip>
+#include <include/ORBSLAM3/SPextractor.h>
 #include "Utility/Thread/ThreadBase.h"
 #include "Visualizer/GlobalImageViewer.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionSystem.h"
 #include "Utility/FeatureExtractor/ORBExtractor.h"
+#include "mode.h"
+
 namespace ObjRecognition {
 
 ObjRecogThread::ObjRecogThread() : ThreadBase(1, false) {
@@ -206,11 +208,21 @@ int ObjRecogThread::Process() {
         platformFrame->img.height, platformFrame->img.width, CV_8UC1,
         platformFrame->img.data);
 
+#ifdef ORBPOINT
     // STSLAMCommon::Timer ORBExtractorTimer("ORBExtractor process");
     SLAMCommon::ORBExtractor orb_extractor(2000, 1.2f, 8, 20, 7);
     orb_extractor.DetectKeyPoints(cur_frame->img, cur_frame->mKpts);
     orb_extractor.ComputeDescriptors(
         cur_frame->img, cur_frame->mKpts, cur_frame->mDesp);
+#endif
+
+#ifdef SUPERPOINT
+    ORB_SLAM3::SPextractor *SPextractor =
+        new ORB_SLAM3::SPextractor(1000, 1.2, 3, 0.015, 0.007, true);
+    (*SPextractor)(
+        cur_frame->img, cv::Mat(), cur_frame->mKpts, cur_frame->mDesp);
+#endif
+
     // VLOG(10) << "ORBExtractor process time: " << ORBExtractorTimer.Stop();
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
