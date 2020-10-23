@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(ORB_SLAM3)
-set(CMAKE_CXX_STANDARD 14)
+#set(CMAKE_CXX_STANDARD 11)
 add_definitions(-w)
 
 IF(NOT CMAKE_BUILD_TYPE)
@@ -51,6 +51,10 @@ find_package(Pangolin REQUIRED)
 find_package(gflags REQUIRED)
 find_package(glog REQUIRED)
 
+set(Torch_DIR "/home/zhangye/Develope/pytorch1.6.0/torch/share/cmake/Torch")  # libtorch
+find_package(Torch REQUIRED)
+
+
 include_directories(
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/include
@@ -71,6 +75,10 @@ include_directories(${PROJECT_SOURCE_DIR}/Thirdparty)
 
 set (ORBSLAM3_FILES
         include/ORBSLAM3/Synchronizer.h
+        include/ORBSLAM3/SuperPoint.h
+        include/ORBSLAM3/SPextractor.h
+        src/ORBSLAM3/Superpoint.cc
+        src/ORBSLAM3/SPextractor.cc
         src/ORBSLAM3/ScannerStruct/Struct.cc
         src/ORBSLAM3/System.cc
         src/ORBSLAM3/Tracking.cc
@@ -311,6 +319,7 @@ add_library(${PROJECT_NAME} SHARED  ${SOURCE_FILES}
 add_subdirectory(Thirdparty/g2o)
 
 target_link_libraries(${PROJECT_NAME}
+${TORCH_LIBRARIES}
 ${OpenCV_LIBS}
 ${EIGEN3_LIBS}
 ${Pangolin_LIBRARIES}
@@ -326,6 +335,9 @@ ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 
 # Build examples
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+add_executable(superpoint_test
+        Examples/Superpoint/Superpoint_test.cc)
+target_link_libraries(superpoint_test ${PROJECT_NAME})
 add_executable(objectRecognition_test
         Examples/ObjectRecognition/mono_inertial_objectRecognition_test.cc)
 target_link_libraries(objectRecognition_test ${PROJECT_NAME})
