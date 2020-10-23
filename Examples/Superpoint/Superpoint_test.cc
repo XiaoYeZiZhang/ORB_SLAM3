@@ -27,7 +27,52 @@ void FindMatchByKNN(
         const float distanceRatio = bestMatch.distance / betterMatch.distance;
         VLOG(50) << "distanceRatio = " << distanceRatio;
         // the farest distance, the better result
-        const float kMinDistanceRatioThreshld = 0.85;
+        const float kMinDistanceRatioThreshld = 0.80;
+        if (distanceRatio < kMinDistanceRatioThreshld) {
+            matches.push_back(bestMatch);
+        }
+    }
+
+    VLOG(15) << "after distance Ratio matches size: " << matches.size();
+
+    double minDisKnn = 9999.0;
+    for (size_t i = 0; i < matches.size(); i++) {
+        if (matches[i].distance < minDisKnn) {
+            minDisKnn = matches[i].distance;
+        }
+    }
+    VLOG(15) << "minDisKnn = " << minDisKnn;
+
+    // set good_matches_threshold
+    const int kgoodMatchesThreshold = 200;
+    for (size_t i = 0; i < matches.size(); i++) {
+        if (matches[i].distance <= kgoodMatchesThreshold) {
+            goodMatches.push_back(matches[i]);
+        }
+    }
+    // VLOG(10) << "detection find match by KNN time: "
+    //       << detectionFindMatch.Stop();
+}
+
+void FindMatchByKNN_opencv(
+    const cv::Mat &frmDesp, const cv::Mat &pcDesp,
+    std::vector<cv::DMatch> &goodMatches) {
+    // STSLAMCommon::Timer detectionFindMatch("detection find match by KNN");
+    std::vector<cv::DMatch> matches;
+    std::vector<std::vector<cv::DMatch>> knnMatches;
+    // use L2 norm instead of Hamming distance
+    cv::BFMatcher matcher(cv::NormTypes::NORM_HAMMING);
+    matcher.knnMatch(frmDesp, pcDesp, knnMatches, 2);
+
+    VLOG(5) << "KNN Matches size: " << knnMatches.size();
+
+    for (size_t i = 0; i < knnMatches.size(); i++) {
+        cv::DMatch &bestMatch = knnMatches[i][0];
+        cv::DMatch &betterMatch = knnMatches[i][1];
+        const float distanceRatio = bestMatch.distance / betterMatch.distance;
+        VLOG(50) << "distanceRatio = " << distanceRatio;
+        // the farest distance, the better result
+        const float kMinDistanceRatioThreshld = 0.80;
         if (distanceRatio < kMinDistanceRatioThreshld) {
             matches.push_back(bestMatch);
         }
@@ -80,19 +125,37 @@ int main(int argc, char *argv[]) {
         ORB_SLAM3::SPextractor *SPextractor =
             new ORB_SLAM3::SPextractor(1000, 1.2, 3, 0.015, 0.007, true);
 
+        cv::Ptr<cv::ORB> m_orb_detector = cv::ORB::create(1000, 1.2);
+        m_orb_detector->setScoreType(cv::ORB::FAST_SCORE);
+        m_orb_detector->setFastThreshold(7);
+
         std::vector<cv::KeyPoint> keypoints1;
         cv::Mat descriptor1;
         std::vector<cv::KeyPoint> keypoints2;
         cv::Mat descriptor2;
+
+        std::vector<cv::KeyPoint> keypoints1_opencv;
+        cv::Mat descriptor1_opencv;
+        std::vector<cv::KeyPoint> keypoints2_opencv;
+        cv::Mat descriptor2_opencv;
+
         auto start = high_resolution_clock::now();
         (*SPextractor)(img1, cv::Mat(), keypoints1, descriptor1);
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start);
         VLOG(0) << "for single image: " << duration.count() / 1000.0 << " ms"
                 << std::endl;
+
+        m_orb_detector->detectAndCompute(
+            img1, cv::Mat(), keypoints1_opencv, descriptor1_opencv);
+
         (*SPextractor)(img2, cv::Mat(), keypoints2, descriptor2);
         VLOG(0) << "keypoints1 size: " << keypoints1.size();
         VLOG(0) << "keypoints2 size: " << keypoints2.size();
+
+        m_orb_detector->detectAndCompute(
+            img2, cv::Mat(), keypoints2_opencv, descriptor2_opencv);
+
         if (!keypoints1.empty() && !keypoints2.empty()) {
             std::vector<cv::DMatch> dmatches;
             FindMatchByKNN(descriptor1, descriptor2, dmatches);
@@ -103,6 +166,18 @@ int main(int argc, char *argv[]) {
             cv::imwrite(
                 "/home/zhangye/data1/test" + std::to_string(i) + ".png",
                 imshow);
+
+            std::vector<cv::DMatch> dmatches_opencv;
+            FindMatchByKNN_opencv(
+                descriptor1_opencv, descriptor2_opencv, dmatches_opencv);
+            cv::drawMatches(
+                img1, keypoints1_opencv, img2, keypoints2_opencv,
+                dmatches_opencv, imshow);
+            cv::imshow("match_opencv", imshow);
+            cv::imwrite(
+                "/home/zhangye/data1/test" + std::to_string(i) + "_cv.png",
+                imshow);
+
         } else {
             VLOG(0) << "no keypoints in image";
         }

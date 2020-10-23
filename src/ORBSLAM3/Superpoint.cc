@@ -3,6 +3,7 @@
 //
 #include "ORBSLAM3/SuperPoint.h"
 #include <glog/logging.h>
+#include <Eigen/Core>
 #include <chrono>
 using namespace std::chrono;
 
@@ -215,37 +216,59 @@ void SPDetector::detect(cv::Mat &img, bool cuda) {
 
     mProb = out[0].squeeze(0); // [H, W]
     mDesc = out[1];            // [1, 256, H/8, W/8]
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-    VLOG(0) << "Time taken by get network output: " << duration.count() / 1000.0
+    VLOG(5) << "Time taken by get network output: "
+            << (duration_cast<microseconds>(
+                    high_resolution_clock::now() - start))
+                       .count() /
+                   1000.0
             << " ms" << std::endl;
+
+    mProb_cpu = mProb.to(torch::kCPU);
 }
 
 void SPDetector::getKeyPoints(
     float threshold, int iniX, int maxX, int iniY, int maxY,
     std::vector<cv::KeyPoint> &keypoints, bool nms) {
-    auto prob = mProb.slice(0, iniY, maxY).slice(1, iniX, maxX).to(torch::kCPU);
+    auto prob = mProb_cpu.slice(0, iniY, maxY).slice(1, iniX, maxX);
+
+    auto start = high_resolution_clock::now();
     cv::Mat resultImg(prob.size(0), prob.size(1), CV_32F);
     std::memcpy(
         (void *)resultImg.data, prob.data_ptr(), sizeof(float) * prob.numel());
-    std::vector<cv::KeyPoint> keypoints_no_nms;
+    VLOG(5) << "time of cv::Mat"
+            << (duration_cast<microseconds>(
+                    high_resolution_clock::now() - start))
+                       .count() /
+                   1000.0
+            << " ms" << std::endl;
 
+    std::vector<cv::KeyPoint> keypoints_no_nms;
+    start = high_resolution_clock::now();
+    keypoints_no_nms.resize(resultImg.cols * resultImg.rows);
+    int num = 0;
     for (size_t i = 0; i < resultImg.cols; i++) {
         for (size_t j = 0; j < resultImg.rows; j++) {
-            if (resultImg.at<float>(j, i) > threshold) {
-                float response = resultImg.at<float>(j, i);
-                keypoints_no_nms.emplace_back(
-                    cv::KeyPoint(i, j, 8, -1, response));
+            float value = resultImg.at<float>(j, i);
+            if (value > threshold) {
+                keypoints_no_nms[num++] = (cv::KeyPoint(i, j, 8, -1, value));
             }
         }
     }
 
+    VLOG(5) << "time of push data to no nms: "
+            << (duration_cast<microseconds>(
+                    high_resolution_clock::now() - start))
+                       .count() /
+                   1000.0
+            << "ms " << std::endl;
+
+    start = high_resolution_clock::now();
     if (nms) {
         cv::Mat conf(keypoints_no_nms.size(), 1, CV_32F);
         for (size_t i = 0; i < keypoints_no_nms.size(); i++) {
             int x = keypoints_no_nms[i].pt.x;
             int y = keypoints_no_nms[i].pt.y;
-            conf.at<float>(i, 0) = prob[y][x].item<float>();
+            conf.at<float>(i, 0) = resultImg.at<float>(y, x);
         }
 
         // cv::Mat descriptors;
@@ -260,6 +283,13 @@ void SPDetector::getKeyPoints(
     } else {
         keypoints = keypoints_no_nms;
     }
+
+    VLOG(5) << "time for nms: "
+            << (duration_cast<microseconds>(
+                    high_resolution_clock::now() - start))
+                       .count() /
+                   1000.0
+            << "ms " << std::endl;
 }
 
 void SPDetector::computeDescriptors(

@@ -58,6 +58,7 @@ private:
     std::shared_ptr<SuperPoint> model;
     torch::Tensor mProb;
     torch::Tensor mDesc;
+    torch::Tensor mProb_cpu;
 };
 
 } // namespace ORB_SLAM3

@@ -539,15 +539,29 @@ void SPextractor::ComputeKeyPointsOctTree(
                 vToDistributeKeys.push_back(*vit);
             }
         }
+
+        VLOG(5) << "Time taken by filter keypoints: "
+                << (duration_cast<microseconds>(
+                        high_resolution_clock::now() - start))
+                           .count() /
+                       1000.0
+                << " ms" << std::endl;
+
+        start = high_resolution_clock::now();
         vector<KeyPoint> &keypoints = allKeypoints[level];
         keypoints.reserve(nfeatures);
-
         keypoints = DistributeOctTree(
             vToDistributeKeys, minBorderX, maxBorderX, minBorderY, maxBorderY,
             mnFeaturesPerLevel[level], level);
 
-        const int scaledPatchSize = PATCH_SIZE * mvScaleFactor[level];
+        VLOG(5) << "time for distribute oct tree: "
+                << (duration_cast<microseconds>(
+                        high_resolution_clock::now() - start))
+                           .count() /
+                       1000.0
+                << " ms" << std::endl;
 
+        const int scaledPatchSize = PATCH_SIZE * mvScaleFactor[level];
         // Add border to coordinates and scale information
         const int nkps = keypoints.size();
         for (int i = 0; i < nkps; i++) {
@@ -556,13 +570,18 @@ void SPextractor::ComputeKeyPointsOctTree(
             keypoints[i].octave = level;
             keypoints[i].size = scaledPatchSize;
         }
-        auto stop = high_resolution_clock::now();
-        auto duration = duration_cast<microseconds>(stop - start);
-        VLOG(0) << "Time taken by filter keypoints: "
-                << duration.count() / 1000.0 << " ms" << std::endl;
+
+        start = high_resolution_clock::now();
         cv::Mat desc;
         detector.computeDescriptors(keypoints, desc, is_use_cuda);
         vDesc.push_back(desc);
+
+        VLOG(5) << "time for compute descriptors"
+                << (duration_cast<microseconds>(
+                        high_resolution_clock::now() - start))
+                           .count() /
+                       1000.0
+                << " ms" << std::endl;
     }
 
     cv::vconcat(vDesc, _desc);
