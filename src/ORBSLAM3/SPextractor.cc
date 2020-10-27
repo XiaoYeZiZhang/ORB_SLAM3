@@ -84,7 +84,7 @@ SPextractor::SPextractor(
     torch::Device device(torch::kCUDA);
     model->to(device);
 
-    torch::load(model, "/home/zhangye/data1/superpoint_v1_test1.pt");
+    torch::load(model, "/home/zhangye/data1/superpoint_v1_test3.pt");
     // torch::load(model, "/home/zhangye/data1/test1.pt");
 
     model->to(torch::kCUDA);
@@ -437,6 +437,138 @@ maxBorderY,mnFeaturesPerLevel[level], level);
     //     computeOrientation(mvImagePyramid[level], allKeypoints[level], umax);
 }*/
 
+void KeyPointsFilterByPixelsMask(
+    std::vector<cv::KeyPoint> &inOutKeyPoints, const cv::Mat &mask,
+    int minBorderX, int minBorderY, float scaleFactor) {
+    if (mask.empty() || inOutKeyPoints.empty()) {
+        return;
+    }
+
+    if (scaleFactor <= 0.0f) {
+        LOG(ERROR) << __FUNCTION__ << ": invlid scaleFactor = " << scaleFactor;
+        return;
+    }
+
+    const float invScaleFactor = 1.0f / scaleFactor;
+
+    for (cv::KeyPoint &cur : inOutKeyPoints) {
+        cur.pt.x += minBorderX;
+        cur.pt.y += minBorderY;
+        cur.pt *= scaleFactor;
+    }
+
+    KeyPointsFilter::runByPixelsMask(inOutKeyPoints, mask);
+
+    for (cv::KeyPoint &cur : inOutKeyPoints) {
+        cur.pt *= invScaleFactor;
+        cur.pt.x -= minBorderX;
+        cur.pt.y -= minBorderY;
+    }
+}
+
+void SPextractor::ComputeKeyPointsWithMask(
+    vector<vector<KeyPoint>> &allKeypoints, cv::Mat &_desc,
+    const cv::Mat &mask) {
+    allKeypoints.resize(nlevels);
+
+    vector<cv::Mat> vDesc;
+
+    const float W = 30;
+
+    for (int level = 0; level < nlevels; ++level) {
+        SPDetector detector(model);
+        detector.detect(mvImagePyramid[level], is_use_cuda);
+
+        const int minBorderX = EDGE_THRESHOLD - 3;
+        const int minBorderY = minBorderX;
+        const int maxBorderX = mvImagePyramid[level].cols - EDGE_THRESHOLD + 3;
+        const int maxBorderY = mvImagePyramid[level].rows - EDGE_THRESHOLD + 3;
+
+        vector<cv::KeyPoint> vToDistributeKeys;
+        vToDistributeKeys.reserve(nfeatures * 10);
+
+        const float width = (maxBorderX - minBorderX);
+        const float height = (maxBorderY - minBorderY);
+
+        const int nCols = width / W;
+        const int nRows = height / W;
+        const int wCell = ceil(width / nCols);
+        const int hCell = ceil(height / nRows);
+
+        auto start = high_resolution_clock::now();
+        vector<cv::KeyPoint> vKeysCell;
+
+        detector.getKeyPoints(
+            iniThFAST, minBorderX, maxBorderX, minBorderY, maxBorderY,
+            vKeysCell, true);
+
+        if (vKeysCell.empty()) {
+            detector.getKeyPoints(
+                minThFAST, minBorderX, maxBorderX, minBorderY, maxBorderY,
+                vKeysCell, true);
+        }
+
+        if (!vKeysCell.empty()) {
+            for (vector<cv::KeyPoint>::iterator vit = vKeysCell.begin();
+                 vit != vKeysCell.end(); vit++) {
+                vToDistributeKeys.push_back(*vit);
+            }
+        }
+
+        VLOG(5) << "Time taken by filter keypoints: "
+                << (duration_cast<microseconds>(
+                        high_resolution_clock::now() - start))
+                           .count() /
+                       1000.0
+                << " ms" << std::endl;
+
+        start = high_resolution_clock::now();
+        vector<KeyPoint> &keypoints = allKeypoints[level];
+        keypoints.reserve(nfeatures);
+
+        KeyPointsFilterByPixelsMask(
+            vToDistributeKeys, mask, minBorderX, minBorderY,
+            mvScaleFactor[level]);
+        keypoints = vToDistributeKeys;
+        KeyPointsFilter::retainBest(keypoints, mnFeaturesPerLevel[level]);
+
+        VLOG(5) << "time for distribute oct tree: "
+                << (duration_cast<microseconds>(
+                        high_resolution_clock::now() - start))
+                           .count() /
+                       1000.0
+                << " ms" << std::endl;
+
+        const int scaledPatchSize = PATCH_SIZE * mvScaleFactor[level];
+        // Add border to coordinates and scale information
+        const int nkps = keypoints.size();
+        for (int i = 0; i < nkps; i++) {
+            keypoints[i].pt.x += minBorderX;
+            keypoints[i].pt.y += minBorderY;
+            keypoints[i].octave = level;
+            keypoints[i].size = scaledPatchSize;
+        }
+
+        start = high_resolution_clock::now();
+        cv::Mat desc;
+        detector.computeDescriptors(keypoints, desc, is_use_cuda);
+        vDesc.push_back(desc);
+
+        VLOG(5) << "time for compute descriptors"
+                << (duration_cast<microseconds>(
+                        high_resolution_clock::now() - start))
+                           .count() /
+                       1000.0
+                << " ms" << std::endl;
+    }
+
+    cv::vconcat(vDesc, _desc);
+
+    // // compute orientations
+    // for (int level = 0; level < nlevels; ++level)
+    //     computeOrientation(mvImagePyramid[level], allKeypoints[level], umax);
+}
+
 void SPextractor::ComputeKeyPointsOctTree(
     vector<vector<KeyPoint>> &allKeypoints, cv::Mat &_desc) {
     allKeypoints.resize(nlevels);
@@ -592,7 +724,7 @@ void SPextractor::ComputeKeyPointsOctTree(
 }
 
 void SPextractor::operator()(
-    InputArray _image, InputArray _mask, vector<KeyPoint> &_keypoints,
+    InputArray _image, const cv::Mat &mask, vector<KeyPoint> &_keypoints,
     OutputArray _descriptors) {
     if (_image.empty()) {
         return;
@@ -607,7 +739,18 @@ void SPextractor::operator()(
     ComputePyramid(image);
 
     vector<vector<KeyPoint>> allKeypoints;
-    ComputeKeyPointsOctTree(allKeypoints, descriptors);
+    cv::Mat mask_zero = mask.clone();
+    mask_zero = cv::Scalar::all(0);
+    cv::Mat dst;
+    cv::bitwise_xor(mask_zero, mask, dst);
+    // use mask if not all zero
+    if (cv::countNonZero(dst) > 0) {
+        VLOG(5) << "compute with mask";
+        ComputeKeyPointsWithMask(allKeypoints, descriptors, mask);
+    } else {
+        VLOG(5) << "compute without mask";
+        ComputeKeyPointsOctTree(allKeypoints, descriptors);
+    }
 
     int nkeypoints = 0;
     for (int level = 0; level < nlevels; ++level)

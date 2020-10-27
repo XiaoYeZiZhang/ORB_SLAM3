@@ -44,6 +44,10 @@ public:
         System *pSys, Atlas *pAtlas, const float bMonocular, bool bInertial,
         const string &_strSeqName = std::string());
 
+    LocalMapping(
+        System *pSys, Atlas *pAtlas, const float bMonocular, bool bInertial,
+        Atlas *pAtlas_superpoint, const string &_strSeqName = std::string());
+
     void SetLoopCloser(LoopClosing *pLoopCloser);
 
     void SetTracker(Tracking *pTracker);
@@ -116,6 +120,9 @@ public:
     float mThFarPoints;
     bool mbRGB;
 
+    // SfM
+    void TriangulateForSuperPoint();
+
 protected:
     bool CheckNewKeyFrames();
     void ProcessNewKeyFrame();
@@ -187,6 +194,10 @@ protected:
     ofstream f_lm;
 
     void (*cb_)(ObjRecognition::ObjRecogFrameCallbackData *&);
+
+    // SfM
+    Atlas *mpAtlas_superpoint;
+    std::list<MapPoint *> mlpRecentAddedMapPoints_superpoint;
 };
 
 } // namespace ORB_SLAM3

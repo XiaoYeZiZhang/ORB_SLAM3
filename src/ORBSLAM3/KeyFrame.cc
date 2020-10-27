@@ -26,7 +26,7 @@
 #include <opencv2/core/eigen.hpp>
 #include <include/CameraModels/Pinhole.h>
 #include <glog/logging.h>
-#include "ObjectRecognition/Utility/Tools.h"
+#include "include/Tools.h"
 #include "ObjectRecognition/Utility/Camera.h"
 
 namespace ORB_SLAM3 {
@@ -160,6 +160,18 @@ void KeyFrame::ComputeBoW() {
         // leaves up) We assume the vocabulary tree has 6 levels, change the 4
         // otherwise
         mpORBvocabulary->transform(vCurrentDesc, mBowVec, mFeatVec, 4);
+    }
+}
+
+void KeyFrame::ComputeBoW_SuperPoint() {
+    if (mBowVec_superpoint.empty() || mFeatVec_superpoint.empty()) {
+        vector<cv::Mat> vCurrentDesc =
+            Converter::toDescriptorVector(mDescriptors_superpoint);
+        // Feature vector associate features with nodes in the 4th level (from
+        // leaves up) We assume the vocabulary tree has 6 levels, change the 4
+        // otherwise
+        mpORBvocabulary->transform(
+            vCurrentDesc, mBowVec_superpoint, mFeatVec_superpoint, 4);
     }
 }
 
@@ -342,6 +354,11 @@ void KeyFrame::AddMapPoint(MapPoint *pMP, const size_t &idx) {
     mvpMapPoints[idx] = pMP;
 }
 
+void KeyFrame::AddSuperpointMapPoint(MapPoint *pMP, const size_t &idx) {
+    unique_lock<mutex> lock(mMutexFeatures);
+    mvpMapPoints_superpoint[idx] = pMP;
+}
+
 void KeyFrame::EraseMapPointMatch(const int &idx) {
     unique_lock<mutex> lock(mMutexFeatures);
     mvpMapPoints[idx] = static_cast<MapPoint *>(NULL);
@@ -402,6 +419,11 @@ vector<MapPoint *> KeyFrame::GetMapPointMatches() {
 MapPoint *KeyFrame::GetMapPoint(const size_t &idx) {
     unique_lock<mutex> lock(mMutexFeatures);
     return mvpMapPoints[idx];
+}
+
+MapPoint *KeyFrame::GetSuperpointMapPoint(const size_t &idx) {
+    unique_lock<mutex> lock(mMutexFeatures);
+    return mvpMapPoints_superpoint[idx];
 }
 
 void KeyFrame::UpdateConnections(bool upParent) {
@@ -905,10 +927,14 @@ void KeyFrame::SetDesps(const cv::Mat &desps) {
     mDescriptors = desps;
 }
 
-unsigned int KeyFrame::GetMemSizeFor3DObject() {
+unsigned int KeyFrame::GetMemSizeFor3DObject(const bool is_superpoint) {
     unsigned int totalSize = 0;
     totalSize += sizeof(mnId);
     int nKpts = mvKeys.size();
+    if (is_superpoint) {
+        nKpts = mvKeys_superpoint.size();
+    }
+
     totalSize += sizeof(nKpts);
     if (nKpts > 0) {
         const unsigned int PerKeyPointSize =
@@ -920,7 +946,6 @@ unsigned int KeyFrame::GetMemSizeFor3DObject() {
     // Tco
     totalSize += sizeof(double) * 7;
     // upload image data
-
     totalSize += sizeof(char) *
                  ObjRecognition::CameraIntrinsic::GetInstance().Width() *
                  ObjRecognition::CameraIntrinsic::GetInstance().Height();
@@ -929,11 +954,16 @@ unsigned int KeyFrame::GetMemSizeFor3DObject() {
 
 void KeyFrame::WriteToMemoryFor3DObject(
     unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two,
-    const Eigen::Matrix3d &Rgl2slam) {
+    const bool is_superpoint) {
     VLOG(10) << "keyframe id: " << mnId;
-    ObjRecognition::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
+    Tools::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
 
-    ObjRecognition::PackORBFeatures(mvKeys, mDescriptors, mem_pos, mem);
+    if (is_superpoint) {
+        Tools::PackORBFeatures(
+            mvKeys_superpoint, mDescriptors_superpoint, mem_pos, mem);
+    } else {
+        Tools::PackORBFeatures(mvKeys, mDescriptors, mem_pos, mem);
+    }
 
     Eigen::Vector3d Tcw;
     Eigen::Matrix3d Rcw;
@@ -946,17 +976,15 @@ void KeyFrame::WriteToMemoryFor3DObject(
     Tcw = Tcw_4_4.block<3, 1>(0, 3);
 
     // TODO(zhangye): check coords
-    // Eigen::Matrix3d Rcw_gl = Rcw * Rgl2slam;
-    Eigen::Matrix3d Rcw_gl = Rcw;
-    Eigen::Matrix3d Rco = Rcw_gl * Two.block<3, 3>(0, 0);
-    Eigen::Vector3d tco = Rcw_gl * Two.block<3, 1>(0, 3) + Tcw;
+    Eigen::Matrix3d Rco = Rcw * Two.block<3, 3>(0, 0);
+    Eigen::Vector3d tco = Rcw * Two.block<3, 1>(0, 3) + Tcw;
 
-    ObjRecognition::PackCamCWToMem(tco, Rco, mem_pos, mem);
+    Tools::PackCamCWToMem(tco, Rco, mem_pos, mem);
 
     VLOG(10) << "size: "
              << ObjRecognition::CameraIntrinsic::GetInstance().Width() << " "
              << ObjRecognition::CameraIntrinsic::GetInstance().Height();
-    ObjRecognition::PutDataToMem(
+    Tools::PutDataToMem(
         mem + mem_pos, imgLeft.data,
         sizeof(char) * ObjRecognition::CameraIntrinsic::GetInstance().Width() *
             ObjRecognition::CameraIntrinsic::GetInstance().Height(),

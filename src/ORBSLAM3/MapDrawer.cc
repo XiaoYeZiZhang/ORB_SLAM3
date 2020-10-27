@@ -25,7 +25,7 @@
 #include <pangolin/pangolin.h>
 #include <mutex>
 #include <cxeigen.hpp>
-#include "ObjectRecognition/Utility/Tools.h"
+#include "include/Tools.h"
 
 namespace ORB_SLAM3 {
 
@@ -461,7 +461,7 @@ void MapDrawer::GetCurrentOpenGLCameraMatrix(
             twc = -Rwc * mCameraPose.rowRange(0, 3).col(3);
         }
 
-        ObjRecognition::ChangeCV44ToGLMatrixFloat(Rwc, M);
+        Tools::ChangeCV44ToGLMatrixFloat(Rwc, M);
         MOw.SetIdentity();
         MOw.m[12] = twc.at<float>(0);
         MOw.m[13] = twc.at<float>(1);
@@ -485,14 +485,14 @@ void MapDrawer::GetCurrentOpenGLCameraMatrix(
             twc = -Rwc * mCameraPose.rowRange(0, 3).col(3);
         }
 
-        ObjRecognition::ChangeCV44ToGLMatrixFloat(Rwc, M);
+        Tools::ChangeCV44ToGLMatrixFloat(Rwc, M);
         MOw.SetIdentity();
         MOw.m[12] = twc.at<float>(0);
         MOw.m[13] = twc.at<float>(1);
         MOw.m[14] = twc.at<float>(2);
 
         MTwwp.SetIdentity();
-        ObjRecognition::ChangeCV44ToGLMatrixFloat(Rwwp, MTwwp);
+        Tools::ChangeCV44ToGLMatrixFloat(Rwwp, MTwwp);
     } else {
         M.SetIdentity();
         MOw.SetIdentity();

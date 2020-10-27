@@ -97,6 +97,9 @@ System::System(
     // Create the Atlas
     // mpMap = new Map();
     mpAtlas = new Atlas(0);
+#ifdef SUPERPOINT
+    mpAtlas_superpoint = new Atlas(-1);
+#endif
     //----
 
     /*if(strLoadingFile.empty())
@@ -184,9 +187,16 @@ System::System(
         m_recognition_mode_);
 
     // Initialize the Local Mapping thread and launch
+#ifdef SUPERPOINT
+    mpLocalMapper = new LocalMapping(
+        this, mpAtlas, mSensor == MONOCULAR || mSensor == IMU_MONOCULAR,
+        mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO, mpAtlas_superpoint,
+        strSequence);
+#else
     mpLocalMapper = new LocalMapping(
         this, mpAtlas, mSensor == MONOCULAR || mSensor == IMU_MONOCULAR,
         mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO, strSequence);
+#endif
 
 #ifdef OBJECTRECOGNITION
     mpLocalMapper->SetObjRecogCallback(ObjRecognitionExd::ObjRecogCallback_V3);
@@ -927,14 +937,31 @@ void System::SetScanBoundingbox_W(
     mpAtlas->SetScanBoundingbox_W(boundingbox);
 }
 
-bool System::PackAtlasToMemoryFor3DObject(
+bool System::PackAtlasToMemoryFor3DObject_SuperPoint(
     char **buffer_out, int &buffer_out_len) {
     std::string version = "V1.0.0.0";
-    buffer_out_len = mpAtlas->GetMemSizeFor3DObject(version);
+    buffer_out_len = mpAtlas_superpoint->GetMemSizeFor3DObject(version, true);
     bool ret = false;
     if (buffer_out_len > 0) {
         *buffer_out = new char[buffer_out_len];
-        ret = mpAtlas->WriteToMemoryFor3DObject(buffer_out_len, *buffer_out);
+        ret = mpAtlas_superpoint->WriteToMemoryFor3DObject(
+            buffer_out_len, *buffer_out, true);
+        if (!ret) {
+            LOG(FATAL) << "write atlas_superpoint to memory error!";
+        }
+    }
+    return ret;
+}
+
+bool System::PackAtlasToMemoryFor3DObject(
+    char **buffer_out, int &buffer_out_len) {
+    std::string version = "V1.0.0.0";
+    buffer_out_len = mpAtlas->GetMemSizeFor3DObject(version, false);
+    bool ret = false;
+    if (buffer_out_len > 0) {
+        *buffer_out = new char[buffer_out_len];
+        ret = mpAtlas->WriteToMemoryFor3DObject(
+            buffer_out_len, *buffer_out, false);
         if (!ret) {
             LOG(FATAL) << "write atlas to memory error!";
         }

@@ -5,7 +5,7 @@
 #include <pangolin/display/opengl_render_state.h>
 #include <pangolin/gl/gl.h>
 #include "ORBSLAM3/ViewerCommon.h"
-#include "ObjectRecognition/Utility/Tools.h"
+#include "include/Tools.h"
 
 void AddTextToImage(
     const std::string &s, cv::Mat &im, const int r, const int g, const int b) {
@@ -114,7 +114,7 @@ void PrintStatus(
 void LoadCameraPose(const cv::Mat &Tcw) {
     if (!Tcw.empty()) {
         pangolin::OpenGlMatrix M;
-        ObjRecognition::ChangeCV44ToGLMatrixFloat(Tcw, M);
+        Tools::ChangeCV44ToGLMatrixFloat(Tcw, M);
         M.Load();
     }
 }

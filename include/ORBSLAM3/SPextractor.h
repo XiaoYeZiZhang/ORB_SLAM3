@@ -47,7 +47,7 @@ public:
     // SP are dispersed on the image using an octree.
     // Mask is ignored in the current implementation.
     void operator()(
-        cv::InputArray image, cv::InputArray mask,
+        cv::InputArray image, const cv::Mat &mask,
         std::vector<cv::KeyPoint> &keypoints, cv::OutputArray descriptors);
 
     int inline GetLevels() {
@@ -80,6 +80,9 @@ protected:
     void ComputePyramid(cv::Mat image);
     void ComputeKeyPointsOctTree(
         std::vector<std::vector<cv::KeyPoint>> &allKeypoints, cv::Mat &_desc);
+    void ComputeKeyPointsWithMask(
+        std::vector<std::vector<cv::KeyPoint>> &allKeypoints, cv::Mat &_desc,
+        const cv::Mat &mask);
     std::vector<cv::KeyPoint> DistributeOctTree(
         const std::vector<cv::KeyPoint> &vToDistributeKeys, const int &minX,
         const int &maxX, const int &minY, const int &maxY, const int &nFeatures,

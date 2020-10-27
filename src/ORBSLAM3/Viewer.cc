@@ -24,7 +24,7 @@
 #include "Visualizer/GlobalImageViewer.h"
 #include "ORBSLAM3/Viewer.h"
 #include "ORBSLAM3/ViewerCommon.h"
-#include "ObjectRecognition/Utility/Tools.h"
+#include "include/Tools.h"
 #include "mode.h"
 namespace ORB_SLAM3 {
 
@@ -340,8 +340,7 @@ void Viewer::Draw() {
                 mbStopTrack = false;
             }
 
-            ObjRecognition::DrawTxt(
-                "IMAGE: " + std::to_string(image_num), 220, 10);
+            Tools::DrawTxt("IMAGE: " + std::to_string(image_num), 220, 10);
             if (!(*menuFollowCamera)) {
                 cv::Mat cam_pos;
                 // TODO(zhangye): check the cam pos???
@@ -505,7 +504,7 @@ void Viewer::Draw() {
                 cv::Mat Two_cv;
                 eigen2cv(Two, Two_cv);
                 pangolin::OpenGlMatrix glTwo;
-                ObjRecognition::ChangeCV44ToGLMatrixDouble(Two_cv, glTwo);
+                Tools::ChangeCV44ToGLMatrixDouble(Two_cv, glTwo);
                 std::vector<Eigen::Vector3d> boundingbox;
                 for (size_t i = 0; i < 8; i++) {
                     boundingbox.emplace_back(Eigen::Vector3d(

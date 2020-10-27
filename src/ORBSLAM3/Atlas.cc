@@ -26,7 +26,7 @@
 #include "Pinhole.h"
 #include "KannalaBrandt8.h"
 #include "ObjectRecognition/Utility/Camera.h"
-#include "ObjectRecognition/Utility/Tools.h"
+#include "include/Tools.h"
 
 namespace ORB_SLAM3 {
 
@@ -278,7 +278,8 @@ bool Atlas::MappointInBoundingbox(const cv::Mat &mappoint_pos) {
     }
 }
 
-unsigned int Atlas::GetMemSizeFor3DObject(const std::string &version) {
+unsigned int Atlas::GetMemSizeFor3DObject(
+    const std::string &version, const bool is_superpoint) {
     // already set boundingbox
     GetBoundingBoxCoordsRange();
     m_3dobject_version_ = version;
@@ -334,7 +335,7 @@ unsigned int Atlas::GetMemSizeFor3DObject(const std::string &version) {
 
         nTotalSize += sizeof(unsigned int);
         for (auto &item : m_saved_keyframe_for_3dobject_) {
-            nTotalSize += item->GetMemSizeFor3DObject();
+            nTotalSize += item->GetMemSizeFor3DObject(is_superpoint);
         }
         VLOG(10) << "getmemsize3" << nTotalSize;
     }
@@ -342,27 +343,28 @@ unsigned int Atlas::GetMemSizeFor3DObject(const std::string &version) {
     return nTotalSize;
 }
 
-bool Atlas::WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem) {
+bool Atlas::WriteToMemoryFor3DObject(
+    const unsigned int &mem_size, char *mem, const bool is_superpoint) {
     unsigned int mem_pos = 0;
     const auto &camera_intrinsic =
         ObjRecognition::CameraIntrinsic::GetInstance();
     char version_str[sizeof(m_3dobject_version_)];
-    ObjRecognition::PutDataToMem(
+    Tools::PutDataToMem(
         mem + mem_pos, version_str, m_3dobject_version_.size(), mem_pos);
     double m_timestamp = 0.0;
-    ObjRecognition::PutDataToMem(
+    Tools::PutDataToMem(
         mem + mem_pos, &m_timestamp, sizeof(m_timestamp), mem_pos);
-    ObjRecognition::PutDataToMem(
+    Tools::PutDataToMem(
         mem + mem_pos, &camera_intrinsic.Width(), sizeof(int), mem_pos);
-    ObjRecognition::PutDataToMem(
+    Tools::PutDataToMem(
         mem + mem_pos, &camera_intrinsic.Height(), sizeof(int), mem_pos);
-    ObjRecognition::PutDataToMem(
+    Tools::PutDataToMem(
         mem + mem_pos, &camera_intrinsic.FX(), sizeof(double), mem_pos);
-    ObjRecognition::PutDataToMem(
+    Tools::PutDataToMem(
         mem + mem_pos, &camera_intrinsic.FY(), sizeof(double), mem_pos);
-    ObjRecognition::PutDataToMem(
+    Tools::PutDataToMem(
         mem + mem_pos, &camera_intrinsic.CX(), sizeof(double), mem_pos);
-    ObjRecognition::PutDataToMem(
+    Tools::PutDataToMem(
         mem + mem_pos, &camera_intrinsic.CY(), sizeof(double), mem_pos);
 
     // bounding box
@@ -375,11 +377,11 @@ bool Atlas::WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem) {
         bounding_box[i * 3 + 2] = m_boundingbox_w_[i](2);
     }
 
-    ObjRecognition::PutDataToMem(
+    Tools::PutDataToMem(
         mem + mem_pos, bounding_box, 24 * sizeof(double), mem_pos);
     // box_scale
     Eigen::Vector3d m_box_scale = Eigen::Vector3d::Zero();
-    ObjRecognition::PutDataToMem(
+    Tools::PutDataToMem(
         mem + mem_pos, m_box_scale.data(), 3 * sizeof(double), mem_pos);
 
     // mappoint size:
@@ -395,7 +397,7 @@ bool Atlas::WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem) {
     VLOG(10) << "write to memory for mappoints: " << nMPs;
     VLOG(10) << "write to memory for keyframes: " << nKFs;
     VLOG(10) << "writememsize1" << mem_pos;
-    ObjRecognition::PutDataToMem(mem + mem_pos, &nMPs, sizeof(nMPs), mem_pos);
+    Tools::PutDataToMem(mem + mem_pos, &nMPs, sizeof(nMPs), mem_pos);
 
     // TODO(zhangye): check Two???
     Eigen::Matrix4d m_object_Two = Eigen::Matrix4d::Identity();
@@ -406,15 +408,11 @@ bool Atlas::WriteToMemoryFor3DObject(const unsigned int &mem_size, char *mem) {
     VLOG(10) << "writememsize2" << mem_pos;
 
     // keyframe size:
-    ObjRecognition::PutDataToMem(mem + mem_pos, &nKFs, sizeof(nKFs), mem_pos);
-
-    Eigen::Matrix3d Rgl2slam = Eigen::Matrix3d::Zero();
-    Rgl2slam(0, 0) = 1;
-    Rgl2slam(1, 2) = -1;
-    Rgl2slam(2, 1) = 1;
+    Tools::PutDataToMem(mem + mem_pos, &nKFs, sizeof(nKFs), mem_pos);
 
     for (KeyFrame *pKFi : m_saved_keyframe_for_3dobject_) {
-        pKFi->WriteToMemoryFor3DObject(mem_pos, mem, m_object_Two, Rgl2slam);
+        pKFi->WriteToMemoryFor3DObject(
+            mem_pos, mem, m_object_Two, is_superpoint);
     }
 
     VLOG(10) << "writememsize3" << mem_pos;

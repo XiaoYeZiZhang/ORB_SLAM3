@@ -8,7 +8,6 @@
 #include <mutex>
 #include <opencv2/core/mat.hpp>
 namespace ObjRecognition {
-
 class FrameBase {
 public:
     void SetCameraPose(const Eigen::Matrix3d &Rcw, const Eigen::Vector3d &tcw);

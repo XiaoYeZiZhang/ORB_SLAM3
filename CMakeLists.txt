@@ -77,8 +77,10 @@ set (ORBSLAM3_FILES
         include/ORBSLAM3/Synchronizer.h
         include/ORBSLAM3/SuperPoint.h
         include/ORBSLAM3/SPextractor.h
+        include/ORBSLAM3/SuperPointMatcher.h
         src/ORBSLAM3/Superpoint.cc
         src/ORBSLAM3/SPextractor.cc
+        src/ORBSLAM3/SuperPointMatcher.cc
         src/ORBSLAM3/ScannerStruct/Struct.cc
         src/ORBSLAM3/System.cc
         src/ORBSLAM3/Tracking.cc
@@ -173,7 +175,7 @@ set(OBJECTRECOGNITION_FILES
         src/ObjectRecognition/Utility/Thread/ThreadBase.cc
         include/ObjectRecognition/Utility/Performance.h
         src/ObjectRecognition/Utility/Performance.cc
-        include/ObjectRecognition/Utility/Tools.h
+        include/Tools.h
         include/ObjectRecognition/Detector/DetectorThread.h
         src/ObjectRecognition/Detector/DetectorThread.cc
         include/ObjectRecognition/Detector/DetectorPointCloud.h

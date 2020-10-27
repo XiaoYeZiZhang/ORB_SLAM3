@@ -391,14 +391,21 @@ public:
     // objectRecognition
     void WriteToMemoryFor3DObject(
         unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two,
-        const Eigen::Matrix3d &Rgl2slam);
-    unsigned int GetMemSizeFor3DObject();
+        const bool is_superpoint);
+    unsigned int GetMemSizeFor3DObject(const bool is_superpoint);
 
     void SetKeyPoints(std::vector<cv::KeyPoint> &keypoints);
     void SetDesps(const cv::Mat &desps);
 
     // The following variables are accesed from only 1 thread or never change
     // (no mutex needed).
+
+    // superpoint
+
+    void AddSuperpointMapPoint(MapPoint *pMP, const size_t &idx);
+    MapPoint *GetSuperpointMapPoint(const size_t &idx);
+    void ComputeBoW_SuperPoint();
+
 public:
     static long unsigned int nNextId;
     long unsigned int mnId;
@@ -521,6 +528,12 @@ public:
     bool mbHasHessian;
     cv::Mat mHessianPose;
 
+    // superpoint
+    DBoW2::BowVector mBowVec_superpoint;
+    DBoW2::FeatureVector mFeatVec_superpoint;
+    // Number of KeyPoints
+    int N_superpoint;
+
     // The following variables need to be accessed trough a mutex to be thread
     // safe.
 protected:
@@ -595,6 +608,10 @@ protected:
     unsigned int mnBackupIdCamera, mnBackupIdCamera2;
 
     void UndistortKeyPoints();
+
+    // superpoint
+    // MapPoints associated to keypoints
+    std::vector<MapPoint *> mvpMapPoints_superpoint;
 
 public:
     GeometricCamera *mpCamera, *mpCamera2;

@@ -140,7 +140,17 @@ int main(int argc, char *argv[]) {
         cv::Mat descriptor2_opencv;
 
         auto start = high_resolution_clock::now();
-        (*SPextractor)(img1, cv::Mat(), keypoints1, descriptor1);
+
+        // cv::Mat mask = img1.clone();
+        // mask = cv::Scalar::all(255);
+        // for (size_t i = 0; i < 50; i++) {
+        // for (size_t j = 0; j < img1.cols; j++) {
+        // mask.at<float>(i, j) = 0;
+        // }
+        // }
+
+        cv::Mat mask = cv::Mat();
+        (*SPextractor)(img1, mask, keypoints1, descriptor1);
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start);
         VLOG(0) << "for single image: " << duration.count() / 1000.0 << " ms"
@@ -149,7 +159,7 @@ int main(int argc, char *argv[]) {
         m_orb_detector->detectAndCompute(
             img1, cv::Mat(), keypoints1_opencv, descriptor1_opencv);
 
-        (*SPextractor)(img2, cv::Mat(), keypoints2, descriptor2);
+        (*SPextractor)(img2, mask, keypoints2, descriptor2);
         VLOG(0) << "keypoints1 size: " << keypoints1.size();
         VLOG(0) << "keypoints2 size: " << keypoints2.size();
 
@@ -164,7 +174,8 @@ int main(int argc, char *argv[]) {
                 img1, keypoints1, img2, keypoints2, dmatches, imshow);
             cv::imshow("match", imshow);
             cv::imwrite(
-                "/home/zhangye/data1/test" + std::to_string(i) + ".png",
+                "/home/zhangye/data1/test_superpoint/test" + std::to_string(i) +
+                    ".png",
                 imshow);
 
             std::vector<cv::DMatch> dmatches_opencv;
@@ -175,7 +186,8 @@ int main(int argc, char *argv[]) {
                 dmatches_opencv, imshow);
             cv::imshow("match_opencv", imshow);
             cv::imwrite(
-                "/home/zhangye/data1/test" + std::to_string(i) + "_cv.png",
+                "/home/zhangye/data1/test_superpoint/test" + std::to_string(i) +
+                    "_cv.png",
                 imshow);
 
         } else {

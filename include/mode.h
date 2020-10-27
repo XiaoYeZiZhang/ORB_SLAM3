@@ -8,6 +8,6 @@
 #define OBJECTRECOGNITION ; // object detection and tracking
 
 // feature point mode
-//#define SUPERPOINT
+// #define SUPERPOINT
 #define ORBPOINT
 #endif // ORB_SLAM3_MODE_H

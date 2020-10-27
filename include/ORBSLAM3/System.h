@@ -191,6 +191,8 @@ public:
     // void SaveAtlas(int type);
 
     bool PackAtlasToMemoryFor3DObject(char **buffer_out, int &buffer_out_len);
+    bool PackAtlasToMemoryFor3DObject_SuperPoint(
+        char **buffer_out, int &buffer_out_len);
     void SetScanBoundingbox_W(const std::vector<Eigen::Vector3d> &boundingbox);
 
     // ObjectRecognition
@@ -202,6 +204,12 @@ public:
     // The viewer draws the map and the current camera pose. It uses Pangolin.
     Viewer *mpViewer;
     Atlas *mpAtlas;
+    // Local Mapper. It manages the local map and performs local bundle
+    // adjustment.
+    LocalMapping *mpLocalMapper;
+
+    // superpoint
+    Atlas *mpAtlas_superpoint;
 
 private:
     // bool LoadAtlas(string filename, int type);
@@ -225,10 +233,6 @@ private:
     // It also decides when to insert a new keyframe, create some new MapPoints
     // and performs relocalization if tracking fails.
     Tracking *mpTracker;
-
-    // Local Mapper. It manages the local map and performs local bundle
-    // adjustment.
-    LocalMapping *mpLocalMapper;
 
     // Loop Closer. It searches loops with every new keyframe. If there is a
     // loop it performs a pose graph optimization and full bundle adjustment (in

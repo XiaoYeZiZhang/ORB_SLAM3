@@ -21,7 +21,7 @@
 
 #include "include/ORBSLAM3/MapPoint.h"
 #include "include/ORBSLAM3/ORBmatcher.h"
-#include "ObjectRecognition/Utility/Tools.h"
+#include "include/Tools.h"
 
 #include <mutex>
 
@@ -572,46 +572,35 @@ unsigned int MapPoint::GetMemSizeFor3DObject() {
 
 void MapPoint::WriteToMemoryFor3DObject(
     unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two) {
-    ObjRecognition::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
+    Tools::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
     Eigen::Vector3d pos = Eigen::Vector3d(
         mWorldPos.at<float>(0), mWorldPos.at<float>(1), mWorldPos.at<float>(2));
     // TODO(zhangye): check coords
-    // pos = Eigen::Vector3d(pos[0], pos[2], -pos[1]);
-    // pos = Tow.block<3, 3>(0, 0) * pos + Tow.block<3, 1>(0, 3);
-
     // Tco
-    ObjRecognition::PutDataToMem(
-        mem + mem_pos, &(pos(0)), sizeof(double), mem_pos);
-    ObjRecognition::PutDataToMem(
-        mem + mem_pos, &(pos(1)), sizeof(double), mem_pos);
-    ObjRecognition::PutDataToMem(
-        mem + mem_pos, &(pos(2)), sizeof(double), mem_pos);
+    Tools::PutDataToMem(mem + mem_pos, &(pos(0)), sizeof(double), mem_pos);
+    Tools::PutDataToMem(mem + mem_pos, &(pos(1)), sizeof(double), mem_pos);
+    Tools::PutDataToMem(mem + mem_pos, &(pos(2)), sizeof(double), mem_pos);
 
     int deps_size = 1;
-    ObjRecognition::PutDataToMem(
-        mem + mem_pos, &deps_size, sizeof(deps_size), mem_pos);
+    Tools::PutDataToMem(mem + mem_pos, &deps_size, sizeof(deps_size), mem_pos);
     cv::Mat desp = GetDescriptor();
 
-    ObjRecognition::PutDataToMem(
+    Tools::PutDataToMem(
         mem + mem_pos, &mpRefKF->mnId, sizeof(mpRefKF->mnId), mem_pos);
     auto obs = GetObservations();
 
-    ObjRecognition::PutDataToMem(
-        mem + mem_pos, desp.data, 32 * sizeof(uchar), mem_pos);
+    Tools::PutDataToMem(mem + mem_pos, desp.data, 32 * sizeof(uchar), mem_pos);
 
     unsigned int obSize = obs.size();
 
-    ObjRecognition::PutDataToMem(
-        mem + mem_pos, &obSize, sizeof(obSize), mem_pos);
+    Tools::PutDataToMem(mem + mem_pos, &obSize, sizeof(obSize), mem_pos);
 
     for (auto &curOb : obs) {
-        ObjRecognition::PutDataToMem(
+        Tools::PutDataToMem(
             mem + mem_pos, &curOb.first, sizeof(curOb.first->mnId), mem_pos);
     }
-    ObjRecognition::PutDataToMem(
-        mem + mem_pos, &mnVisible, sizeof(mnVisible), mem_pos);
-    ObjRecognition::PutDataToMem(
-        mem + mem_pos, &mnFound, sizeof(mnFound), mem_pos);
+    Tools::PutDataToMem(mem + mem_pos, &mnVisible, sizeof(mnVisible), mem_pos);
+    Tools::PutDataToMem(mem + mem_pos, &mnFound, sizeof(mnFound), mem_pos);
 }
 
 void MapPoint::PreSave(set<KeyFrame *> &spKF, set<MapPoint *> &spMP) {

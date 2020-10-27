@@ -26,7 +26,7 @@
 #include <cstdlib>
 #include "ORBSLAM3/ScannerStruct/Struct.h"
 #include "ORBSLAM3/ViewerCommon.h"
-#include "ObjectRecognition/Utility/Tools.h"
+#include "include/Tools.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "mode.h"
 using namespace std;
@@ -969,7 +969,7 @@ void Plane::Recompute() {
     Tpw.rowRange(0, 3).colRange(0, 3) =
         ExpSO3(v * ang / sa) * ExpSO3(up * rang);
     o.copyTo(Tpw.col(3).rowRange(0, 3));
-    ObjRecognition::ChangeCV44ToGLMatrixFloat(Tpw, glTpw);
+    Tools::ChangeCV44ToGLMatrixFloat(Tpw, glTpw);
 }
 
 Plane::Plane(
@@ -988,7 +988,7 @@ Plane::Plane(
     const float rang = -3.14f / 2 + ((float)rand() / RAND_MAX) * 3.14f;
     Tpw.rowRange(0, 3).colRange(0, 3) = ExpSO3(v * a / s) * ExpSO3(up * rang);
     o.copyTo(Tpw.col(3).rowRange(0, 3));
-    ObjRecognition::ChangeCV44ToGLMatrixFloat(Tpw, glTpw);
+    Tools::ChangeCV44ToGLMatrixFloat(Tpw, glTpw);
 }
 
 } // namespace ORB_SLAM3
