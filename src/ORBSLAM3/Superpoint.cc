@@ -102,140 +102,66 @@ void NMS2(
     std::vector<cv::KeyPoint> det, cv::Mat conf, std::vector<cv::KeyPoint> &pts,
     int border, int dist_thresh, int img_width, int img_height);
 
-cv::Mat SPdetect(
-    std::shared_ptr<SuperPoint> model, cv::Mat img,
-    std::vector<cv::KeyPoint> &keypoints, double threshold, bool nms,
-    bool cuda) {
-    auto x = torch::from_blob(
-        img.clone().data, {1, 1, img.rows, img.cols}, torch::kByte);
-    x = x.to(torch::kFloat) / 255;
-
-    bool use_cuda = cuda && torch::cuda::is_available();
-    torch::DeviceType device_type;
-    if (use_cuda)
-        device_type = torch::kCUDA;
-    else
-        device_type = torch::kCPU;
-    torch::Device device(device_type);
-
-    model->to(device);
-    x = x.set_requires_grad(false);
-    auto out = model->forward(x.to(device));
-    auto prob = out[0].squeeze(0); // [H, W]
-
-    auto desc = out[1]; // [1, 256, H/8, W/8]
-
-    auto kpts = (prob > threshold);
-
-    kpts = torch::nonzero(kpts); // [n_keypoints, 2]  (y, x)
-    auto fkpts = kpts.to(torch::kFloat);
-    auto grid = torch::zeros({1, 1, kpts.size(0), 2})
-                    .to(device); // [1, 1, n_keypoints, 2]
-    grid[0][0].slice(1, 0, 1) =
-        2.0 * fkpts.slice(1, 1, 2) / prob.size(1) - 1; // x
-    grid[0][0].slice(1, 1, 2) =
-        2.0 * fkpts.slice(1, 0, 1) / prob.size(0) - 1; // y
-
-    // TODO(zhangye) check the bool parameter??
-    desc = torch::grid_sampler(
-        desc, grid, 0, 0, false);      // [1, 256, 1, n_keypoints]
-    desc = desc.squeeze(0).squeeze(1); // [256, n_keypoints]
-
-    // normalize to 1
-    auto dn = torch::norm(desc, 2, 1);
-    desc = desc.div(torch::unsqueeze(dn, 1));
-
-    desc = desc.transpose(0, 1).contiguous(); // [n_keypoints, 256]
-
-    if (use_cuda)
-        desc = desc.to(torch::kCPU);
-
-    cv::Mat descriptors_no_nms(
-        cv::Size(desc.size(1), desc.size(0)), CV_32FC1, desc.data<float>());
-
-    std::vector<cv::KeyPoint> keypoints_no_nms;
-    for (int i = 0; i < kpts.size(0); i++) {
-        float response = prob[kpts[i][0]][kpts[i][1]].item<float>();
-        keypoints_no_nms.push_back(cv::KeyPoint(
-            kpts[i][1].item<float>(), kpts[i][0].item<float>(), 8, -1,
-            response));
-    }
-
-    if (nms) {
-        cv::Mat kpt_mat(keypoints_no_nms.size(), 2, CV_32F);
-        cv::Mat conf(keypoints_no_nms.size(), 1, CV_32F);
-        for (size_t i = 0; i < keypoints_no_nms.size(); i++) {
-            int x = keypoints_no_nms[i].pt.x;
-            int y = keypoints_no_nms[i].pt.y;
-            kpt_mat.at<float>(i, 0) = (float)keypoints_no_nms[i].pt.x;
-            kpt_mat.at<float>(i, 1) = (float)keypoints_no_nms[i].pt.y;
-
-            conf.at<float>(i, 0) = prob[y][x].item<float>();
-        }
-
-        cv::Mat descriptors;
-
-        int border = 8;
-        int dist_thresh = 4;
-        int height = img.rows;
-        int width = img.cols;
-
-        NMS(kpt_mat, conf, descriptors_no_nms, keypoints, descriptors, border,
-            dist_thresh, width, height);
-
-        return descriptors;
-    } else {
-        keypoints = keypoints_no_nms;
-        return descriptors_no_nms.clone();
-    }
-
-    // return descriptors.clone();
-}
-
-SPDetector::SPDetector(std::shared_ptr<SuperPoint> _model) : model(_model) {
+SPDetector::SPDetector(
+    std::shared_ptr<SuperPoint> _model,
+    torch::jit::script::Module _traced_module)
+    : model(_model), traced_module(_traced_module) {
+    traced_module.to(torch::Device(torch::kCUDA));
 }
 
 // get network output
 void SPDetector::detect(cv::Mat &img, bool cuda) {
-    // image need to process ???
     auto start = high_resolution_clock::now();
-    auto x = torch::from_blob(
-        img.clone().data, {1, 1, img.rows, img.cols}, torch::kByte);
-    x = x.to(torch::kFloat) / 255;
+    cv::Mat img_float;
+    img.convertTo(img_float, CV_32F);
+    auto x = torch::zeros({1, 1, img_float.rows, img_float.cols});
+    memcpy(x.data_ptr(), img_float.clone().data, x.numel() * sizeof(float));
+    x = x / 255.0;
     bool use_cuda = cuda && torch::cuda::is_available();
-    torch::DeviceType device_type;
-    if (use_cuda)
-        device_type = torch::kCUDA;
-    else
-        device_type = torch::kCPU;
-    torch::Device device(device_type);
-
-    model->to(device);
+    assert(use_cuda == true);
     x = x.set_requires_grad(false);
-    auto out = model->forward(x.to(device));
 
-    mProb = out[0].squeeze(0); // [H, W]
-    mDesc = out[1];            // [1, 256, H/8, W/8]
-    VLOG(5) << "Time taken by get network output: "
+    std::vector<torch::jit::IValue> inputs;
+    inputs.emplace_back(x.to(torch::Device(torch::kCUDA)));
+
+    auto out_test = traced_module.forward(inputs).toGenericDict();
+    auto semi = out_test.at("semi").toTensor();
+    mDesc = out_test.at("desc").toTensor();
+
+    VLOG(0) << "Time taken by get network output: "
             << (duration_cast<microseconds>(
                     high_resolution_clock::now() - start))
                        .count() /
                    1000.0
             << " ms" << std::endl;
+    // pose process
+    semi = semi.squeeze(0).squeeze(0);
+    start = high_resolution_clock::now();
+    mProb_cpu = semi.to(torch::kCPU);
+    VLOG(0) << "Time taken by move from GPU to CPU: "
+            << (duration_cast<microseconds>(
+                    high_resolution_clock::now() - start))
+                       .count() /
+                   1000.0
+            << " ms" << std::endl;
+}
 
-    mProb_cpu = mProb.to(torch::kCPU);
+static bool compare_response(cv::KeyPoint first, cv::KeyPoint second) {
+    if (first.response > second.response)
+        return true;
+    else
+        return false;
 }
 
 void SPDetector::getKeyPoints(
     float threshold, int iniX, int maxX, int iniY, int maxY,
     std::vector<cv::KeyPoint> &keypoints, bool nms) {
-    auto prob = mProb_cpu.slice(0, iniY, maxY).slice(1, iniX, maxX);
-
     auto start = high_resolution_clock::now();
-    cv::Mat resultImg(prob.size(0), prob.size(1), CV_32F);
+    cv::Mat resultImg(mProb_cpu.size(0), mProb_cpu.size(1), CV_32F);
     std::memcpy(
-        (void *)resultImg.data, prob.data_ptr(), sizeof(float) * prob.numel());
-    VLOG(5) << "time of cv::Mat"
+        (void *)resultImg.data, mProb_cpu.data_ptr(),
+        sizeof(float) * mProb_cpu.numel());
+    VLOG(5) << "time of cv::Mat: "
             << (duration_cast<microseconds>(
                     high_resolution_clock::now() - start))
                        .count() /
@@ -243,18 +169,18 @@ void SPDetector::getKeyPoints(
             << " ms" << std::endl;
 
     std::vector<cv::KeyPoint> keypoints_no_nms;
+    keypoints_no_nms.reserve(resultImg.rows * resultImg.cols);
+
     start = high_resolution_clock::now();
-    keypoints_no_nms.resize(resultImg.cols * resultImg.rows);
-    int num = 0;
-    for (size_t i = 0; i < resultImg.cols; i++) {
-        for (size_t j = 0; j < resultImg.rows; j++) {
-            float value = resultImg.at<float>(j, i);
+    for (size_t i = 0; i < resultImg.rows; i++) {
+        for (size_t j = 0; j < resultImg.cols; j++) {
+            float value = resultImg.at<float>(i, j);
             if (value > threshold) {
-                keypoints_no_nms[num++] = (cv::KeyPoint(i, j, 8, -1, value));
+                keypoints_no_nms.emplace_back(
+                    (cv::KeyPoint(j, i, 8, -1, value)));
             }
         }
     }
-
     VLOG(5) << "time of push data to no nms: "
             << (duration_cast<microseconds>(
                     high_resolution_clock::now() - start))
@@ -263,6 +189,7 @@ void SPDetector::getKeyPoints(
             << "ms " << std::endl;
 
     start = high_resolution_clock::now();
+    sort(keypoints_no_nms.begin(), keypoints_no_nms.end(), compare_response);
     if (nms) {
         cv::Mat conf(keypoints_no_nms.size(), 1, CV_32F);
         for (size_t i = 0; i < keypoints_no_nms.size(); i++) {
@@ -270,13 +197,10 @@ void SPDetector::getKeyPoints(
             int y = keypoints_no_nms[i].pt.y;
             conf.at<float>(i, 0) = resultImg.at<float>(y, x);
         }
-
-        // cv::Mat descriptors;
         int border = 0;
         int dist_thresh = 4;
         int height = maxY - iniY;
         int width = maxX - iniX;
-
         NMS2(
             keypoints_no_nms, conf, keypoints, border, dist_thresh, width,
             height);
@@ -308,27 +232,23 @@ void SPDetector::computeDescriptors(
     auto grid =
         torch::zeros({1, 1, fkpts.size(0), 2}); // [1, 1, n_keypoints, 2]
     grid[0][0].slice(1, 0, 1) =
-        2.0 * fkpts.slice(1, 1, 2) / mProb.size(1) - 1; // x
+        2.0 * fkpts.slice(1, 1, 2) / mProb_cpu.size(1) - 1; // x
     grid[0][0].slice(1, 1, 2) =
-        2.0 * fkpts.slice(1, 0, 1) / mProb.size(0) - 1; // y
+        2.0 * fkpts.slice(1, 0, 1) / mProb_cpu.size(0) - 1; // y
     if (cuda) {
         grid = grid.to(torch::kCUDA);
     }
-    // TODO(zhangye): the bool parameter?
+
     auto desc = torch::grid_sampler(
-        mDesc, grid, 0, 0, false);     // [1, 256, 1, n_keypoints]
+        mDesc, grid, 0, 0, true);      // [1, 256, 1, n_keypoints]
     desc = desc.squeeze(0).squeeze(1); // [256, n_keypoints]
 
     // normalize to 1
-    auto dn = torch::norm(desc, 2, 1);
-    desc = desc.div(torch::unsqueeze(dn, 1));
-
+    desc = desc.div(torch::unsqueeze(torch::norm(desc, 2, 0), 0));
     desc = desc.transpose(0, 1).contiguous(); // [n_keypoints, 256]
     desc = desc.to(torch::kCPU);
-
     cv::Mat desc_mat(
         cv::Size(desc.size(1), desc.size(0)), CV_32FC1, desc.data<float>());
-
     descriptors = desc_mat.clone();
 }
 
@@ -337,7 +257,6 @@ void NMS2(
     int border, int dist_thresh, int img_width, int img_height) {
 
     std::vector<cv::Point2f> pts_raw;
-
     for (int i = 0; i < det.size(); i++) {
 
         int u = (int)det[i].pt.x;
@@ -411,17 +330,6 @@ void NMS2(
             }
         }
     }
-
-    // descriptors.create(select_indice.size(), 256, CV_32F);
-
-    // for (int i=0; i<select_indice.size(); i++)
-    // {
-    //     for (int j=0; j < 256; j++)
-    //     {
-    //         descriptors.at<float>(i, j) = desc.at<float>(select_indice[i],
-    //         j);
-    //     }
-    // }
 }
 
 void NMS(

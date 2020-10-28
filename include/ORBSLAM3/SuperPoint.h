@@ -37,15 +37,11 @@ struct SuperPoint : torch::nn::Module {
     torch::nn::Conv2d convDb;
 };
 
-cv::Mat SPdetect(
-    std::shared_ptr<SuperPoint> model, cv::Mat img,
-    std::vector<cv::KeyPoint> &keypoints, double threshold, bool nms,
-    bool cuda);
-// torch::Tensor NMS(torch::Tensor kpts);
-
 class SPDetector {
 public:
-    SPDetector(std::shared_ptr<SuperPoint> _model);
+    SPDetector(
+        std::shared_ptr<SuperPoint> _model,
+        torch::jit::script::Module _traced_module);
     void detect(cv::Mat &image, bool cuda);
     void getKeyPoints(
         float threshold, int iniX, int maxX, int iniY, int maxY,
@@ -56,7 +52,7 @@ public:
 
 private:
     std::shared_ptr<SuperPoint> model;
-    torch::Tensor mProb;
+    torch::jit::script::Module traced_module;
     torch::Tensor mDesc;
     torch::Tensor mProb_cpu;
 };

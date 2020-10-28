@@ -278,7 +278,9 @@ void TestViewer::DebugMode() {
         }
         usleep(1 * 1e5);
         if (viewerAR.GetStopFlag()) {
+#ifdef SUPERPOINT
             SfMIfSp();
+#endif
             return;
         }
         if (viewerAR.GetFixFlag()) {
@@ -344,14 +346,13 @@ void TestViewer::FindMatchByKNN(
 }
 
 void TestViewer::SfMIfSp() {
-#ifdef SUPERPOINT
     // TODO(zhangye): DO SFM USING SUPERPOINT
     VLOG(0) << "DOING SFM USING SUPERPOINT, PLEASE WAIT...";
     std::vector<ORB_SLAM3::KeyFrame *> keyframes =
         SLAM->mpAtlas->GetAllKeyFrames();
 
     ORB_SLAM3::SPextractor *SPextractor =
-        new ORB_SLAM3::SPextractor(1000, 1.2, 3, 0.015, 0.007, true);
+        new ORB_SLAM3::SPextractor(2000, 1.2, 3, 0.015, 0.007, true);
     for (size_t i = 0; i < keyframes.size(); i++) {
         ORB_SLAM3::KeyFrame *keyframe = keyframes[i];
         cv::Mat Tcw_cv = keyframe->GetPose();
@@ -360,7 +361,7 @@ void TestViewer::SfMIfSp() {
         Eigen::Matrix3d Rcw = Tcw_eigen.block<3, 3>(0, 0);
         Eigen::Vector3d tcw = Tcw_eigen.block<3, 1>(0, 3);
         cv::Mat mask;
-        ObjRecognition::GetBoundingBoxMask(
+        Tools::GetBoundingBoxMask(
             keyframe->imgLeft,
             ObjRecognition::CameraIntrinsic::GetInstance().GetEigenK(), Rcw,
             tcw, m_boundingbox_w, mask);
@@ -376,7 +377,6 @@ void TestViewer::SfMIfSp() {
         keyframe->ComputeBoW_SuperPoint();
     }
     SLAM->mpLocalMapper->TriangulateForSuperPoint();
-#endif
 }
 
 // click boundingbox fix button:
@@ -424,7 +424,9 @@ bool TestViewer::RunScanner() {
         DebugMode();
 
         if (viewerAR.GetStopFlag()) {
+#ifdef SUPERPOINT
             SfMIfSp();
+#endif
             break;
         }
 
