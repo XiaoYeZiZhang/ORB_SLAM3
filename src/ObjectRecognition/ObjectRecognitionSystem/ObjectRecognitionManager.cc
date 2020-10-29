@@ -5,6 +5,7 @@
 #include <zlib.h>
 #include <iostream>
 #include "Utility/Camera.h"
+#include "Utility/Statistics.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
 namespace ObjRecognitionExd {
 
@@ -211,8 +212,8 @@ int ObjRecongManager::Run(
         return ret;
     }
 
-    // Common::StatsCollector pointCloudFrameNum("Frame num");
-    // pointCloudFrameNum.IncrementOne();
+    STATISTICS_UTILITY::StatsCollector pointCloudFrameNum("Image number");
+    pointCloudFrameNum.IncrementOne();
 
     VLOG(10) << "ObjRecogManager Run";
 

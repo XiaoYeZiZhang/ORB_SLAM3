@@ -6,6 +6,7 @@
 #include <iomanip>
 #include "Utility/Thread/ThreadBase.h"
 #include "Visualizer/GlobalImageViewer.h"
+#include "Utility/Statistics.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionSystem.h"
 #include "Utility/FeatureExtractor/ORBExtractor.h"
 namespace ObjRecognition {
@@ -118,9 +119,9 @@ void ObjRecogThread::SetInfo() {
 
     object_->GetPose(frmIndex, timeStamp, state, Rcw, Tcw, R_obj, T_obj);
     if (state == TrackingGood) {
-        // STSLAMCommon::StatsCollector pointCloudFinalStateNum(
-        //"pointCloud finalState good num");
-        // pointCloudFinalStateNum.IncrementOne();
+        STATISTICS_UTILITY::StatsCollector pointCloudFinalStateNum(
+            "pointCloud finalState good num");
+        pointCloudFinalStateNum.IncrementOne();
         obj_num = 1;
     }
     info += "obj num: " + std::to_string(obj_num) + '\n';
