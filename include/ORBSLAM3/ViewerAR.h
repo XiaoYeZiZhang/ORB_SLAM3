@@ -145,6 +145,10 @@ public:
         m_is_fix = state;
     }
 
+    void SetSfMFinishFlag() {
+        m_is_SfMFinish = true;
+    }
+
     std::vector<Eigen::Vector3d>
     ComputeBoundingbox_W(const pangolin::OpenGlMatrix &Twp_opengl);
 
@@ -154,6 +158,7 @@ public:
 
     void SetSLAM(ORB_SLAM3::System *pSystem) {
         mpSystem = pSystem;
+        mpMapDrawer = pSystem->mpMapDrawer;
     }
 
     // Main thread function.
@@ -163,7 +168,7 @@ public:
         const cv::Mat &Tcw, const std::vector<double> &bbx,
         std::vector<cv::KeyPoint> &keypoints_outbbx,
         std::vector<cv::KeyPoint> &keypoints_inbbx);
-    std::vector<double> GetCurrentMapPointNumInBBX(
+    void GetCurrentMapPointInBBX(
         const vector<Plane *> &vpPlane, const bool &is_insert_cube,
         int &mappoint_num_inbbx);
 
@@ -183,7 +188,10 @@ public:
 private:
     // SLAM
     ORB_SLAM3::System *mpSystem;
-    void DrawCube(const float x = 0, const float y = 0, const float z = 0);
+    MapDrawer *mpMapDrawer;
+
+    void
+    DrawBoundingbox(const float x = 0, const float y = 0, const float z = 0);
     void DrawPlane(int ndivs, float ndivsize);
     void DrawPlane(Plane *pPlane, int ndivs, float ndivsize);
     void DrawTrackedPoints(
@@ -229,7 +237,35 @@ private:
     std::vector<cv::KeyPoint> mvKeys;
     std::vector<MapPoint *> mvMPs;
 
-    // scann
+    // show another pangolin window for sfm
+    bool switch_window_flag;
+    void SwitchWindow();
+    void Draw(int w, int h);
+    void DrawScanInit(int w, int h);
+    void DrawSfMInit(int w, int h);
+    std::unique_ptr<pangolin::Var<bool>> menu_setboundingbox;
+    std::unique_ptr<pangolin::Var<bool>> menu_fixBBX;
+    std::unique_ptr<pangolin::Var<bool>> menu_stop;
+    std::unique_ptr<pangolin::Var<bool>> menu_clear;
+    std::unique_ptr<pangolin::Var<bool>> menu_debug;
+    std::unique_ptr<pangolin::Var<bool>> menu_drawim;
+    std::unique_ptr<pangolin::Var<bool>> menu_boundingbox;
+    std::unique_ptr<pangolin::Var<float>> menu_cubesize;
+    std::unique_ptr<pangolin::Var<bool>> menu_drawgrid;
+    std::unique_ptr<pangolin::Var<int>> menu_ngrid;
+    std::unique_ptr<pangolin::Var<float>> menu_sizegrid;
+    std::unique_ptr<pangolin::Var<bool>> menu_drawTrackedpoints;
+    std::unique_ptr<pangolin::Var<bool>> menu_drawMappoints;
+    std::unique_ptr<pangolin::Var<bool>> menu_LocalizationMode;
+    cv::Mat im_scan, Tcw_scan;
+    int status_scan;
+    vector<cv::KeyPoint> vKeys_scan;
+    vector<MapPoint *> vMPs_scan;
+
+    void
+    DrawMapPoints_SuperPoint(const std::vector<double> &boundingbox_w_corner);
+
+    // scan
     Object m_boundingbox_p;
     MouseState m_mouseState;
     Scene m_scene;
@@ -237,8 +273,14 @@ private:
     bool m_is_debug_mode;
     bool m_is_stop;
     bool m_is_fix;
-    pangolin::OpenGlRenderState s_cam;
+    bool m_is_SfMFinish;
+    pangolin::OpenGlRenderState s_cam_scan;
+    pangolin::View d_cam_scan;
+
+    pangolin::OpenGlRenderState s_cam_SfM;
+    pangolin::View d_cam_SfM;
     std::vector<Eigen::Vector3d> m_boundingbox_w;
+    std::vector<double> m_boundingbox_corner;
 };
 } // namespace ORB_SLAM3
 

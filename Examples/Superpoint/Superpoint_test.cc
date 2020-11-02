@@ -17,7 +17,7 @@ void FindMatchByKNN(
     std::vector<cv::DMatch> matches;
     std::vector<std::vector<cv::DMatch>> knnMatches;
     // use L2 norm instead of Hamming distance
-    cv::BFMatcher matcher(cv::NormTypes::NORM_L2, true);
+    cv::BFMatcher matcher(cv::NormTypes::NORM_L2);
     // matcher.knnMatch(frmDesp, pcDesp, knnMatches, 2);
     matcher.match(frmDesp, pcDesp, matches);
     //    VLOG(5) << "KNN Matches size: " << knnMatches.size();
@@ -64,7 +64,7 @@ void FindMatchByKNN(
 
     std::vector<uchar> inliersMask(srcPoints.size());
     auto homography =
-        findHomography(srcPoints, dstPoints, CV_FM_RANSAC, 4.5, inliersMask);
+        findHomography(srcPoints, dstPoints, CV_FM_RANSAC, 6.0, inliersMask);
 
     std::vector<cv::DMatch> inliers;
     for (size_t i = 0; i < inliersMask.size(); i++) {
@@ -127,7 +127,7 @@ int main(int argc, char *argv[]) {
     FLAGS_alsologtostderr = true;
     FLAGS_colorlogtostderr = true;
     ORB_SLAM3::SPextractor *SPextractor =
-        new ORB_SLAM3::SPextractor(2000, 1.2, 1, 0.015, 0.007, true);
+        new ORB_SLAM3::SPextractor(3000, 1.2, 3, 0.015, 0.007, true);
     cv::Ptr<cv::ORB> m_orb_detector = cv::ORB::create(1000, 1.2);
     m_orb_detector->setScoreType(cv::ORB::FAST_SCORE);
     m_orb_detector->setFastThreshold(7);
@@ -152,12 +152,11 @@ int main(int argc, char *argv[]) {
     // mask.at<float>(i, j) = 0;
     // }
     // }
-
     (*SPextractor)(img1, mask, keypoints1, descriptor1);
     m_orb_detector->detectAndCompute(
         img1, cv::Mat(), keypoints1_opencv, descriptor1_opencv);
 
-    for (size_t i = 2; i < 55; i++) {
+    for (size_t i = 2; i < 3; i++) {
         VLOG(0) << "image id: " << i << std::endl;
         path2 = "/home/zhangye/data1/superpoint/datasets/Box/1_box/" +
                 std::to_string(i) + ".png";

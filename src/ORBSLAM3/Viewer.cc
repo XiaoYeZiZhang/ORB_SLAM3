@@ -162,8 +162,6 @@ void Viewer::DrawSLAMInit() {
         "menu.Show Matched 3DObject", true, true);
     menuShowInertialGraph = std::make_unique<pangolin::Var<bool>>(
         "menu.Show Inertial Graph", true, true);
-    menuLocalizationMode = std::make_unique<pangolin::Var<bool>>(
-        "menu.Localization Mode", false, true);
     menuReset =
         std::make_unique<pangolin::Var<bool>>("menu.Reset", false, false);
     menuStepByStep = std::make_unique<pangolin::Var<bool>>(
@@ -285,7 +283,6 @@ void Viewer::Draw() {
     cv::namedWindow("ORB-SLAM3: Current Frame");
 
     bool bFollow = true;
-    bool bLocalizationMode = false;
     bool bStepByStep = false;
     bool bCameraView = true;
 
@@ -395,14 +392,6 @@ void Viewer::Draw() {
                 s_cam_slam.Follow(Ow);
             }
 
-            if (*menuLocalizationMode && !bLocalizationMode) {
-                mpSystem->ActivateLocalizationMode();
-                bLocalizationMode = true;
-            } else if (!(*menuLocalizationMode) && bLocalizationMode) {
-                mpSystem->DeactivateLocalizationMode();
-                bLocalizationMode = false;
-            }
-
             d_cam_slam.Activate(s_cam_slam);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             pangolin::glDrawAxis(0.6f);
@@ -457,9 +446,6 @@ void Viewer::Draw() {
                 *menuShowKeyFrames = true;
                 *menuShowPoints = true;
                 *menuLocalizationMode = false;
-                if (bLocalizationMode)
-                    mpSystem->DeactivateLocalizationMode();
-                bLocalizationMode = false;
                 bFollow = true;
                 *menuFollowCamera = false;
                 *menuShow3DObject = true;

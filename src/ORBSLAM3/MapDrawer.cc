@@ -45,6 +45,23 @@ MapDrawer::MapDrawer(Atlas *pAtlas, const string &strSettingPath)
     }
 }
 
+MapDrawer::MapDrawer(
+    Atlas *pAtlas, Atlas *pAtlas_superpoint, const string &strSettingPath)
+    : mpAtlas(pAtlas), mpAtlas_superpoint(pAtlas_superpoint) {
+    cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
+
+    bool is_correct = ParseViewerParamFile(fSettings);
+
+    if (!is_correct) {
+        std::cerr << "**ERROR in the config file, the format is not correct**"
+                  << std::endl;
+        try {
+            throw - 1;
+        } catch (exception &e) {
+        }
+    }
+}
+
 bool MapDrawer::ParseViewerParamFile(cv::FileStorage &fSettings) {
     bool b_miss_params = false;
 
@@ -109,6 +126,56 @@ bool MapDrawer::ParseViewerParamFile(cv::FileStorage &fSettings) {
     }
 
     return !b_miss_params;
+}
+
+void MapDrawer::DrawMapPoints_SuperPoint(
+    const std::vector<double> &boundingbox_w_corner) {
+    const vector<MapPoint *> &vpMPs = mpAtlas_superpoint->GetAllMapPoints();
+    const vector<MapPoint *> &vpRefMPs =
+        mpAtlas_superpoint->GetReferenceMapPoints();
+
+    set<MapPoint *> spRefMPs(vpRefMPs.begin(), vpRefMPs.end());
+
+    if (vpMPs.empty())
+        return;
+
+    // mappoints:
+    glPointSize(mPointSize);
+    glBegin(GL_POINTS);
+
+    for (size_t i = 0, iend = vpMPs.size(); i < iend; i++) {
+        if (vpMPs[i]->isBad() || spRefMPs.count(vpMPs[i]))
+            continue;
+        cv::Mat pos = vpMPs[i]->GetWorldPos();
+        if (pos.at<float>(0) > boundingbox_w_corner[0] &&
+            pos.at<float>(1) > boundingbox_w_corner[1] &&
+            pos.at<float>(2) > boundingbox_w_corner[2] &&
+            pos.at<float>(0) < boundingbox_w_corner[3] &&
+            pos.at<float>(1) < boundingbox_w_corner[4] &&
+            pos.at<float>(2) < boundingbox_w_corner[5]) {
+            glColor3f(1.0, 0.0, 0.0);
+            glVertex3f(pos.at<float>(0), pos.at<float>(1), pos.at<float>(2));
+        } else {
+            glColor3f(0.0, 1.0, 0.0);
+            glVertex3f(pos.at<float>(0), pos.at<float>(1), pos.at<float>(2));
+        }
+    }
+    glEnd();
+
+    glPointSize(mPointSize);
+    glBegin(GL_POINTS);
+    glColor3f(0.0, 0.0, 1.0);
+
+    for (set<MapPoint *>::iterator sit = spRefMPs.begin(),
+                                   send = spRefMPs.end();
+         sit != send; sit++) {
+        if ((*sit)->isBad())
+            continue;
+        cv::Mat pos = (*sit)->GetWorldPos();
+        glVertex3f(pos.at<float>(0), pos.at<float>(1), pos.at<float>(2));
+    }
+
+    glEnd();
 }
 
 void MapDrawer::DrawMapPoints() {

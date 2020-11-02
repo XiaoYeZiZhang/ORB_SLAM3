@@ -98,6 +98,11 @@ void Atlas::SetViewer(Viewer *pViewer) {
     mHasViewer = true;
 }
 
+void Atlas::AddKeyFrame_superpoint(KeyFrame *pKF) {
+    Map *pMapKF = GetCurrentMap();
+    pMapKF->AddKeyFrame(pKF);
+}
+
 void Atlas::AddKeyFrame(KeyFrame *pKF) {
     Map *pMapKF = pKF->GetMap();
     pMapKF->AddKeyFrame(pKF);
@@ -298,7 +303,7 @@ unsigned int Atlas::GetMemSizeFor3DObject(
         // bounding box + scale
         nTotalSize += 27 * sizeof(double);
 
-        VLOG(10) << "getmemsize1" << nTotalSize;
+        VLOG(5) << "getmemsize1" << nTotalSize;
         nTotalSize += sizeof(unsigned int);
         std::vector<Map *> saved_map;
         struct compFunctor {
@@ -313,10 +318,11 @@ unsigned int Atlas::GetMemSizeFor3DObject(
         for (Map *pMi : saved_map) {
             for (MapPoint *pMPi : pMi->GetAllMapPoints()) {
                 cv::Mat tmpPos = pMPi->GetWorldPos();
+                // TODO(zhangye) check for superpoint boundingbox
                 // condition???
                 if (MappointInBoundingbox(tmpPos)) {
                     m_saved_mappoint_for_3dobject_.emplace_back(pMPi);
-                    nTotalSize += pMPi->GetMemSizeFor3DObject();
+                    nTotalSize += pMPi->GetMemSizeFor3DObject(is_superpoint);
                 }
             }
         }
@@ -326,18 +332,21 @@ unsigned int Atlas::GetMemSizeFor3DObject(
             return 0;
         }
 
-        VLOG(10) << "getmemsize2" << nTotalSize;
-        for (Map *pMi : saved_map) {
-            for (KeyFrame *pKFi : pMi->GetAllKeyFrames()) {
-                m_saved_keyframe_for_3dobject_.emplace_back(pKFi);
+        VLOG(5) << "getmemsize2" << nTotalSize;
+        if (!is_superpoint) {
+            for (Map *pMi : saved_map) {
+                for (KeyFrame *pKFi : pMi->GetAllKeyFrames()) {
+                    m_saved_keyframe_for_3dobject_.emplace_back(pKFi);
+                }
             }
         }
 
         nTotalSize += sizeof(unsigned int);
         for (auto &item : m_saved_keyframe_for_3dobject_) {
             nTotalSize += item->GetMemSizeFor3DObject(is_superpoint);
+            VLOG(5) << "get mem id: " << item->mnId << " " << nTotalSize;
         }
-        VLOG(10) << "getmemsize3" << nTotalSize;
+        VLOG(5) << "getmemsize3" << nTotalSize;
     }
 
     return nTotalSize;
@@ -396,16 +405,17 @@ bool Atlas::WriteToMemoryFor3DObject(
 
     VLOG(10) << "write to memory for mappoints: " << nMPs;
     VLOG(10) << "write to memory for keyframes: " << nKFs;
-    VLOG(10) << "writememsize1" << mem_pos;
+    VLOG(5) << "writememsize1" << mem_pos;
     Tools::PutDataToMem(mem + mem_pos, &nMPs, sizeof(nMPs), mem_pos);
 
     // TODO(zhangye): check Two???
     Eigen::Matrix4d m_object_Two = Eigen::Matrix4d::Identity();
     for (MapPoint *pMPi : m_saved_mappoint_for_3dobject_) {
-        pMPi->WriteToMemoryFor3DObject(mem_pos, mem, m_object_Two);
+        pMPi->WriteToMemoryFor3DObject(
+            mem_pos, mem, m_object_Two, is_superpoint);
     }
     VLOG(0) << "saved mappoint num: " << nMPs;
-    VLOG(10) << "writememsize2" << mem_pos;
+    VLOG(5) << "writememsize2" << mem_pos;
 
     // keyframe size:
     Tools::PutDataToMem(mem + mem_pos, &nKFs, sizeof(nKFs), mem_pos);
@@ -413,9 +423,10 @@ bool Atlas::WriteToMemoryFor3DObject(
     for (KeyFrame *pKFi : m_saved_keyframe_for_3dobject_) {
         pKFi->WriteToMemoryFor3DObject(
             mem_pos, mem, m_object_Two, is_superpoint);
+        VLOG(5) << "write mem id: " << pKFi->mnId << " " << mem_pos;
     }
 
-    VLOG(10) << "writememsize3" << mem_pos;
+    VLOG(5) << "writememsize3" << mem_pos;
     return mem_pos == mem_size;
 }
 

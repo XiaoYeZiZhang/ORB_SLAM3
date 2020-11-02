@@ -53,6 +53,7 @@ cv::Mat ExpSO3(const cv::Mat &v) {
 ViewerAR::ViewerAR() {
     m_is_debug_mode = false;
     m_is_stop = false;
+    switch_window_flag = false;
     RegistEvents();
 }
 
@@ -121,6 +122,11 @@ void ViewerAR::SetCameraCalibration(
     cy = cy_;
 }
 
+void ViewerAR::DrawMapPoints_SuperPoint(
+    const std::vector<double> &boundingbox_w_corner) {
+    mpMapDrawer->DrawMapPoints_SuperPoint(boundingbox_w_corner);
+}
+
 std::vector<Map *> ViewerAR::GetAllMapPoints() {
     std::vector<Map *> saved_map;
     struct compFunctor {
@@ -135,14 +141,14 @@ std::vector<Map *> ViewerAR::GetAllMapPoints() {
     return saved_map;
 }
 
-std::vector<double> ViewerAR::GetCurrentMapPointNumInBBX(
+void ViewerAR::GetCurrentMapPointInBBX(
     const vector<Plane *> &vpPlane, const bool &is_insert_cube,
     int &mappoint_num_inbbx) {
     mappoint_num_inbbx = -1;
     if (!is_insert_cube) {
-        return std::vector<double>();
+        m_boundingbox_corner = std::vector<double>();
     }
-    std::vector<double> result;
+
     if (!vpPlane.empty()) {
         mappoint_num_inbbx = 0;
         Plane *pPlane = vpPlane[0];
@@ -155,6 +161,7 @@ std::vector<double> ViewerAR::GetCurrentMapPointNumInBBX(
         double bbx_xmax = -10000;
         double bbx_ymax = -10000;
         double bbx_zmax = -10000;
+
         for (int i = 0; i < boundingbox_w.size(); i++) {
             if (boundingbox_w[i](0) < bbx_xmin) {
                 bbx_xmin = boundingbox_w[i](0);
@@ -178,7 +185,8 @@ std::vector<double> ViewerAR::GetCurrentMapPointNumInBBX(
             }
         }
 
-        result = {bbx_xmin, bbx_ymin, bbx_zmin, bbx_xmax, bbx_ymax, bbx_zmax};
+        m_boundingbox_corner = {bbx_xmin, bbx_ymin, bbx_zmin,
+                                bbx_xmax, bbx_ymax, bbx_zmax};
         std::vector<Map *> saved_map = GetAllMapPoints();
         for (Map *pMi : saved_map) {
             for (MapPoint *pMPi : pMi->GetAllMapPoints()) {
@@ -195,7 +203,6 @@ std::vector<double> ViewerAR::GetCurrentMapPointNumInBBX(
             }
         }
     }
-    return result;
 }
 
 void ViewerAR::ProjectMapPointInImage(
@@ -244,57 +251,56 @@ void ViewerAR::ProjectMapPointInImage(
             }
         }
     }
-    return;
 }
 
-void ViewerAR::Run() {
-    m_scene.SetSceneSize(
-        ObjRecognition::CameraIntrinsic::GetInstance().Width(),
-        ObjRecognition::CameraIntrinsic::GetInstance().Height(), 200);
-
-    int w, h;
-    cv::Mat im, Tcw;
-    int status;
-    vector<cv::KeyPoint> vKeys;
-    vector<MapPoint *> vMPs;
-
-    while (true) {
-        GetImagePose(im, Tcw, status, vKeys, vMPs);
-        if (im.empty())
-            cv::waitKey(mT);
-        else {
-            w = im.cols;
-            h = im.rows;
-            break;
-        }
+void ViewerAR::SwitchWindow() {
+    std::cout << "switch flag" << std::endl;
+    if (switch_window_flag) {
+        d_cam_scan.show = false;
+        d_cam_SfM = pangolin::CreateDisplay()
+                        .SetBounds(
+                            0.0, 1.0f,
+                            pangolin::Attach::Pix(m_scene.GetSceneBarWidth()),
+                            1.0, (float)im_scan.cols / im_scan.rows)
+                        .SetHandler(new pangolin::Handler3D(s_cam_SfM));
+        d_cam_SfM.show = true;
+    } else {
+        d_cam_SfM.show = false;
+        d_cam_scan =
+            pangolin::CreateDisplay()
+                .SetBounds(
+                    0, 1.0f, pangolin::Attach::Pix(m_scene.GetSceneBarWidth()),
+                    1.0f, (float)im_scan.cols / im_scan.rows)
+                .SetLock(pangolin::LockLeft, pangolin::LockTop)
+                .SetHandler(mp_handler3d.get());
+        d_cam_scan.show = true;
     }
+    switch_window_flag = !switch_window_flag;
+}
 
-    pangolin::CreateWindowAndBind("Viewer", w + m_scene.GetSceneBarWidth(), h);
-
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-
+void ViewerAR::DrawScanInit(int w, int h) {
     pangolin::CreatePanel("menu").SetBounds(
         0.0, 1.0, 0.0, pangolin::Attach::Pix(m_scene.GetSceneBarWidth()));
-    pangolin::Var<bool> menu_insertcube("menu.Insert Cube", false, false);
-    pangolin::Var<bool> menu_fixcube("menu.Fix Cube", false, false);
-    pangolin::Var<bool> menu_stop("menu.Finish Scan", false, false);
-    pangolin::Var<bool> menu_clear("menu.Choose Another Plane", false, false);
-    pangolin::Var<bool> menu_debug("menu.Debug", false, false);
-    pangolin::Var<bool> menu_drawim("menu.Draw Image", true, true);
-    pangolin::Var<bool> menu_drawcube("menu.Draw Cube", true, true);
-    pangolin::Var<float> menu_cubesize("menu. Cube Size", 0.05, 0.01, 0.3);
+    menu_clear = std::make_unique<pangolin::Var<bool>>(
+        "menu.Choose Another Plane", false, false);
+    menu_setboundingbox =
+        std::make_unique<pangolin::Var<bool>>("menu.Set a BBX", false, false);
+    menu_fixBBX =
+        std::make_unique<pangolin::Var<bool>>("menu.Fix BBX", false, false);
+    menu_stop =
+        std::make_unique<pangolin::Var<bool>>("menu.Finish Scan", false, false);
 
-    m_boundingbox_p.SetSize(menu_cubesize);
-    // if draw plane
-    pangolin::Var<bool> menu_drawgrid("menu.Draw Grid", true, true);
+    menu_debug =
+        std::make_unique<pangolin::Var<bool>>("menu.Debug", false, false);
+    m_boundingbox_p.SetSize(0.05);
     // plane grid number
-    pangolin::Var<int> menu_ngrid("menu. Grid Elements", 3, 1, 10);
-    // plane gird size
-    pangolin::Var<float> menu_sizegrid("menu. Element Size", 0.05, 0.01, 0.3);
-    pangolin::Var<bool> menu_drawpoints("menu.Draw Points", false, true);
-    pangolin::Var<bool> menu_drawMappoints(
-        "menu. Draw Projected Mappoints", true, true);
+    menu_ngrid =
+        std::make_unique<pangolin::Var<int>>("menu. Grid Elements", 3, 1, 10);
+    menu_drawTrackedpoints =
+        std::make_unique<pangolin::Var<bool>>("menu.Draw Points", false, true);
+    menu_drawMappoints = std::make_unique<pangolin::Var<bool>>(
+        "menu.Draw Proj Mappoints", false, true);
+
     // handle keyboard event
     std::function<void(void)> decrease_shape_key_callback =
         std::bind(&ViewerAR::decrease_shape, this);
@@ -321,23 +327,26 @@ void ViewerAR::Run() {
     pangolin::RegisterKeyPressCallback('d', right_key_callback);
     pangolin::RegisterKeyPressCallback('f', front_key_callback);
     pangolin::RegisterKeyPressCallback('b', back_key_callback);
-
-    pangolin::Var<bool> menu_LocalizationMode(
-        "menu.Localization Mode", false, true);
-    bool bLocalizationMode = false;
-
     // define projection and initial movelview matrix: default
-    s_cam = pangolin::OpenGlRenderState();
-    mp_handler3d.reset(new MapHandler3D(s_cam));
+    s_cam_scan = pangolin::OpenGlRenderState();
+    mp_handler3d.reset(new MapHandler3D(s_cam_scan));
 
-    pangolin::View &d_image =
+    d_cam_scan =
         pangolin::Display("image")
             .SetBounds(
                 0, 1.0f, pangolin::Attach::Pix(m_scene.GetSceneBarWidth()),
                 1.0f, (float)w / h)
             .SetLock(pangolin::LockLeft, pangolin::LockTop)
             .SetHandler(mp_handler3d.get());
+}
 
+void ViewerAR::DrawSfMInit(int w, int h) {
+    s_cam_SfM = pangolin::OpenGlRenderState(
+        pangolin::ProjectionMatrix(1024, 768, 500, 500, 512, 389, 0.1, 1000),
+        pangolin::ModelViewLookAt(0, -0.7, -3.5, 0, 0, 0, 0.0, -1.0, 0.0));
+}
+
+void ViewerAR::Draw(int w, int h) {
     pangolin::GlTexture imageTexture(
         w, h, GL_RGB, false, 0, GL_RGB, GL_UNSIGNED_BYTE);
 
@@ -347,155 +356,213 @@ void ViewerAR::Run() {
     vector<Plane *> vpPlane;
 
     while (true) {
-        m_is_debug_mode = menu_debug;
-        if (menu_LocalizationMode && !bLocalizationMode) {
-            mpSystem->ActivateLocalizationMode();
-            bLocalizationMode = true;
-        } else if (!menu_LocalizationMode && bLocalizationMode) {
-            mpSystem->DeactivateLocalizationMode();
-            bLocalizationMode = false;
-        }
-
+        m_is_debug_mode = *menu_debug;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Activate m_camera view
-        d_image.Activate(s_cam);
-        glColor3f(1.0, 1.0, 1.0);
+        if (!switch_window_flag) {
+            d_cam_scan.show = true;
+            // Activate m_camera view
+            d_cam_scan.Activate(s_cam_scan);
+            glColor3f(1.0, 1.0, 1.0);
+            // Get last image and its computed pose from SLAM
+            GetImagePose(im_scan, Tcw_scan, status_scan, vKeys_scan, vMPs_scan);
 
-        // Get last image and its computed pose from SLAM
-        GetImagePose(im, Tcw, status, vKeys, vMPs);
+            if (!Tcw_scan.empty()) {
+                cv::Mat Rwc = Tcw_scan.rowRange(0, 3).colRange(0, 3).t();
+                cv::Mat twc = -Rwc * Tcw_scan.rowRange(0, 3).col(3);
+                // set m_camera position
+                m_camera.SetCamPos(
+                    twc.at<float>(0), twc.at<float>(1), twc.at<float>(2));
+            }
 
-        if (!Tcw.empty()) {
-            cv::Mat Rwc = Tcw.rowRange(0, 3).colRange(0, 3).t();
-            cv::Mat twc = -Rwc * Tcw.rowRange(0, 3).col(3);
-            // set m_camera position
-            m_camera.SetCamPos(
-                twc.at<float>(0), twc.at<float>(1), twc.at<float>(2));
-        }
+            // get mappoint num in boundingbox
+            int current_mappoint_num_inbbx = 0;
+            GetCurrentMapPointInBBX(
+                vpPlane, *menu_setboundingbox, current_mappoint_num_inbbx);
 
-        // get mappoint num in boundingbox
-        int current_num_inbbx = 0;
-        std::vector<double> bbx;
-        bbx = GetCurrentMapPointNumInBBX(
-            vpPlane, menu_insertcube, current_num_inbbx);
+            // Add text to image
+            PrintStatus(status_scan, current_mappoint_num_inbbx, im_scan);
+            cv::cvtColor(im_scan, im_scan, CV_GRAY2RGB);
+            if (*menu_drawTrackedpoints)
+                DrawTrackedPoints(vKeys_scan, vMPs_scan, im_scan);
 
-        // Add text to image
-        PrintStatus(status, bLocalizationMode, current_num_inbbx, im);
-        cv::cvtColor(im, im, CV_GRAY2RGB);
-        if (menu_drawpoints)
-            DrawTrackedPoints(vKeys, vMPs, im);
-
-        // Draw image
-        if (menu_drawim) {
-            if (menu_drawMappoints) {
+            // Draw image
+            if (*menu_drawMappoints) {
+                // draw mappoints in and out the boundingbox
                 std::vector<cv::KeyPoint> keypoints_outbbx;
                 std::vector<cv::KeyPoint> keypoints_inbbx;
                 ProjectMapPointInImage(
-                    Tcw, bbx, keypoints_outbbx, keypoints_inbbx);
+                    Tcw_scan, m_boundingbox_corner, keypoints_outbbx,
+                    keypoints_inbbx);
                 cv::drawKeypoints(
-                    im, keypoints_outbbx, im, cv::Scalar(255, 0, 255));
+                    im_scan, keypoints_outbbx, im_scan,
+                    cv::Scalar(255, 0, 255));
                 cv::drawKeypoints(
-                    im, keypoints_inbbx, im, cv::Scalar(0, 255, 255));
+                    im_scan, keypoints_inbbx, im_scan, cv::Scalar(0, 255, 255));
             }
+            DrawImageTexture(imageTexture, im_scan);
 
-            DrawImageTexture(imageTexture, im);
-        }
+            ObjRecognition::GlobalOcvViewer::DrawAllView();
+            glClear(GL_DEPTH_BUFFER_BIT);
 
-        ObjRecognition::GlobalOcvViewer::DrawAllView();
-        glClear(GL_DEPTH_BUFFER_BIT);
+            // Load m_camera projection
+            glMatrixMode(GL_PROJECTION);
+            P.Load();
 
-        // Load m_camera projection
-        glMatrixMode(GL_PROJECTION);
-        P.Load();
+            // load model view matrix
+            glMatrixMode(GL_MODELVIEW);
 
-        // load model view matrix
-        glMatrixMode(GL_MODELVIEW);
+            // Load m_camera pose  set opengl coords, same as slam coords
+            // view matrix Tcw
+            LoadCameraPose(Tcw_scan);
 
-        // Load m_camera pose  set opengl coords, same as slam coords
-        // view matrix Tcw
-        LoadCameraPose(Tcw);
-
-        if (menu_clear) {
-            if (!vpPlane.empty()) {
-                for (size_t i = 0; i < vpPlane.size(); i++) {
-                    delete vpPlane[i];
+            if (*menu_clear) {
+                if (!vpPlane.empty()) {
+                    for (size_t i = 0; i < vpPlane.size(); i++) {
+                        delete vpPlane[i];
+                    }
+                    vpPlane.clear();
+                    m_is_fix = false;
+                    m_is_stop = false;
+#ifdef SUPERPOINT
+                    m_is_SfMFinish = false;
+#endif
+                    m_boundingbox_p.Reset();
+                    m_boundingbox_p.SetSize(0.05);
+                    VLOG(0) << "ORBSLAM3: All cubes erased!";
                 }
-                vpPlane.clear();
-                m_is_fix = false;
-                m_is_stop = false;
-                m_boundingbox_p.Reset();
-                m_boundingbox_p.SetSize(menu_cubesize);
-                VLOG(0) << "ORBSLAM3: All cubes erased!";
+                *menu_clear = false;
             }
-            menu_clear = false;
-        }
-        // Draw virtual things
-        // can only insert cube when slam state is fine
-        if (status == 2) {
-            Plane *pPlane = DetectPlane(Tcw, vMPs, 50);
-            if (pPlane && vpPlane.empty()) {
-                VLOG(0) << "ORBSLAM3: New virtual plane is detected!";
-                vpPlane.push_back(pPlane);
+            // Draw virtual things
+            // can only insert cube when slam state is fine
+            if (status_scan == 2) {
+                Plane *pPlane = DetectPlane(Tcw_scan, vMPs_scan, 50);
+                if (pPlane && vpPlane.empty()) {
+                    VLOG(0) << "ORBSLAM3: New virtual plane is detected!";
+                    vpPlane.push_back(pPlane);
+                }
             }
-        }
 
-        // draw cube no mater what slam state is
-        if (!vpPlane.empty()) {
-            m_boundingbox_p.SetExist(true);
-            bool bRecompute = false;
-            if (!bLocalizationMode) {
+            // draw cube no mater what slam state is
+            if (!vpPlane.empty()) {
+                m_boundingbox_p.SetExist(true);
+                bool bRecompute = false;
                 if (mpSystem->MapChanged()) {
-                    VLOG(0)
-                        << "ORBSLAM3: Map changed. All virtual elements are "
-                           "recomputed!";
+                    VLOG(0) << "ORBSLAM3: Map changed. All virtual "
+                               "elements are "
+                               "recomputed!";
                     bRecompute = true;
                 }
+
+                if (vpPlane.size() > 1) {
+                    LOG(FATAL) << "plane error";
+                }
+
+                Plane *pPlane = vpPlane[0];
+                if (pPlane) {
+                    if (*menu_fixBBX) {
+                        // get m_boundingbox_w
+                        m_boundingbox_w = ComputeBoundingbox_W(pPlane->glTpw);
+                        m_is_fix = true;
+                        *menu_fixBBX = false;
+                    }
+                    if (*menu_stop) {
+                        m_is_stop = true;
+                        *menu_stop = false;
+
+#ifdef SUPERPOINT
+                        // change to sfm panglin dispaly
+                        switch_window_flag = !switch_window_flag;
+                        d_cam_scan.show = false;
+                        d_cam_SfM =
+                            pangolin::CreateDisplay()
+                                .SetBounds(
+                                    0.0, 1.0,
+                                    pangolin::Attach::Pix(
+                                        m_scene.GetSceneBarWidth()),
+                                    1.0, (float)im_scan.cols / im_scan.rows)
+                                .SetHandler(new pangolin::Handler3D(s_cam_SfM));
+                        d_cam_SfM.show = true;
+#else
+                        break;
+#endif
+                    }
+                    if (bRecompute) {
+                        pPlane->Recompute();
+                    }
+
+                    ChangeShape(pPlane->glTpw);
+
+                    // plane coords, model matrix:
+                    glPushMatrix();
+                    // Twp
+                    pPlane->glTpw.Multiply();
+
+                    // Draw cube
+                    if (*menu_setboundingbox) {
+                        DrawBoundingbox();
+                    }
+
+                    // Draw grid plane
+                    DrawPlane(*menu_ngrid, 0.05);
+                    glPopMatrix();
+                }
             }
 
-            if (vpPlane.size() > 1) {
-                LOG(FATAL) << "plane error";
+        } else {
+#ifdef SUPERPOINT
+            d_cam_SfM.show = true;
+            d_cam_SfM.Activate(s_cam_SfM);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            pangolin::glDrawAxis(0.6f);
+            glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
+            pangolin::glDraw_z0(0.5f, 100);
+
+            DrawMapPoints_SuperPoint(m_boundingbox_corner);
+            if (m_is_SfMFinish) {
+                break;
             }
-
-            Plane *pPlane = vpPlane[0];
-            if (pPlane) {
-                if (menu_fixcube) {
-                    // get m_boundingbox_w
-                    m_boundingbox_w = ComputeBoundingbox_W(pPlane->glTpw);
-                    m_is_fix = true;
-                    menu_fixcube = false;
-                }
-                if (menu_stop) {
-                    m_is_stop = true;
-                    menu_stop = false;
-                    break;
-                }
-                if (bRecompute) {
-                    pPlane->Recompute();
-                }
-
-                ChangeShape(pPlane->glTpw);
-
-                // plane coords, model matrix:
-                glPushMatrix();
-                // Twp
-                pPlane->glTpw.Multiply();
-
-                // Draw cube
-                if (menu_drawcube && menu_insertcube) {
-                    DrawCube();
-                }
-
-                // Draw grid plane
-                if (menu_drawgrid) {
-                    DrawPlane(menu_ngrid, menu_sizegrid);
-                }
-                glPopMatrix();
-            }
+#endif
         }
 
         pangolin::FinishFrame();
         usleep(mT * 1000);
     }
+}
+
+void ViewerAR::Run() {
+    m_scene.SetSceneSize(
+        ObjRecognition::CameraIntrinsic::GetInstance().Width(),
+        ObjRecognition::CameraIntrinsic::GetInstance().Height(), 200);
+
+    int w, h;
+
+    while (true) {
+        GetImagePose(im_scan, Tcw_scan, status_scan, vKeys_scan, vMPs_scan);
+        if (im_scan.empty())
+            cv::waitKey(mT);
+        else {
+            w = im_scan.cols;
+            h = im_scan.rows;
+            break;
+        }
+    }
+
+    pangolin::CreateWindowAndBind("Viewer", w + m_scene.GetSceneBarWidth(), h);
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // std::function<void(void)> switch_win_callback =
+    // std::bind(&ViewerAR::SwitchWindow, this);
+    // pangolin::RegisterKeyPressCallback('h', switch_win_callback);
+
+    DrawScanInit(w, h);
+#ifdef SUPERPOINT
+    DrawSfMInit(w, h);
+#endif
+    Draw(w, h);
 }
 
 void ViewerAR::SetImagePose(
@@ -744,7 +811,7 @@ Eigen::Vector3d ViewerAR::Change2PlaneCoords(
     return Pp;
 }
 
-void ViewerAR::DrawCube(const float x, const float y, const float z) {
+void ViewerAR::DrawBoundingbox(const float x, const float y, const float z) {
     glColor3f(0.0, 1.0, 0);
     int i, j;
     glBegin(GL_LINES);

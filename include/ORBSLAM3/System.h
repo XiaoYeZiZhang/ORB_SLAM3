@@ -192,9 +192,11 @@ public:
 
     bool PackAtlasToMemoryFor3DObject(char **buffer_out, int &buffer_out_len);
     bool PackAtlasToMemoryFor3DObject_SuperPoint(
-        char **buffer_out, int &buffer_out_len);
+        char **buffer_out, int &buffer_out_len,
+        const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM);
     void SetScanBoundingbox_W(const std::vector<Eigen::Vector3d> &boundingbox);
-
+    void SetScanBoundingbox_W_Superpoint(
+        const std::vector<Eigen::Vector3d> &boundingbox);
     // ObjectRecognition
     void SetPointCloudModel(
         std::shared_ptr<ObjRecognition::Object> &pointCloud_model) {
@@ -207,7 +209,7 @@ public:
     // Local Mapper. It manages the local map and performs local bundle
     // adjustment.
     LocalMapping *mpLocalMapper;
-
+    MapDrawer *mpMapDrawer;
     // superpoint
     Atlas *mpAtlas_superpoint;
 
@@ -240,7 +242,6 @@ private:
     LoopClosing *mpLoopCloser;
 
     FrameDrawer *mpFrameDrawer;
-    MapDrawer *mpMapDrawer;
 
     // System threads: Local Mapping, Loop Closing, Viewer.
     // The Tracking thread "lives" in the main execution thread that creates the

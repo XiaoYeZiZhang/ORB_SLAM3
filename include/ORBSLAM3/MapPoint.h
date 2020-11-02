@@ -161,11 +161,11 @@ public:
         return mnFound;
     }
 
-    void ComputeDistinctiveDescriptors();
+    void ComputeDistinctiveDescriptors(bool is_suerpoint = false);
 
     cv::Mat GetDescriptor();
 
-    void UpdateNormalAndDepth();
+    void UpdateNormalAndDepth(bool is_suerpoint = false);
     void SetNormalVector(cv::Mat &normal);
 
     float GetMinDistanceInvariance();
@@ -183,9 +183,10 @@ public:
         map<long unsigned int, KeyFrame *> &mpKFid,
         map<long unsigned int, MapPoint *> &mpMPid);
 
-    unsigned int GetMemSizeFor3DObject();
+    unsigned int GetMemSizeFor3DObject(bool is_superpoint = false);
     void WriteToMemoryFor3DObject(
-        unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two);
+        unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two,
+        bool is_superpoint = false);
 
 public:
     long unsigned int mnId;
@@ -245,7 +246,6 @@ protected:
     std::map<long unsigned int, int> mBackupObservationsId2;
 
     // Mean viewing direction
-    cv::Mat mNormalVector;
 
     // Best descriptor to fast matching
     cv::Mat mDescriptor;
@@ -268,6 +268,11 @@ protected:
     // Scale invariance distances
     float mfMinDistance;
     float mfMaxDistance;
+    cv::Mat mNormalVector;
+
+    float mfMinDistance_superpoint;
+    float mfMaxDistance_superpoint;
+    cv::Mat mNormalVector_superpoint;
 
     Map *mpMap;
 

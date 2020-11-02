@@ -85,11 +85,17 @@ SPextractor::SPextractor(
     torch::Device device(torch::kCUDA);
     model->to(device);
 
-    traced_module = torch::jit::load(
-        "/home/zhangye/data1/traced_superpoint_model_test_save_time.pt");
-    //    traced_module =
-    //        torch::jit::load("/home/zhangye/data1/traced_superpoint_model.pt");
-    traced_module.to(at::kCUDA);
+    traced_module_480_640 = torch::jit::load(
+        "/home/zhangye/data1/traced_superpoint_model_480*640.pt");
+    traced_module_480_640.to(at::kCUDA);
+
+    traced_module_400_533 = torch::jit::load(
+        "/home/zhangye/data1/traced_superpoint_model_400*533.pt");
+    traced_module_400_533.to(at::kCUDA);
+
+    traced_module_333_444 = torch::jit::load(
+        "/home/zhangye/data1/traced_superpoint_model_333*444.pt");
+    traced_module_333_444.to(at::kCUDA);
 
     mvScaleFactor.resize(nlevels);
     mvLevelSigma2.resize(nlevels);
@@ -169,7 +175,6 @@ vector<cv::KeyPoint> SPextractor::DistributeOctTree(
     }
 
     bool bFinish = false;
-
     int iteration = 0;
 
     vector<pair<int, ExtractorNode_sp *>> vSizeAndPointerToNode;
@@ -369,8 +374,10 @@ void SPextractor::ComputeKeyPointsWithMask(
     const float W = 30;
 
     for (int level = 0; level < nlevels; ++level) {
-        SPDetector detector(model, traced_module);
-        detector.detect(mvImagePyramid[level], is_use_cuda);
+        SPDetector detector(
+            model, traced_module_480_640, traced_module_400_533,
+            traced_module_333_444);
+        detector.detect(mvImagePyramid[level], level, is_use_cuda);
 
         const int minBorderX = 0; // EDGE_THRESHOLD - 3;
         const int minBorderY = 0; // minBorderX;
@@ -463,14 +470,13 @@ void SPextractor::ComputeKeyPointsWithMask(
 void SPextractor::ComputeKeyPointsOctTree(
     vector<vector<KeyPoint>> &allKeypoints, cv::Mat &_desc) {
     allKeypoints.resize(nlevels);
-
     vector<cv::Mat> vDesc;
-
     const float W = 30;
-
     for (int level = 0; level < nlevels; ++level) {
-        SPDetector detector(model, traced_module);
-        detector.detect(mvImagePyramid[level], is_use_cuda);
+        SPDetector detector(
+            model, traced_module_480_640, traced_module_400_533,
+            traced_module_333_444);
+        detector.detect(mvImagePyramid[level], level, is_use_cuda);
 
         const int minBorderX = 0; // EDGE_THRESHOLD - 3;
         const int minBorderY = 0; // minBorderX;
@@ -487,64 +493,6 @@ void SPextractor::ComputeKeyPointsOctTree(
 
         const int nCols = width / W;
         const int nRows = height / W;
-        const int wCell = ceil(width / nCols);
-        const int hCell = ceil(height / nRows);
-
-        //        auto start = high_resolution_clock::now();
-        //        for(int i=0; i<nRows; i++)
-        //        {
-        //            const float iniY =minBorderY+i*hCell;
-        //            float maxY = iniY+hCell+6;
-        //
-        //            if(iniY>=maxBorderY-3)
-        //                continue;
-        //            if(maxY>maxBorderY)
-        //                maxY = maxBorderY;
-        //
-        //            for(int j=0; j<nCols; j++)
-        //            {
-        //                const float iniX =minBorderX+j*wCell;
-        //                float maxX = iniX+wCell+6;
-        //                if(iniX>=maxBorderX-6)
-        //                    continue;
-        //                if(maxX>maxBorderX)
-        //                    maxX = maxBorderX;
-        //
-        //                auto start1 = high_resolution_clock::now();
-        //                vector<cv::KeyPoint> vKeysCell;
-        //
-        //                detector.getKeyPoints(iniThFAST, iniX, maxX, iniY,
-        //                maxY, vKeysCell, true);
-        //
-        //                if(vKeysCell.empty())
-        //                {
-        //                    detector.getKeyPoints(minThFAST, iniX, maxX, iniY,
-        //                    maxY, vKeysCell, true);
-        //                }
-        //
-        //                if(!vKeysCell.empty())
-        //                {
-        //                    for(vector<cv::KeyPoint>::iterator
-        //                    vit=vKeysCell.begin(); vit!=vKeysCell.end();vit++)
-        //                    {
-        //                        (*vit).pt.x+=j*wCell;
-        //                        (*vit).pt.y+=i*hCell;
-        //                        vToDistributeKeys.push_back(*vit);
-        //                    }
-        //                }
-        //                auto stop1 = high_resolution_clock::now();
-        //                auto duration1 = duration_cast<microseconds>(stop1 -
-        //                start1); std::cout << "Time taken by get keypoints
-        //                every cell: "
-        //                          << duration1.count()/1000.0 << " ms" <<
-        //                          std::endl;
-        //
-        //            }
-        //        }
-        //        auto stop = high_resolution_clock::now();
-        //        auto duration = duration_cast<microseconds>(stop - start);
-        //        std::cout << "Time taken by get keypoints: "
-        //                  << duration.count()/1000.0 << " ms" << std::endl;
         auto start = high_resolution_clock::now();
         vector<cv::KeyPoint> vKeysCell;
 
@@ -574,8 +522,6 @@ void SPextractor::ComputeKeyPointsOctTree(
 
         start = high_resolution_clock::now();
         vector<KeyPoint> &keypoints = allKeypoints[level];
-        // keypoints.reserve(nfeatures);
-        //        keypoints = vToDistributeKeys;
         keypoints = DistributeOctTree(
             vToDistributeKeys, minBorderX, maxBorderX, minBorderY, maxBorderY,
             mnFeaturesPerLevel[level], level);

@@ -121,7 +121,8 @@ public:
     bool mbRGB;
 
     // SfM
-    void TriangulateForSuperPoint();
+    void TriangulateForSuperPoint(
+        const std::vector<ORB_SLAM3::KeyFrame *> &allkeyframes);
 
 protected:
     bool CheckNewKeyFrames();

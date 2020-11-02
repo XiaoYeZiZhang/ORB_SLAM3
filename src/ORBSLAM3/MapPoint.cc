@@ -22,6 +22,7 @@
 #include "include/ORBSLAM3/MapPoint.h"
 #include "include/ORBSLAM3/ORBmatcher.h"
 #include "include/Tools.h"
+#include "ORBSLAM3/SuperPointMatcher.h"
 
 #include <mutex>
 
@@ -321,12 +322,10 @@ float MapPoint::GetFoundRatio() {
     return static_cast<float>(mnFound) / mnVisible;
 }
 
-void MapPoint::ComputeDistinctiveDescriptors() {
+void MapPoint::ComputeDistinctiveDescriptors(bool is_superpoint) {
     // Retrieve all observed descriptors
     vector<cv::Mat> vDescriptors;
-
     map<KeyFrame *, tuple<int, int>> observations;
-
     {
         unique_lock<mutex> lock1(mMutexFeatures);
         if (mbBad)
@@ -338,21 +337,27 @@ void MapPoint::ComputeDistinctiveDescriptors() {
         return;
 
     vDescriptors.reserve(observations.size());
-
     for (map<KeyFrame *, tuple<int, int>>::iterator mit = observations.begin(),
                                                     mend = observations.end();
          mit != mend; mit++) {
         KeyFrame *pKF = mit->first;
-
         if (!pKF->isBad()) {
             tuple<int, int> indexes = mit->second;
             int leftIndex = get<0>(indexes), rightIndex = get<1>(indexes);
 
             if (leftIndex != -1) {
-                vDescriptors.push_back(pKF->mDescriptors.row(leftIndex));
+                if (is_superpoint) {
+                    vDescriptors.push_back(
+                        pKF->mDescriptors_superpoint.row(leftIndex));
+                } else {
+                    vDescriptors.push_back(pKF->mDescriptors.row(leftIndex));
+                }
             }
-            if (rightIndex != -1) {
-                vDescriptors.push_back(pKF->mDescriptors.row(rightIndex));
+
+            if (!is_superpoint) {
+                if (rightIndex != -1) {
+                    vDescriptors.push_back(pKF->mDescriptors.row(rightIndex));
+                }
             }
         }
     }
@@ -367,8 +372,14 @@ void MapPoint::ComputeDistinctiveDescriptors() {
     for (size_t i = 0; i < N; i++) {
         Distances[i][i] = 0;
         for (size_t j = i + 1; j < N; j++) {
-            int distij = ORBmatcher::DescriptorDistance(
-                vDescriptors[i], vDescriptors[j]);
+            int distij;
+            if (is_superpoint) {
+                distij = ORB_SLAM3::SuperPointMatcher::DescriptorDistance(
+                    vDescriptors[i], vDescriptors[j]);
+            } else {
+                distij = ORBmatcher::DescriptorDistance(
+                    vDescriptors[i], vDescriptors[j]);
+            }
             Distances[i][j] = distij;
             Distances[j][i] = distij;
         }
@@ -412,7 +423,7 @@ bool MapPoint::IsInKeyFrame(KeyFrame *pKF) {
     return (mObservations.count(pKF));
 }
 
-void MapPoint::UpdateNormalAndDepth() {
+void MapPoint::UpdateNormalAndDepth(bool is_suerpoint) {
     map<KeyFrame *, tuple<int, int>> observations;
     KeyFrame *pRefKF;
     cv::Mat Pos;
@@ -445,37 +456,72 @@ void MapPoint::UpdateNormalAndDepth() {
             normal = normal + normali / cv::norm(normali);
             n++;
         }
-        if (rightIndex != -1) {
-            cv::Mat Owi = pKF->GetRightCameraCenter();
-            cv::Mat normali = mWorldPos - Owi;
-            normal = normal + normali / cv::norm(normali);
-            n++;
+        if (!is_suerpoint) {
+            if (rightIndex != -1) {
+                cv::Mat Owi = pKF->GetRightCameraCenter();
+                cv::Mat normali = mWorldPos - Owi;
+                normal = normal + normali / cv::norm(normali);
+                n++;
+            }
         }
     }
 
     cv::Mat PC = Pos - pRefKF->GetCameraCenter();
     const float dist = cv::norm(PC);
-
     tuple<int, int> indexes = observations[pRefKF];
     int leftIndex = get<0>(indexes), rightIndex = get<1>(indexes);
     int level;
+
     if (pRefKF->NLeft == -1) {
-        level = pRefKF->mvKeysUn[leftIndex].octave;
+        if (is_suerpoint) {
+            level = pRefKF->mvKeysUn_superpoint[leftIndex].octave;
+        } else {
+            level = pRefKF->mvKeysUn[leftIndex].octave;
+        }
     } else if (leftIndex != -1) {
-        level = pRefKF->mvKeys[leftIndex].octave;
+        if (is_suerpoint) {
+            level = pRefKF->mvKeys_superpoint[leftIndex].octave;
+        } else {
+            level = pRefKF->mvKeys[leftIndex].octave;
+        }
     } else {
-        level = pRefKF->mvKeysRight[rightIndex - pRefKF->NLeft].octave;
+        if (!is_suerpoint) {
+            level = pRefKF->mvKeysRight[rightIndex - pRefKF->NLeft].octave;
+        }
     }
 
     // const int level = pRefKF->mvKeysUn[observations[pRefKF]].octave;
-    const float levelScaleFactor = pRefKF->mvScaleFactors[level];
-    const int nLevels = pRefKF->mnScaleLevels;
+    float levelScaleFactor;
+    if (is_suerpoint) {
+        levelScaleFactor = pRefKF->mvScaleFactors_suerpoint[level];
+    } else {
+        levelScaleFactor = pRefKF->mvScaleFactors[level];
+    }
 
-    {
-        unique_lock<mutex> lock3(mMutexPos);
-        mfMaxDistance = dist * levelScaleFactor;
-        mfMinDistance = mfMaxDistance / pRefKF->mvScaleFactors[nLevels - 1];
-        mNormalVector = normal / n;
+    int nLevels;
+    if (is_suerpoint) {
+        nLevels = pRefKF->mnScaleLevels_suerpoint;
+    } else {
+        nLevels = pRefKF->mnScaleLevels;
+    }
+
+    if (is_suerpoint) {
+        {
+            unique_lock<mutex> lock3(mMutexPos);
+            mfMaxDistance_superpoint = dist * levelScaleFactor;
+            mfMinDistance_superpoint =
+                mfMaxDistance_superpoint /
+                pRefKF->mvScaleFactors_suerpoint[nLevels - 1];
+            mNormalVector_superpoint = normal / n;
+        }
+
+    } else {
+        {
+            unique_lock<mutex> lock3(mMutexPos);
+            mfMaxDistance = dist * levelScaleFactor;
+            mfMinDistance = mfMaxDistance / pRefKF->mvScaleFactors[nLevels - 1];
+            mNormalVector = normal / n;
+        }
     }
 }
 
@@ -549,7 +595,7 @@ void MapPoint::UpdateMap(Map *pMap) {
     mpMap = pMap;
 }
 
-unsigned int MapPoint::GetMemSizeFor3DObject() {
+unsigned int MapPoint::GetMemSizeFor3DObject(bool is_superpoint) {
     int total_size = 0;
     total_size += sizeof(mnId);
     // position
@@ -557,7 +603,12 @@ unsigned int MapPoint::GetMemSizeFor3DObject() {
     // deps size
     total_size += sizeof(int);
     total_size += sizeof(mpRefKF->mnId);
-    total_size += 32 * sizeof(uchar);
+    if (is_superpoint) {
+        total_size += 256 * sizeof(uchar);
+    } else {
+        total_size += 32 * sizeof(uchar);
+    }
+
     // ref_kf
     auto obs = std::move(GetObservations());
     unsigned int obsSize = obs.size();
@@ -571,7 +622,8 @@ unsigned int MapPoint::GetMemSizeFor3DObject() {
 }
 
 void MapPoint::WriteToMemoryFor3DObject(
-    unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two) {
+    unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two,
+    bool is_superpoint) {
     Tools::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
     Eigen::Vector3d pos = Eigen::Vector3d(
         mWorldPos.at<float>(0), mWorldPos.at<float>(1), mWorldPos.at<float>(2));
@@ -583,13 +635,17 @@ void MapPoint::WriteToMemoryFor3DObject(
 
     int deps_size = 1;
     Tools::PutDataToMem(mem + mem_pos, &deps_size, sizeof(deps_size), mem_pos);
-    cv::Mat desp = GetDescriptor();
-
     Tools::PutDataToMem(
         mem + mem_pos, &mpRefKF->mnId, sizeof(mpRefKF->mnId), mem_pos);
     auto obs = GetObservations();
-
-    Tools::PutDataToMem(mem + mem_pos, desp.data, 32 * sizeof(uchar), mem_pos);
+    cv::Mat desp = GetDescriptor();
+    if (is_superpoint) {
+        Tools::PutDataToMem(
+            mem + mem_pos, desp.data, 256 * sizeof(uchar), mem_pos);
+    } else {
+        Tools::PutDataToMem(
+            mem + mem_pos, desp.data, 32 * sizeof(uchar), mem_pos);
+    }
 
     unsigned int obSize = obs.size();
 

@@ -22,7 +22,9 @@ public:
     bool InitSLAM();
     bool RunScanner();
     bool SaveMappointFor3DObject(const std::string save_path);
-    bool SaveMappointFor3DObject_SuperPoint(const std::string save_path);
+    bool SaveMappointFor3DObject_SuperPoint(
+        const std::string save_path,
+        const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM);
 
     cv::Mat M2l;
     cv::Mat M1r;
@@ -36,6 +38,8 @@ public:
     std::string mappoint_filename;
     std::string dataset_name;
 
+    std::vector<ORB_SLAM3::KeyFrame *> keyframes_for_SfM;
+
 private:
     void LoadImages(
         const string &strPathLeft, const string &strPathRight,
@@ -44,7 +48,7 @@ private:
     void LoadIMU(
         const string &strImuPath, vector<double> &vTimeStamps,
         vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro);
-    void SfMIfSp();
+    void SfMProcess();
     void FindMatchByKNN(
         const cv::Mat &frmDesp, const cv::Mat &pcDesp,
         std::vector<cv::DMatch> &goodMatches);
@@ -70,13 +74,14 @@ private:
 };
 
 bool TestViewer::SaveMappointFor3DObject_SuperPoint(
-    const std::string save_path) {
+    const std::string save_path,
+    const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM) {
     char *buffer = NULL;
     int buffer_size = 0;
-    SLAM->SetScanBoundingbox_W(m_boundingbox_w);
+    SLAM->SetScanBoundingbox_W_Superpoint(m_boundingbox_w);
 
-    bool save_result =
-        SLAM->PackAtlasToMemoryFor3DObject_SuperPoint(&buffer, buffer_size);
+    bool save_result = SLAM->PackAtlasToMemoryFor3DObject_SuperPoint(
+        &buffer, buffer_size, keyframes_for_SfM);
     if (save_result) {
         std::ofstream out(save_path, std::ios::out | std::ios::binary);
         if (out.is_open()) {
@@ -279,7 +284,7 @@ void TestViewer::DebugMode() {
         usleep(1 * 1e5);
         if (viewerAR.GetStopFlag()) {
 #ifdef SUPERPOINT
-            SfMIfSp();
+            SfMProcess();
 #endif
             return;
         }
@@ -290,10 +295,7 @@ void TestViewer::DebugMode() {
                 LOG(FATAL) << "error in save boundingbox";
             }
 
-            VLOG(0) << "boundingbox coords: \n";
-            for (const auto &coords : m_boundingbox_w) {
-                VLOG(0) << coords;
-            }
+            VLOG(0) << "fix the boundingbox";
 #ifdef ORBPOINT
             // extract more keypoihts
             ORB_SLAM3::FrameObjectProcess::GetInstance()->SetBoundingBox(
@@ -345,16 +347,15 @@ void TestViewer::FindMatchByKNN(
     }
 }
 
-void TestViewer::SfMIfSp() {
+void TestViewer::SfMProcess() {
     // TODO(zhangye): DO SFM USING SUPERPOINT
     VLOG(0) << "DOING SFM USING SUPERPOINT, PLEASE WAIT...";
-    std::vector<ORB_SLAM3::KeyFrame *> keyframes =
-        SLAM->mpAtlas->GetAllKeyFrames();
+    keyframes_for_SfM = SLAM->mpAtlas->GetAllKeyFrames();
 
     ORB_SLAM3::SPextractor *SPextractor =
-        new ORB_SLAM3::SPextractor(2000, 1.2, 3, 0.015, 0.007, true);
-    for (size_t i = 0; i < keyframes.size(); i++) {
-        ORB_SLAM3::KeyFrame *keyframe = keyframes[i];
+        new ORB_SLAM3::SPextractor(3000, 1.2, 3, 0.015, 0.007, true);
+    for (size_t i = 0; i < keyframes_for_SfM.size(); i++) {
+        ORB_SLAM3::KeyFrame *keyframe = keyframes_for_SfM[i];
         cv::Mat Tcw_cv = keyframe->GetPose();
         Eigen::Matrix4d Tcw_eigen;
         cv::cv2eigen(Tcw_cv, Tcw_eigen);
@@ -367,16 +368,27 @@ void TestViewer::SfMIfSp() {
             tcw, m_boundingbox_w, mask);
 
         (*SPextractor)(
-            keyframe->imgLeft, mask, keyframe->mvKeys_superpoint,
+            keyframe->imgLeft, cv::Mat(), keyframe->mvKeys_superpoint,
             keyframe->mDescriptors_superpoint);
 
-        keyframe->mvKeysUn_superpoint = keyframe->mvKeys_superpoint;
-        keyframe->N_superpoint = keyframe->mvKeys_superpoint.size();
-
+        keyframe->mnScaleLevels_suerpoint = SPextractor->GetLevels();
+        keyframe->mfScaleFactor_superpoint = SPextractor->GetScaleFactor();
+        keyframe->mfLogScaleFactor_superpoint =
+            log(keyframe->mfScaleFactor_superpoint);
+        keyframe->mvScaleFactors_suerpoint = SPextractor->GetScaleFactors();
+        keyframe->mvInvScaleFactors_superpoint =
+            SPextractor->GetInverseScaleFactors();
+        keyframe->mvLevelSigma2_superpoint =
+            SPextractor->GetScaleSigmaSquares();
+        keyframe->mvInvLevelSigma2_suerpoint =
+            SPextractor->GetInverseScaleSigmaSquares();
+        keyframe->SetKeyPoints_Superpoints();
         // compute dbow
         keyframe->ComputeBoW_SuperPoint();
+        keyframe->SetMap_SuperPoint(SLAM->mpAtlas_superpoint->GetCurrentMap());
     }
-    SLAM->mpLocalMapper->TriangulateForSuperPoint();
+    VLOG(0) << "All keyframe exract superpoint done !";
+    SLAM->mpLocalMapper->TriangulateForSuperPoint(keyframes_for_SfM);
 }
 
 // click boundingbox fix button:
@@ -408,16 +420,11 @@ bool TestViewer::RunScanner() {
             if (m_boundingbox_w.empty()) {
                 LOG(FATAL) << "error in save boundingbox";
             }
-
-            VLOG(0) << "boundingbox coords: \n";
-            for (const auto &coords : m_boundingbox_w) {
-                VLOG(0) << coords;
-            }
-
+#ifdef ORBPOINT
             // obstract more keypoihts
             ORB_SLAM3::FrameObjectProcess::GetInstance()->SetBoundingBox(
                 m_boundingbox_w);
-
+#endif
             viewerAR.SetFixFlag(false);
         }
 
@@ -425,7 +432,8 @@ bool TestViewer::RunScanner() {
 
         if (viewerAR.GetStopFlag()) {
 #ifdef SUPERPOINT
-            SfMIfSp();
+            SfMProcess();
+            viewerAR.SetSfMFinishFlag();
 #endif
             break;
         }
@@ -520,9 +528,10 @@ bool TestViewer::RunScanner() {
     // Stop all threads
     SLAM->Shutdown();
 
-    std::string mappoint_save_path = slam_saved_path + "/" + mappoint_save_path;
+    std::string mappoint_save_path = slam_saved_path + "/" + mappoint_filename;
 #ifdef SUPERPOINT
-    if (SaveMappointFor3DObject_SuperPoint(mappoint_save_path)) {
+    if (SaveMappointFor3DObject_SuperPoint(
+            mappoint_save_path, keyframes_for_SfM)) {
         VLOG(0) << "save mappoint_superpoint for 3dobject success!";
     }
 #else

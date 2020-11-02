@@ -5,6 +5,8 @@
 #include "ORBSLAM3/Converter.h"
 #include "Utility/Camera.h"
 #include "Struct/PointCloudObject.h"
+#include "mode.h"
+
 namespace ObjRecognition {
 
 template <class T1, class T2>
@@ -39,9 +41,16 @@ bool MapPoint::Load(unsigned int &mem_pos, const char *mem) {
     for (int i = 0; i < desps_size; i++) {
         FrameIndex index;
         GetDataFromMem(&index, ((mem) + mem_pos), sizeof(FrameIndex), mem_pos);
+
+#ifdef SUPERPOINT
+        cv::Mat desp = cv::Mat::zeros(256, 1, CV_8U);
+        GetDataFromMem(
+            desp.data, ((mem) + mem_pos), 256 * sizeof(uchar), mem_pos);
+#else
         cv::Mat desp = cv::Mat::zeros(32, 1, CV_8U);
         GetDataFromMem(
             desp.data, ((mem) + mem_pos), 32 * sizeof(uchar), mem_pos);
+#endif
         m_multi_desps.push_back({index, desp});
     }
 
@@ -134,7 +143,11 @@ UnpackORBFeatures(unsigned int &mem_cur, const char *mem) {
             &(kpt.class_id), mem + mem_cur, sizeof(kpt.class_id), mem_cur);
     }
 
+#ifdef SUPERPOINT
+    cv::Mat temp_desp(nKpts, 256, CV_8UC1, (void *)(mem + mem_cur));
+#else
     cv::Mat temp_desp(nKpts, 32, CV_8UC1, (void *)(mem + mem_cur));
+#endif
     cv::Mat desp = temp_desp.clone();
     mem_cur += desp.rows * desp.cols * sizeof(uchar);
     return std::forward_as_tuple(std::move(vKpts), std::move(desp));

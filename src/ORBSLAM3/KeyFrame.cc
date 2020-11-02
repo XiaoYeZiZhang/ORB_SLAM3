@@ -167,9 +167,6 @@ void KeyFrame::ComputeBoW_SuperPoint() {
     if (mBowVec_superpoint.empty() || mFeatVec_superpoint.empty()) {
         vector<cv::Mat> vCurrentDesc =
             Converter::toDescriptorVector(mDescriptors_superpoint);
-        // Feature vector associate features with nodes in the 4th level (from
-        // leaves up) We assume the vocabulary tree has 6 levels, change the 4
-        // otherwise
         mpORBvocabulary->transform(
             vCurrentDesc, mBowVec_superpoint, mFeatVec_superpoint, 4);
     }
@@ -911,6 +908,16 @@ void KeyFrame::UpdateMap(Map *pMap) {
     mpMap = pMap;
 }
 
+void KeyFrame::SetMap_SuperPoint(Map *pMap_SuperPoint) {
+    unique_lock<mutex> lock(mMutexMap);
+    mpMap_Superpoint = pMap_SuperPoint;
+}
+
+Map *KeyFrame::GetMap_SuperPoint() {
+    unique_lock<mutex> lock(mMutexMap);
+    return mpMap_Superpoint;
+}
+
 // TODO(zhangye): need more variables to reset???
 void KeyFrame::SetKeyPoints(std::vector<cv::KeyPoint> &keypoints) {
     mvKeys = keypoints;
@@ -923,6 +930,16 @@ void KeyFrame::SetKeyPoints(std::vector<cv::KeyPoint> &keypoints) {
     }
 }
 
+void KeyFrame::SetKeyPoints_Superpoints() {
+    N_superpoint = mvKeys_superpoint.size();
+    VLOG(5) << "mappoint id, keypoint num: " << mnId << " " << N_superpoint;
+    mvKeysUn_superpoint = mvKeys_superpoint;
+    mvpMapPoints_superpoint.resize(N_superpoint);
+    for (int i = 0; i < mvpMapPoints_superpoint.size(); i++) {
+        mvpMapPoints_superpoint[i] = static_cast<MapPoint *>(NULL);
+    }
+}
+
 void KeyFrame::SetDesps(const cv::Mat &desps) {
     mDescriptors = desps;
 }
@@ -930,25 +947,36 @@ void KeyFrame::SetDesps(const cv::Mat &desps) {
 unsigned int KeyFrame::GetMemSizeFor3DObject(const bool is_superpoint) {
     unsigned int totalSize = 0;
     totalSize += sizeof(mnId);
+    VLOG(5) << "getmem key 1: " << totalSize;
     int nKpts = mvKeys.size();
     if (is_superpoint) {
         nKpts = mvKeys_superpoint.size();
     }
 
     totalSize += sizeof(nKpts);
+    VLOG(5) << "getmem key 2: " << totalSize;
+
     if (nKpts > 0) {
         const unsigned int PerKeyPointSize =
             sizeof(float) * 5 + 2 * sizeof(int);
         totalSize += nKpts * PerKeyPointSize;
-        totalSize += nKpts * 32 * sizeof(uchar);
+        VLOG(5) << "getmem key 3: " << totalSize;
+        if (is_superpoint) {
+            totalSize += nKpts * 256 * sizeof(uchar);
+        } else {
+            totalSize += nKpts * 32 * sizeof(uchar);
+        }
+        VLOG(5) << "getmem key 4: " << totalSize;
     }
 
     // Tco
     totalSize += sizeof(double) * 7;
+    VLOG(5) << "getmem key 5: " << totalSize;
     // upload image data
     totalSize += sizeof(char) *
                  ObjRecognition::CameraIntrinsic::GetInstance().Width() *
                  ObjRecognition::CameraIntrinsic::GetInstance().Height();
+    VLOG(5) << "getmem key 6: " << totalSize;
     return totalSize;
 }
 
@@ -958,6 +986,7 @@ void KeyFrame::WriteToMemoryFor3DObject(
     VLOG(10) << "keyframe id: " << mnId;
     Tools::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
 
+    VLOG(5) << "write mem key 1:" << sizeof(mnId);
     if (is_superpoint) {
         Tools::PackORBFeatures(
             mvKeys_superpoint, mDescriptors_superpoint, mem_pos, mem);
@@ -978,8 +1007,9 @@ void KeyFrame::WriteToMemoryFor3DObject(
     // TODO(zhangye): check coords
     Eigen::Matrix3d Rco = Rcw * Two.block<3, 3>(0, 0);
     Eigen::Vector3d tco = Rcw * Two.block<3, 1>(0, 3) + Tcw;
-
+    auto init = mem_pos;
     Tools::PackCamCWToMem(tco, Rco, mem_pos, mem);
+    VLOG(5) << "write mem key 5:" << mem_pos - init;
 
     VLOG(10) << "size: "
              << ObjRecognition::CameraIntrinsic::GetInstance().Width() << " "
@@ -989,6 +1019,10 @@ void KeyFrame::WriteToMemoryFor3DObject(
         sizeof(char) * ObjRecognition::CameraIntrinsic::GetInstance().Width() *
             ObjRecognition::CameraIntrinsic::GetInstance().Height(),
         mem_pos);
+    VLOG(5) << "write mem key 6:"
+            << sizeof(char) *
+                   ObjRecognition::CameraIntrinsic::GetInstance().Width() *
+                   ObjRecognition::CameraIntrinsic::GetInstance().Height();
 }
 
 void KeyFrame::PreSave(

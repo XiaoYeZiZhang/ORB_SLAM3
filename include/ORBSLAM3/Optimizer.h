@@ -51,14 +51,14 @@ public:
         const std::vector<MapPoint *> &vpMP, int nIterations = 5,
         bool *pbStopFlag = NULL, const unsigned long nLoopKF = 0,
         const bool bRobust = true);
-    void static BundleAdjustment_SuperPoint(
-        const std::vector<KeyFrame *> &vpKF,
-        const std::vector<MapPoint *> &vpMP, int nIterations = 5,
-        bool *pbStopFlag = NULL, const unsigned long nLoopKF = 0,
-        const bool bRobust = true);
-    void static GlobalBundleAdjustemnt_Superpoint(
-        Map *pMap, int nIterations = 5, bool *pbStopFlag = NULL,
-        const unsigned long nLoopKF = 0, const bool bRobust = true);
+    //    void static BundleAdjustment_SuperPoint(
+    //        const std::vector<KeyFrame *> &vpKF,
+    //        const std::vector<MapPoint *> &vpMP, int nIterations = 5,
+    //        bool *pbStopFlag = NULL, const unsigned long nLoopKF = 0,
+    //        const bool bRobust = true);
+    //    void static GlobalBundleAdjustemnt_Superpoint(
+    //        Map *pMap, int nIterations = 5, bool *pbStopFlag = NULL,
+    //        const unsigned long nLoopKF = 0, const bool bRobust = true);
     void static GlobalBundleAdjustemnt(
         Map *pMap, int nIterations = 5, bool *pbStopFlag = NULL,
         const unsigned long nLoopKF = 0, const bool bRobust = true);
@@ -70,6 +70,7 @@ public:
 
     void static LocalBundleAdjustment(
         KeyFrame *pKF, bool *pbStopFlag, vector<KeyFrame *> &vpNonEnoughOptKFs);
+    void static LocalBundleAdjustment_Superpoint(Atlas *atlas_superpoint);
     void static LocalBundleAdjustment(
         KeyFrame *pKF, bool *pbStopFlag, Map *pMap, int &num_fixedKF);
 

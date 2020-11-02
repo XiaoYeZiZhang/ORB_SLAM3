@@ -1,5 +1,5 @@
 %YAML:1.0
-mappoint_filename: "box.bin"
+mappoint_filename: "box_superpoint.bin"
 saved_path: "/home/zhangye/data/saved"
 voc_path: "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/ORBvoc.txt"
 data_path: "/home/zhangye/data/objectRecognition/scan_realsense/1602479931"

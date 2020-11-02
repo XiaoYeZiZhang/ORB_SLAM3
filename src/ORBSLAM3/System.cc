@@ -176,7 +176,11 @@ System::System(
 
     // Create Drawers. These are used by the Viewer
     mpFrameDrawer = new FrameDrawer(mpAtlas);
+#ifdef SUPERPOINT:
+    mpMapDrawer = new MapDrawer(mpAtlas, mpAtlas_superpoint, strSettingsFile);
+#else
     mpMapDrawer = new MapDrawer(mpAtlas, strSettingsFile);
+#endif
 
     // Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this
@@ -187,7 +191,7 @@ System::System(
         m_recognition_mode_);
 
     // Initialize the Local Mapping thread and launch
-#ifdef SUPERPOINT
+#ifdef SUPERPOINT &&SCANNER
     mpLocalMapper = new LocalMapping(
         this, mpAtlas, mSensor == MONOCULAR || mSensor == IMU_MONOCULAR,
         mSensor == IMU_MONOCULAR || mSensor == IMU_STEREO, mpAtlas_superpoint,
@@ -937,9 +941,17 @@ void System::SetScanBoundingbox_W(
     mpAtlas->SetScanBoundingbox_W(boundingbox);
 }
 
+void System::SetScanBoundingbox_W_Superpoint(
+    const std::vector<Eigen::Vector3d> &boundingbox) {
+    mpAtlas_superpoint->SetScanBoundingbox_W(boundingbox);
+}
+
 bool System::PackAtlasToMemoryFor3DObject_SuperPoint(
-    char **buffer_out, int &buffer_out_len) {
+    char **buffer_out, int &buffer_out_len,
+    const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM) {
     std::string version = "V1.0.0.0";
+    mpAtlas_superpoint->SetSavedKeyFramesFor3DObjet_Superpoint(
+        keyframes_for_SfM);
     buffer_out_len = mpAtlas_superpoint->GetMemSizeFor3DObject(version, true);
     bool ret = false;
     if (buffer_out_len > 0) {

@@ -64,50 +64,24 @@ void PrintSLAMStatusForViewer(
     }
 }
 
-void PrintStatus(
-    const int &status, const bool &bLocMode, const int mappoint_num,
-    cv::Mat &im) {
-    if (!bLocMode) {
-        switch (status) {
-        case 1: {
-            AddTextToImage(
-                "SLAM NOT INITIALIZED| num: " + std::to_string(mappoint_num),
-                im, 255, 0, 0);
-            break;
-        }
-        case 2: {
-            AddTextToImage(
-                "SLAM ON| num: " + std::to_string(mappoint_num), im, 0, 255, 0);
-            break;
-        }
-        case 3: {
-            AddTextToImage(
-                "SLAM LOST| num: " + std::to_string(mappoint_num), im, 255, 0,
-                0);
-            break;
-        }
-        }
-    } else {
-        switch (status) {
-        case 1: {
-            AddTextToImage(
-                "SLAM NOT INITIALIZED| num: " + std::to_string(mappoint_num),
-                im, 255, 0, 0);
-            break;
-        }
-        case 2: {
-            AddTextToImage(
-                "LOCALIZATION ON| num: " + std::to_string(mappoint_num), im, 0,
-                255, 0);
-            break;
-        }
-        case 3: {
-            AddTextToImage(
-                "LOCALIZATION LOST| num: " + std::to_string(mappoint_num), im,
-                255, 0, 0);
-            break;
-        }
-        }
+void PrintStatus(const int &status, const int mappoint_num, cv::Mat &im) {
+    switch (status) {
+    case 1: {
+        AddTextToImage(
+            "SLAM NOT INITIALIZED| num: " + std::to_string(mappoint_num), im,
+            255, 0, 0);
+        break;
+    }
+    case 2: {
+        AddTextToImage(
+            "SLAM ON| num: " + std::to_string(mappoint_num), im, 0, 255, 0);
+        break;
+    }
+    case 3: {
+        AddTextToImage(
+            "SLAM LOST| num: " + std::to_string(mappoint_num), im, 255, 0, 0);
+        break;
+    }
     }
 }
 

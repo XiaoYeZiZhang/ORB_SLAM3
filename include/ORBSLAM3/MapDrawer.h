@@ -34,9 +34,12 @@ namespace ORB_SLAM3 {
 class MapDrawer {
 public:
     MapDrawer(Atlas *pAtlas, const string &strSettingPath);
-
+    MapDrawer(
+        Atlas *pAtlas, Atlas *pAtlas_superpoint, const string &strSettingPath);
     Atlas *mpAtlas;
-
+    Atlas *mpAtlas_superpoint;
+    void
+    DrawMapPoints_SuperPoint(const std::vector<double> &boundingbox_w_corner);
     void DrawMapPoints();
     void DrawKeyFrames(
         const bool bDrawKF, const bool bDrawGraph,

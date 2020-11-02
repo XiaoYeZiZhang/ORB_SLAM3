@@ -7,22 +7,24 @@
 #include <include/ORBSLAM3/SPextractor.h>
 #include <include/ObjectRecognition/Utility/Parameters.h>
 #include <include/ORBSLAM3/FrameObjectProcess.h>
+#include <chrono>
 #include "ORBSLAM3/System.h"
-#include "Utility/GlobalSummary.h"
 #include "Utility/FileIO.h"
 #include "Utility/Camera.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
 #include "include/Tools.h"
 #include "ORBSLAM3/ViewerAR.h"
 #include "mode.h"
-
 using namespace std;
+using namespace std::chrono;
 class TestViewer {
 public:
     bool InitSLAM();
     bool RunScanner();
     bool SaveMappointFor3DObject(const std::string save_path);
-    bool SaveMappointFor3DObject_SuperPoint(const std::string save_path);
+    bool SaveMappointFor3DObject_SuperPoint(
+        const std::string save_path,
+        const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM);
     cv::Mat M2l;
     cv::Mat M1r;
     cv::Mat M2r;
@@ -34,13 +36,14 @@ public:
     std::string slam_saved_path;
     std::string mappoint_filename;
     std::string dataset_name;
+    std::vector<ORB_SLAM3::KeyFrame *> keyframes_for_SfM;
 
 private:
     void LoadImages(
         const string &strPathLeft, const string &strPathRight,
         const string &strPathTimes, vector<string> &vstrImageLeft,
         vector<string> &vstrImageRight, vector<double> &vTimeStamps);
-    void SfMIfSp();
+    void SfMProcess();
     void FindMatchByKNN(
         const cv::Mat &frmDesp, const cv::Mat &pcDesp,
         std::vector<cv::DMatch> &goodMatches);
@@ -62,13 +65,14 @@ private:
 };
 
 bool TestViewer::SaveMappointFor3DObject_SuperPoint(
-    const std::string save_path) {
+    const std::string save_path,
+    const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM) {
     char *buffer = NULL;
     int buffer_size = 0;
-    SLAM->SetScanBoundingbox_W(m_boundingbox_w);
+    SLAM->SetScanBoundingbox_W_Superpoint(m_boundingbox_w);
 
-    bool save_result =
-        SLAM->PackAtlasToMemoryFor3DObject_SuperPoint(&buffer, buffer_size);
+    bool save_result = SLAM->PackAtlasToMemoryFor3DObject_SuperPoint(
+        &buffer, buffer_size, keyframes_for_SfM);
     if (save_result) {
         std::ofstream out(save_path, std::ios::out | std::ios::binary);
         if (out.is_open()) {
@@ -222,7 +226,7 @@ void TestViewer::DebugMode() {
         usleep(1 * 1e5);
         if (viewerAR.GetStopFlag()) {
 #ifdef SUPERPOINT
-            SfMIfSp();
+            SfMProcess();
 #endif
             return;
         }
@@ -231,11 +235,6 @@ void TestViewer::DebugMode() {
             m_boundingbox_w = viewerAR.GetScanBoundingbox_W();
             if (m_boundingbox_w.empty()) {
                 LOG(FATAL) << "error in save boundingbox";
-            }
-
-            VLOG(0) << "boundingbox coords: \n";
-            for (const auto &coords : m_boundingbox_w) {
-                VLOG(0) << coords;
             }
 
 #ifdef ORBPOINT
@@ -289,16 +288,14 @@ void TestViewer::FindMatchByKNN(
     }
 }
 
-void TestViewer::SfMIfSp() {
+void TestViewer::SfMProcess() {
     // TODO(zhangye): DO SFM USING SUPERPOINT
     VLOG(0) << "DOING SFM USING SUPERPOINT, PLEASE WAIT...";
-    std::vector<ORB_SLAM3::KeyFrame *> keyframes =
-        SLAM->mpAtlas->GetAllKeyFrames();
-
+    keyframes_for_SfM = SLAM->mpAtlas->GetAllKeyFrames();
     ORB_SLAM3::SPextractor *SPextractor =
-        new ORB_SLAM3::SPextractor(2000, 1.2, 3, 0.015, 0.007, true);
-    for (size_t i = 0; i < keyframes.size(); i++) {
-        ORB_SLAM3::KeyFrame *keyframe = keyframes[i];
+        new ORB_SLAM3::SPextractor(3000, 1.2, 3, 0.015, 0.007, true);
+    for (size_t i = 0; i < keyframes_for_SfM.size(); i++) {
+        ORB_SLAM3::KeyFrame *keyframe = keyframes_for_SfM[i];
         cv::Mat Tcw_cv = keyframe->GetPose();
         Eigen::Matrix4d Tcw_eigen;
         cv::cv2eigen(Tcw_cv, Tcw_eigen);
@@ -310,18 +307,37 @@ void TestViewer::SfMIfSp() {
             ObjRecognition::CameraIntrinsic::GetInstance().GetEigenK(), Rcw,
             tcw, m_boundingbox_w, mask);
 
+        auto start = std::chrono::high_resolution_clock::now();
         (*SPextractor)(
-            keyframe->imgLeft, mask, keyframe->mvKeys_superpoint,
+            keyframe->imgLeft, cv::Mat(), keyframe->mvKeys_superpoint,
             keyframe->mDescriptors_superpoint);
-
-        keyframe->mvKeysUn_superpoint = keyframe->mvKeys_superpoint;
-        keyframe->N_superpoint = keyframe->mvKeys_superpoint.size();
-
+        VLOG(0) << "Time taken by extract superpoint: "
+                << (duration_cast<std::chrono::microseconds>(
+                        std::chrono::high_resolution_clock::now() - start))
+                           .count() /
+                       1000.0
+                << " ms" << std::endl;
+        keyframe->mnScaleLevels_suerpoint = SPextractor->GetLevels();
+        keyframe->mfScaleFactor_superpoint = SPextractor->GetScaleFactor();
+        keyframe->mfLogScaleFactor_superpoint =
+            log(keyframe->mfScaleFactor_superpoint);
+        keyframe->mvScaleFactors_suerpoint = SPextractor->GetScaleFactors();
+        keyframe->mvInvScaleFactors_superpoint =
+            SPextractor->GetInverseScaleFactors();
+        keyframe->mvLevelSigma2_superpoint =
+            SPextractor->GetScaleSigmaSquares();
+        keyframe->mvInvLevelSigma2_suerpoint =
+            SPextractor->GetInverseScaleSigmaSquares();
+        keyframe->SetKeyPoints_Superpoints();
         // compute dbow
         keyframe->ComputeBoW_SuperPoint();
+        keyframe->SetMap_SuperPoint(SLAM->mpAtlas_superpoint->GetCurrentMap());
     }
-    SLAM->mpLocalMapper->TriangulateForSuperPoint();
+
+    VLOG(0) << "All keyframe exract superpoint done !";
+    SLAM->mpLocalMapper->TriangulateForSuperPoint(keyframes_for_SfM);
 }
+
 // click boundingbox fix button:
 // 1. get the boundingbox
 // 2. setboundingbox
@@ -351,16 +367,12 @@ bool TestViewer::RunScanner() {
             if (m_boundingbox_w.empty()) {
                 LOG(FATAL) << "error in save boundingbox";
             }
-
-            VLOG(0) << "boundingbox coords: \n";
-            for (const auto &coords : m_boundingbox_w) {
-                VLOG(0) << coords;
-            }
-
+            VLOG(0) << "fix the boundingbox";
+#ifdef ORBPOINT
             // obstract more keypoihts
             ORB_SLAM3::FrameObjectProcess::GetInstance()->SetBoundingBox(
                 m_boundingbox_w);
-
+#endif
             viewerAR.SetFixFlag(false);
         }
 
@@ -368,7 +380,8 @@ bool TestViewer::RunScanner() {
 
         if (viewerAR.GetStopFlag()) {
 #ifdef SUPERPOINT
-            SfMIfSp();
+            SfMProcess();
+            viewerAR.SetSfMFinishFlag();
 #endif
             break;
         }
@@ -447,9 +460,10 @@ bool TestViewer::RunScanner() {
     // Stop all threads
     SLAM->Shutdown();
 
-    std::string mappoint_save_path = slam_saved_path + "/" + mappoint_save_path;
+    std::string mappoint_save_path = slam_saved_path + "/" + mappoint_filename;
 #ifdef SUPERPOINT
-    if (SaveMappointFor3DObject_SuperPoint(mappoint_save_path)) {
+    if (SaveMappointFor3DObject_SuperPoint(
+            mappoint_save_path, keyframes_for_SfM)) {
         VLOG(0) << "save mappoint_superpoint for 3dobject success!";
     }
 #else

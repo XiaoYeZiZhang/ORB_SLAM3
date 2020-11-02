@@ -363,6 +363,9 @@ public:
     }
 
     Map *GetMap();
+    // superpoint
+    Map *GetMap_SuperPoint();
+
     void UpdateMap(Map *pMap);
 
     void SetNewBias(const IMU::Bias &b);
@@ -401,7 +404,7 @@ public:
     // (no mutex needed).
 
     // superpoint
-
+    void SetKeyPoints_Superpoints();
     void AddSuperpointMapPoint(MapPoint *pMP, const size_t &idx);
     MapPoint *GetSuperpointMapPoint(const size_t &idx);
     void ComputeBoW_SuperPoint();
@@ -502,6 +505,15 @@ public:
     const std::vector<float> mvLevelSigma2;
     const std::vector<float> mvInvLevelSigma2;
 
+    // superpoint
+    int mnScaleLevels_suerpoint;
+    float mfScaleFactor_superpoint;
+    float mfLogScaleFactor_superpoint;
+    std::vector<float> mvInvScaleFactors_superpoint;
+    std::vector<float> mvScaleFactors_suerpoint;
+    std::vector<float> mvLevelSigma2_superpoint;
+    std::vector<float> mvInvLevelSigma2_suerpoint;
+
     // Image bounds and calibration
     const int mnMinX;
     const int mnMinY;
@@ -594,6 +606,9 @@ protected:
 
     Map *mpMap;
 
+    // superpoint
+    Map *mpMap_Superpoint;
+
     std::mutex mMutexPose; // for pose, velocity and biases
     std::mutex mMutexConnections;
     std::mutex mMutexFeatures;
@@ -653,6 +668,9 @@ public:
         VLOG(5) << "ORBSLAM3: Point distribution in KeyFrame: left-> " << left
                 << " --- right-> " << right;
     }
+
+    // superpoint
+    void SetMap_SuperPoint(Map *pMap_SuperPoint);
 };
 
 } // namespace ORB_SLAM3

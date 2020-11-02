@@ -15,8 +15,8 @@ SuperPointMatcher::SuperPointMatcher(float nnratio, bool checkOri)
 }
 
 int SuperPointMatcher::SearchForTriangulation(
-    KeyFrame *pKF1, KeyFrame *pKF2, cv::Mat F12,
-    std::vector<pair<size_t, size_t>> &vMatchedPairs, const bool bOnlyStereo) {
+    KeyFrame *pKF1, KeyFrame *pKF2, const cv::Mat &F12,
+    std::vector<pair<size_t, size_t>> &vMatchedPairs) {
     const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVec_superpoint;
     const DBoW2::FeatureVector &vFeatVec2 = pKF2->mFeatVec_superpoint;
 
@@ -52,13 +52,10 @@ int SuperPointMatcher::SearchForTriangulation(
         if (f1it->first == f2it->first) {
             for (size_t i1 = 0, iend1 = f1it->second.size(); i1 < iend1; i1++) {
                 const size_t idx1 = f1it->second[i1];
-
                 MapPoint *pMP1 = pKF1->GetSuperpointMapPoint(idx1);
-
                 // If there is already a MapPoint skip
                 if (pMP1)
                     continue;
-
                 const cv::KeyPoint &kp1 = pKF1->mvKeysUn_superpoint[idx1];
                 const cv::Mat &d1 = pKF1->mDescriptors_superpoint.row(idx1);
 
@@ -68,7 +65,6 @@ int SuperPointMatcher::SearchForTriangulation(
                 for (size_t i2 = 0, iend2 = f2it->second.size(); i2 < iend2;
                      i2++) {
                     size_t idx2 = f2it->second[i2];
-
                     MapPoint *pMP2 = pKF2->GetSuperpointMapPoint(idx2);
 
                     // If we have already matched or there is a MapPoint skip
@@ -86,7 +82,7 @@ int SuperPointMatcher::SearchForTriangulation(
                     const float distex = ex - kp2.pt.x;
                     const float distey = ey - kp2.pt.y;
                     if (distex * distex + distey * distey <
-                        100 * pKF2->mvScaleFactors[kp2.octave])
+                        100 * pKF2->mvScaleFactors_suerpoint[kp2.octave])
                         continue;
 
                     if (CheckDistEpipolarLine(kp1, kp2, F12, pKF2)) {
@@ -146,9 +142,8 @@ int SuperPointMatcher::SearchForTriangulation(
     for (size_t i = 0, iend = vMatches12.size(); i < iend; i++) {
         if (vMatches12[i] < 0)
             continue;
-        vMatchedPairs.push_back(make_pair(i, vMatches12[i]));
+        vMatchedPairs.emplace_back(make_pair(i, vMatches12[i]));
     }
-
     return nmatches;
 }
 
@@ -171,13 +166,12 @@ bool SuperPointMatcher::CheckDistEpipolarLine(
 
     const float dsqr = num * num / den;
 
-    return dsqr < 3.84 * pKF2->mvLevelSigma2[kp2.octave];
+    return dsqr < 3.84 * pKF2->mvLevelSigma2_superpoint[kp2.octave];
 }
 
 float SuperPointMatcher::DescriptorDistance(
     const cv::Mat &a, const cv::Mat &b) {
     float dist = (float)cv::norm(a, b, cv::NORM_L2);
-
     return dist;
 }
 

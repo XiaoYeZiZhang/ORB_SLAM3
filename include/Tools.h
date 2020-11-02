@@ -206,12 +206,15 @@ static void PackORBFeatures(
     unsigned int nKpts = vKpts.size();
     VLOG(10) << "keyframe kpts: " << nKpts;
     PutDataToMem(mem + mem_cur, &(nKpts), sizeof(nKpts), mem_cur);
+    VLOG(5) << "write mem key 2:" << sizeof(nKpts);
+
     if (nKpts == 0) {
         LOG(FATAL) << "error: PackORBFeatures: nKpts.size = 0, mem_cur = "
                    << mem_cur;
         return;
     }
 
+    auto init = mem_cur;
     for (auto &kpt : vKpts) {
         PutDataToMem(mem + mem_cur, &(kpt.pt.x), sizeof(kpt.pt.x), mem_cur);
         PutDataToMem(mem + mem_cur, &(kpt.pt.y), sizeof(kpt.pt.y), mem_cur);
@@ -223,10 +226,13 @@ static void PackORBFeatures(
         PutDataToMem(
             mem + mem_cur, &(kpt.class_id), sizeof(kpt.class_id), mem_cur);
     }
+
+    VLOG(5) << "write mem key 3:" << mem_cur - init;
     const uchar *src_mem = desp.data;
     PutDataToMem(
         (uchar *)(mem + mem_cur), src_mem,
         desp.rows * desp.cols * sizeof(uchar), mem_cur);
+    VLOG(5) << "write mem key 4:" << desp.rows * desp.cols * sizeof(uchar);
 }
 } // namespace Tools
 #endif // ORB_SLAM3_TOOLS_H

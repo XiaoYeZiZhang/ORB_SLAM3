@@ -458,7 +458,8 @@ void LocalMapping::ProcessNewKeyFrame() {
     // Insert Keyframe in Map
     mpAtlas->AddKeyFrame(mpCurrentKeyFrame);
 #ifdef SUPERPOINT
-    mpAtlas_superpoint->AddKeyFrame(mpCurrentKeyFrame);
+
+    mpAtlas_superpoint->AddKeyFrame_superpoint(mpCurrentKeyFrame);
 #endif
 }
 
@@ -504,13 +505,14 @@ void LocalMapping::MapPointCulling() {
     // cout << "erase MP: " << borrar << endl;
 }
 
-void LocalMapping::TriangulateForSuperPoint() {
-    std::vector<ORB_SLAM3::KeyFrame *> keyframes = mpAtlas->GetAllKeyFrames();
+void LocalMapping::TriangulateForSuperPoint(
+    const std::vector<ORB_SLAM3::KeyFrame *> &allkeyframes) {
     SuperPointMatcher superPointmatcher(0.6, false);
-    for (size_t i = 0; i < keyframes.size(); i++) {
+    for (size_t i = 0; i < allkeyframes.size(); i++) {
         int nn = 20;
-        ORB_SLAM3::KeyFrame *currentKeyFrame = keyframes[i];
-        const float ratioFactor = 1.5f * currentKeyFrame->mfScaleFactor;
+        ORB_SLAM3::KeyFrame *currentKeyFrame = allkeyframes[i];
+        const float ratioFactor =
+            1.5f * currentKeyFrame->mfScaleFactor_superpoint;
 
         vector<ORB_SLAM3::KeyFrame *> vpNeighKFs =
             currentKeyFrame->GetBestCovisibilityKeyFrames(nn);
@@ -523,17 +525,20 @@ void LocalMapping::TriangulateForSuperPoint() {
         cv::Mat Ow1 = currentKeyFrame->GetCameraCenter();
         ORB_SLAM3::GeometricCamera *pCamera1 = currentKeyFrame->mpCamera;
 
+        // neighbor keyframes
         for (size_t i = 0; i < vpNeighKFs.size(); i++) {
             ORB_SLAM3::KeyFrame *pKF2 = vpNeighKFs[i];
+            if (pKF2->mvKeys_superpoint.size() <= 0) {
+                continue;
+            }
             ORB_SLAM3::GeometricCamera *pCamera2 = pKF2->mpCamera;
             cv::Mat Ow2 = pKF2->GetCameraCenter();
-
-            // Compute Fundamental Matrix
             cv::Mat F12 = ComputeF12(currentKeyFrame, pKF2);
-            // Search matches that fullfil epipolar constraint
             vector<pair<size_t, size_t>> vMatchedIndices;
+
+            // triangulation search
             superPointmatcher.SearchForTriangulation(
-                currentKeyFrame, pKF2, F12, vMatchedIndices, false);
+                currentKeyFrame, pKF2, F12, vMatchedIndices);
 
             cv::Mat Rcw2 = pKF2->GetRotation();
             cv::Mat Rwc2 = Rcw2.t();
@@ -617,7 +622,7 @@ void LocalMapping::TriangulateForSuperPoint() {
 
                 // Check reprojection error in first keyframe
                 const float &sigmaSquare1 =
-                    currentKeyFrame->mvLevelSigma2[kp1.octave];
+                    currentKeyFrame->mvLevelSigma2_superpoint[kp1.octave];
                 const float x1 = Rcw1.row(0).dot(x3Dt) + tcw1.at<float>(0);
                 const float y1 = Rcw1.row(1).dot(x3Dt) + tcw1.at<float>(1);
                 const float invz1 = 1.0 / z1;
@@ -630,7 +635,8 @@ void LocalMapping::TriangulateForSuperPoint() {
                     continue;
 
                 // Check reprojection error in second keyframe
-                const float sigmaSquare2 = pKF2->mvLevelSigma2[kp2.octave];
+                const float sigmaSquare2 =
+                    pKF2->mvLevelSigma2_superpoint[kp2.octave];
                 const float x2 = Rcw2.row(0).dot(x3Dt) + tcw2.at<float>(0);
                 const float y2 = Rcw2.row(1).dot(x3Dt) + tcw2.at<float>(1);
                 const float invz2 = 1.0 / z2;
@@ -651,14 +657,14 @@ void LocalMapping::TriangulateForSuperPoint() {
                 if (dist1 == 0 || dist2 == 0)
                     continue;
 
-                if ((dist1 >= mThFarPoints ||
-                     dist2 >= mThFarPoints)) // MODIFICATION
+                if (mbFarPoints && (dist1 >= mThFarPoints ||
+                                    dist2 >= mThFarPoints)) // MODIFICATION
                     continue;
 
                 const float ratioDist = dist2 / dist1;
                 const float ratioOctave =
-                    currentKeyFrame->mvScaleFactors[kp1.octave] /
-                    pKF2->mvScaleFactors[kp2.octave];
+                    currentKeyFrame->mvScaleFactors_suerpoint[kp1.octave] /
+                    pKF2->mvScaleFactors_suerpoint[kp2.octave];
 
                 if (ratioDist * ratioFactor < ratioOctave ||
                     ratioDist > ratioOctave * ratioFactor)
@@ -674,9 +680,8 @@ void LocalMapping::TriangulateForSuperPoint() {
                 currentKeyFrame->AddSuperpointMapPoint(pMP, idx1);
                 pKF2->AddSuperpointMapPoint(pMP, idx2);
 
-                pMP->ComputeDistinctiveDescriptors();
-
-                pMP->UpdateNormalAndDepth();
+                pMP->ComputeDistinctiveDescriptors(true);
+                pMP->UpdateNormalAndDepth(true);
 
                 mpAtlas_superpoint->AddMapPoint(pMP);
                 mlpRecentAddedMapPoints_superpoint.push_back(pMP);
@@ -684,8 +689,9 @@ void LocalMapping::TriangulateForSuperPoint() {
         }
     }
 
-    Optimizer::GlobalBundleAdjustemnt_Superpoint(
-        mpAtlas_superpoint->GetCurrentMap(), 20);
+    // Optimizer::GlobalBundleAdjustemnt_Superpoint(
+    // mpAtlas_superpoint->GetCurrentMap(), 20);
+    Optimizer::LocalBundleAdjustment_Superpoint(mpAtlas_superpoint);
 }
 
 void LocalMapping::CreateNewMapPoints() {

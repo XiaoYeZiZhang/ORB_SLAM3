@@ -86,6 +86,7 @@ public:
 
     // Method for change components in the current map
     void AddKeyFrame(KeyFrame *pKF);
+    void AddKeyFrame_superpoint(KeyFrame *pKF);
     void AddMapPoint(MapPoint *pMP);
     // void EraseMapPoint(MapPoint* pMP);
     // void EraseKeyFrame(KeyFrame* pKF);
@@ -145,6 +146,11 @@ public:
     GetMemSizeFor3DObject(const std::string &version, const bool is_superpoint);
     void SetScanBoundingbox_W(const std::vector<Eigen::Vector3d> &boundingbox);
     std::set<Map *> mspMaps;
+
+    void SetSavedKeyFramesFor3DObjet_Superpoint(
+        const std::vector<KeyFrame *> &keyframes_for_SfM) {
+        m_saved_keyframe_for_3dobject_ = keyframes_for_SfM;
+    }
 
 protected:
     std::set<Map *> mspBadMaps;

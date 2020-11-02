@@ -104,13 +104,19 @@ void NMS2(
 
 SPDetector::SPDetector(
     std::shared_ptr<SuperPoint> _model,
-    torch::jit::script::Module _traced_module)
-    : model(_model), traced_module(_traced_module) {
-    traced_module.to(torch::Device(torch::kCUDA));
+    torch::jit::script::Module _traced_module_480_640,
+    torch::jit::script::Module _traced_module_400_533,
+    torch::jit::script::Module _traced_module_333_444)
+    : model(_model), traced_module_480_640(_traced_module_480_640),
+      traced_module_400_533(_traced_module_400_533),
+      traced_module_333_444(_traced_module_333_444) {
+    traced_module_480_640.to(torch::Device(torch::kCUDA));
+    traced_module_400_533.to(torch::Device(torch::kCUDA));
+    traced_module_333_444.to(torch::Device(torch::kCUDA));
 }
 
 // get network output
-void SPDetector::detect(cv::Mat &img, bool cuda) {
+void SPDetector::detect(cv::Mat &img, int level, bool cuda) {
     auto start = high_resolution_clock::now();
     cv::Mat img_float;
     img.convertTo(img_float, CV_32F);
@@ -124,11 +130,22 @@ void SPDetector::detect(cv::Mat &img, bool cuda) {
     std::vector<torch::jit::IValue> inputs;
     inputs.emplace_back(x.to(torch::Device(torch::kCUDA)));
 
-    auto out_test = traced_module.forward(inputs).toGenericDict();
-    auto semi = out_test.at("semi").toTensor();
-    mDesc = out_test.at("desc").toTensor();
+    torch::Tensor semi;
+    if (level == 0) {
+        auto out_test = traced_module_480_640.forward(inputs).toGenericDict();
+        semi = out_test.at("semi").toTensor();
+        mDesc = out_test.at("desc").toTensor();
+    } else if (level == 1) {
+        auto out_test = traced_module_400_533.forward(inputs).toGenericDict();
+        semi = out_test.at("semi").toTensor();
+        mDesc = out_test.at("desc").toTensor();
+    } else if (level == 2) {
+        auto out_test = traced_module_333_444.forward(inputs).toGenericDict();
+        semi = out_test.at("semi").toTensor();
+        mDesc = out_test.at("desc").toTensor();
+    }
 
-    VLOG(0) << "Time taken by get network output: "
+    VLOG(5) << "Time taken by get network output: "
             << (duration_cast<microseconds>(
                     high_resolution_clock::now() - start))
                        .count() /
@@ -138,7 +155,7 @@ void SPDetector::detect(cv::Mat &img, bool cuda) {
     semi = semi.squeeze(0).squeeze(0);
     start = high_resolution_clock::now();
     mProb_cpu = semi.to(torch::kCPU);
-    VLOG(0) << "Time taken by move from GPU to CPU: "
+    VLOG(5) << "Time taken by move from GPU to CPU: "
             << (duration_cast<microseconds>(
                     high_resolution_clock::now() - start))
                        .count() /
@@ -172,8 +189,8 @@ void SPDetector::getKeyPoints(
     keypoints_no_nms.reserve(resultImg.rows * resultImg.cols);
 
     start = high_resolution_clock::now();
-    for (size_t i = 0; i < resultImg.rows; i++) {
-        for (size_t j = 0; j < resultImg.cols; j++) {
+    for (size_t i = 4; i < resultImg.rows - 10; i++) {
+        for (size_t j = 4; j < resultImg.cols - 10; j++) {
             float value = resultImg.at<float>(i, j);
             if (value > threshold) {
                 keypoints_no_nms.emplace_back(
