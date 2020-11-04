@@ -276,12 +276,6 @@ ObjRecognition::ObjRecogResult ObjRecongManager::GetObjRecognitionResult() {
 
     Rco = R_camera * Rwo;
     tco = R_camera * two + t_camera;
-    // TODO(zhangye): check the coords
-    Rslam2gl(0, 0) = 1;
-    Rslam2gl(1, 2) = -1;
-    Rslam2gl(2, 1) = 1;
-    // Rco = Rco * Rslam2gl;
-
     Row = Rco.transpose() * (R_camera); // world -> obj
     tow = Rco.transpose() * (t_camera - tco);
     Rwo = Row.transpose();

@@ -122,7 +122,9 @@ public:
 
     // SfM
     void TriangulateForSuperPoint(
-        const std::vector<ORB_SLAM3::KeyFrame *> &allkeyframes);
+        const std::vector<ORB_SLAM3::KeyFrame *> &allkeyframes,
+        const int keyframe_num);
+    void LocalBAForSuperPoint();
 
 protected:
     bool CheckNewKeyFrames();

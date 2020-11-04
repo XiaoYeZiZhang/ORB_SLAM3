@@ -10,6 +10,8 @@
 #include "Utility/Parameters.h"
 #include "Detector/DetectorPointCloud.h"
 #include "Optimizer/LBAOptimizer.h"
+#include "mode.h"
+
 namespace ObjRecognition {
 
 PointCloudObjDetector::PointCloudObjDetector() {
@@ -85,9 +87,16 @@ std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
                  << kf_matches.at(index)->GetID();
         PS::MatchSet2D matches;
         std::vector<cv::DMatch> dmatches;
-
         cv::Mat kfDesp = kf_matches.at(index)->GetDesciriptor();
+
+#ifdef SUPERPOINT
+        ObjDetectionCommon::FindMatchByKNN_SuperPoint_Homography(
+            frm->m_kpts, kf_matches.at(index)->GetKeyPoints(), frmDesp, kfDesp,
+            dmatches);
+#else
         ObjDetectionCommon::FindMatchByKNN(frmDesp, kfDesp, dmatches);
+#endif
+
         VLOG(15) << "2DMatch frm kpts num: " << frm->m_kpts.size();
         VLOG(15) << "2DMatch kf kpts num: "
                  << kf_matches.at(index)->GetKeyPoints().size();
@@ -119,13 +128,11 @@ std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
     // stats_collector.AddSample(matches2d_count);
 
     MatchKeyFramesShow(frm, kf_matches);
-
     return matchs_2ds;
 }
 
 void PointCloudObjDetector::PreProcess(
     const std::shared_ptr<ObjRecognition::FrameData> &frm) {
-
     m_frame_cur = std::make_shared<DetectorFrame>();
     m_frame_cur->m_time_stamp = frm->mTimeStamp;
     m_frame_cur->m_frame_index = frm->mFrmIndex;
@@ -133,16 +140,15 @@ void PointCloudObjDetector::PreProcess(
     m_frame_cur->m_desp = frm->mDesp.clone();
     m_frame_cur->m_kpts = frm->mKpts;
     m_frame_cur->SetCameraPose(frm->mRcw, frm->mTcw);
-
     Rcw_cur_ = frm->mRcw;
     tcw_cur_ = frm->mTcw;
 }
 
 std::vector<PS::MatchSet2D>
 PointCloudObjDetector::Find2DMatches(const std::vector<KeyFrame::Ptr> &allKFs) {
-
     // STSLAMCommon::Timer timer_find_2dmatch("find 2d matches");
 
+    // using dbow and current frame desp to find matches kfs
     std::vector<KeyFrame::Ptr> kf_mathceds = mObj->FrameQueryMap(m_frame_cur);
     std::vector<PS::MatchSet2D> matches_2ds;
 
@@ -155,12 +161,10 @@ PointCloudObjDetector::Find2DMatches(const std::vector<KeyFrame::Ptr> &allKFs) {
     for (KeyFrame::Ptr kf : kf_mathceds) {
         kf_matches_id.insert(kf->GetID());
     }
-
     // GlobalKeyFrameMatchViewer::SetMatchedKeyFrames(kf_matches_id);
     matches_2ds = Generate2DMatchesFromKeyFrame(m_frame_cur, kf_mathceds);
 
     // timer_find_2dmatch.Stop();
-
     return matches_2ds;
 }
 
@@ -186,7 +190,12 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatch() {
     knn_match_num_ = -1;
 
     std::vector<cv::DMatch> goodMatches;
+#ifdef SUPERPOINT
+    // TODO(zhangye): use only norm2 distance for superpoint match?
+    ObjDetectionCommon::FindMatchByKNN_SuperPoint(frmDesp, pcDesp, goodMatches);
+#else
     ObjDetectionCommon::FindMatchByKNN(frmDesp, pcDesp, goodMatches);
+#endif
 
     for (int i = 0; i < goodMatches.size(); i++) {
         matches2dTo3d.insert(std::pair<int, MapPointIndex>(
@@ -565,6 +574,7 @@ void PointCloudObjDetector::Process(
     auto allKFs = mObj->GetKeyFrames();
     matchset_2d = Find2DMatches(allKFs);
 #endif
+
     PS::MatchSet3D matchset_3d = Find3DMatch();
 
     std::vector<int> inliers_3d;

@@ -11,12 +11,13 @@ namespace ORB_SLAM3 {
 
 FrameObjectProcess::FrameObjectProcess() {
     // TODO(zhangye): check the parameters
+    // 1000, 1.2, 8, 20
     m_orb_detector = cv::ORB::create(
         1000, Parameters::GetInstance().KORBExtractor_scaleFactor,
         Parameters::GetInstance().KORBExtractor_nlevels);
     m_orb_detector->setScoreType(cv::ORB::FAST_SCORE);
     m_orb_detector->setFastThreshold(
-        Parameters::GetInstance().KORBExtractor_fastThreathold);
+        Parameters::GetInstance().KORBExtractor_fastInitThreshold);
     m_obj_corner_points = std::vector<Eigen::Vector3d>();
 }
 

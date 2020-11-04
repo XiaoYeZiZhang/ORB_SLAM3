@@ -26,6 +26,6 @@ Parameters::Parameters() {
 
     KORBExtractor_scaleFactor = 0.0;
     KORBExtractor_nlevels = 0;
-    KORBExtractor_fastInit = 0;
-    KORBExtractor_fastThreathold = 0;
+    KORBExtractor_fastInitThreshold = 0;
+    KORBExtractor_fastMinThrethold = 0;
 }

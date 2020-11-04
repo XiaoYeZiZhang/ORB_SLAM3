@@ -47,7 +47,8 @@ private:
     void FindMatchByKNN(
         const cv::Mat &frmDesp, const cv::Mat &pcDesp,
         std::vector<cv::DMatch> &goodMatches);
-    void DebugMode();
+    void ScanDebugMode();
+    void SfMDebugMode();
     std::string m_result_dir;
     vector<string> vstrImageLeft;
     vector<string> vstrImageRight;
@@ -202,12 +203,12 @@ bool TestViewer::InitSLAM() {
 
     double scaleFactor = fsSettings["ORBextractor.scaleFactor"];
     int nlevels = fsSettings["ORBextractor.nLevels"];
-    double fastInit = fsSettings["ORBextractor.iniThFAST"];
-    double fastThreathold = fsSettings["ORBextractor.minThFAST"];
+    double fastInitThreshold = fsSettings["ORBextractor.iniThFAST"];
+    double fastMinThreshold = fsSettings["ORBextractor.minThFAST"];
     Parameters::GetInstance().SetScaleFactor(scaleFactor);
     Parameters::GetInstance().SetLevels(nlevels);
-    Parameters::GetInstance().SetFastInit(fastInit);
-    Parameters::GetInstance().SetFastThreathold(fastThreathold);
+    Parameters::GetInstance().SetFastInitThreshold(fastInitThreshold);
+    Parameters::GetInstance().SetFastMinThreshold(fastMinThreshold);
 
     bRGB = static_cast<bool>((int)fsSettings["Camera.RGB"]);
     fps = fsSettings["Camera.fps"];
@@ -218,9 +219,20 @@ bool TestViewer::InitSLAM() {
     return true;
 }
 
-void TestViewer::DebugMode() {
+void TestViewer::SfMDebugMode() {
     while (true) {
-        if (!viewerAR.GetDebugFlag()) {
+        if (!viewerAR.GetSfMDebugFlag()) {
+            VLOG(0) << viewerAR.GetSfMDebugFlag();
+            viewerAR.SetSfMDebugReverse();
+            return;
+        }
+        usleep(1 * 1e5);
+    }
+}
+
+void TestViewer::ScanDebugMode() {
+    while (true) {
+        if (!viewerAR.GetScanDebugFlag()) {
             return;
         }
         usleep(1 * 1e5);
@@ -295,6 +307,7 @@ void TestViewer::SfMProcess() {
     ORB_SLAM3::SPextractor *SPextractor =
         new ORB_SLAM3::SPextractor(3000, 1.2, 3, 0.015, 0.007, true);
     for (size_t i = 0; i < keyframes_for_SfM.size(); i++) {
+
         ORB_SLAM3::KeyFrame *keyframe = keyframes_for_SfM[i];
         cv::Mat Tcw_cv = keyframe->GetPose();
         Eigen::Matrix4d Tcw_eigen;
@@ -335,7 +348,12 @@ void TestViewer::SfMProcess() {
     }
 
     VLOG(0) << "All keyframe exract superpoint done !";
-    SLAM->mpLocalMapper->TriangulateForSuperPoint(keyframes_for_SfM);
+    for (auto key_num = 0; key_num < keyframes_for_SfM.size(); key_num++) {
+        SfMDebugMode();
+        SLAM->mpLocalMapper->TriangulateForSuperPoint(
+            keyframes_for_SfM, key_num);
+    }
+    SLAM->mpLocalMapper->LocalBAForSuperPoint();
 }
 
 // click boundingbox fix button:
@@ -376,7 +394,7 @@ bool TestViewer::RunScanner() {
             viewerAR.SetFixFlag(false);
         }
 
-        DebugMode();
+        ScanDebugMode();
 
         if (viewerAR.GetStopFlag()) {
 #ifdef SUPERPOINT
@@ -416,12 +434,10 @@ bool TestViewer::RunScanner() {
             std::chrono::monotonic_clock::now();
 #endif
 
-        // TODO(zhangye): check the pose: left image pose??
         cv::Mat Tcw = SLAM->TrackStereo(
             imLeftRect, imRightRect, tframe, vector<ORB_SLAM3::IMU::Point>(),
             vstrImageLeft[ni]); // TODO change to monocular_inertial
 
-        // TODO(zhangye): imLeft or imLeftRect
         cv::Mat im_clone_left = imLeftRect.clone();
         int state = SLAM->GetTrackingState();
         vector<ORB_SLAM3::MapPoint *> vMPs = SLAM->GetTrackedMapPoints();

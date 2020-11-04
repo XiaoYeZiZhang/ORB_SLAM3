@@ -132,8 +132,14 @@ public:
         mT = 1e3 / fps;
     }
 
-    bool GetDebugFlag() {
-        return m_is_debug_mode;
+    bool GetScanDebugFlag() {
+        return m_is_scan_debug_mode;
+    }
+    void SetSfMDebugReverse() {
+        *menu_SfM_debug = !(*menu_SfM_debug);
+    }
+    bool GetSfMDebugFlag() {
+        return m_is_SfM_debug_mode;
     }
     bool GetStopFlag() {
         return m_is_stop;
@@ -247,16 +253,14 @@ private:
     std::unique_ptr<pangolin::Var<bool>> menu_fixBBX;
     std::unique_ptr<pangolin::Var<bool>> menu_stop;
     std::unique_ptr<pangolin::Var<bool>> menu_clear;
-    std::unique_ptr<pangolin::Var<bool>> menu_debug;
-    std::unique_ptr<pangolin::Var<bool>> menu_drawim;
-    std::unique_ptr<pangolin::Var<bool>> menu_boundingbox;
+    std::unique_ptr<pangolin::Var<bool>> menu_scan_debug;
     std::unique_ptr<pangolin::Var<float>> menu_cubesize;
     std::unique_ptr<pangolin::Var<bool>> menu_drawgrid;
     std::unique_ptr<pangolin::Var<int>> menu_ngrid;
     std::unique_ptr<pangolin::Var<float>> menu_sizegrid;
     std::unique_ptr<pangolin::Var<bool>> menu_drawTrackedpoints;
     std::unique_ptr<pangolin::Var<bool>> menu_drawMappoints;
-    std::unique_ptr<pangolin::Var<bool>> menu_LocalizationMode;
+    std::unique_ptr<pangolin::Var<bool>> menu_SfM_debug;
     cv::Mat im_scan, Tcw_scan;
     int status_scan;
     vector<cv::KeyPoint> vKeys_scan;
@@ -270,7 +274,8 @@ private:
     MouseState m_mouseState;
     Scene m_scene;
     Camera m_camera;
-    bool m_is_debug_mode;
+    bool m_is_scan_debug_mode;
+    bool m_is_SfM_debug_mode;
     bool m_is_stop;
     bool m_is_fix;
     bool m_is_SfMFinish;

@@ -318,8 +318,6 @@ unsigned int Atlas::GetMemSizeFor3DObject(
         for (Map *pMi : saved_map) {
             for (MapPoint *pMPi : pMi->GetAllMapPoints()) {
                 cv::Mat tmpPos = pMPi->GetWorldPos();
-                // TODO(zhangye) check for superpoint boundingbox
-                // condition???
                 if (MappointInBoundingbox(tmpPos)) {
                     m_saved_mappoint_for_3dobject_.emplace_back(pMPi);
                     nTotalSize += pMPi->GetMemSizeFor3DObject(is_superpoint);
@@ -376,9 +374,6 @@ bool Atlas::WriteToMemoryFor3DObject(
     Tools::PutDataToMem(
         mem + mem_pos, &camera_intrinsic.CY(), sizeof(double), mem_pos);
 
-    // bounding box
-    // TODO(zhangye): check bbx data
-    // in scan slam coords
     double bounding_box[24];
     for (int i = 0; i < m_boundingbox_w_.size(); i++) {
         bounding_box[i * 3] = m_boundingbox_w_[i](0);
@@ -408,7 +403,6 @@ bool Atlas::WriteToMemoryFor3DObject(
     VLOG(5) << "writememsize1" << mem_pos;
     Tools::PutDataToMem(mem + mem_pos, &nMPs, sizeof(nMPs), mem_pos);
 
-    // TODO(zhangye): check Two???
     Eigen::Matrix4d m_object_Two = Eigen::Matrix4d::Identity();
     for (MapPoint *pMPi : m_saved_mappoint_for_3dobject_) {
         pMPi->WriteToMemoryFor3DObject(

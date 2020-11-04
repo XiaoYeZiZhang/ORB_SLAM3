@@ -19,11 +19,11 @@ public:
     void SetLevels(int level) {
         KORBExtractor_nlevels = level;
     }
-    int SetFastInit(double init) {
-        KORBExtractor_fastInit = init;
+    int SetFastInitThreshold(double initThre) {
+        KORBExtractor_fastInitThreshold = initThre;
     }
-    int SetFastThreathold(double threashold) {
-        KORBExtractor_fastThreathold = threashold;
+    int SetFastMinThreshold(double minThre) {
+        KORBExtractor_fastMinThrethold = minThre;
     }
 
 public:
@@ -46,8 +46,8 @@ public:
 
     double KORBExtractor_scaleFactor;
     int KORBExtractor_nlevels;
-    int KORBExtractor_fastInit;
-    int KORBExtractor_fastThreathold;
+    int KORBExtractor_fastInitThreshold;
+    int KORBExtractor_fastMinThrethold;
 };
 
 #endif // ORB_SLAM3_PARAMETERS_H

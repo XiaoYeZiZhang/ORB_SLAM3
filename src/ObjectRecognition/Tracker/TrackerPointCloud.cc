@@ -10,6 +10,7 @@
 #include "Utility/Parameters.h"
 #include "Utility/Camera.h"
 #include "Tracker/TrackerCommon.h"
+#include "mode.h"
 
 namespace ObjRecognition {
 
@@ -107,7 +108,7 @@ void PointCloudObjTracker::PreProcess(
 }
 
 PS::MatchSet3D OpticalFlowGenerate3DMatch(
-    std::shared_ptr<TrackerFrame> frame,
+    const std::shared_ptr<TrackerFrame> &frame,
     const std::vector<Eigen::Vector3d> &pointClouds3dObj) {
     PS::MatchSet3D matchset_3d;
     const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
@@ -116,6 +117,7 @@ PS::MatchSet3D OpticalFlowGenerate3DMatch(
     float cx = static_cast<float>(Kcv.at<double>(0, 2));
     float cy = static_cast<float>(Kcv.at<double>(1, 2));
 
+    // 2d pos, 3d pos
     frame->m_opticalflow_matches3d_vec.clear();
     for (const auto &it : frame->m_opticalflow_matches2dto3d) {
         PS::Point3D point_3d(
@@ -226,9 +228,7 @@ void PointCloudObjTracker::RemoveOpticalFlow3dMatchOutliers(
 }
 
 PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
-
     PS::MatchSet3D matchset_3d;
-
     if (m_frame_Pre->m_opticalflow_matches2dto3d.empty() ||
         m_frame_Pre->m_opticalflow_point2ds.empty()) {
         return matchset_3d;
@@ -257,6 +257,7 @@ PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
     ObjTrackerCommon::GetMapPointPositions(
         pointClouds, Rwo_cur_, two_cur_, mapPointsObj, mapPointsWorld);
 
+    // opticalflow 2d point position of previous frame
     std::vector<cv::Point2f> opticalFlowKeyPointsPreFloat;
     opticalFlowKeyPointsPreFloat.reserve(
         m_frame_Pre->m_opticalflow_point2ds.size());
@@ -268,6 +269,8 @@ PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
 
     std::vector<uchar> opticalFlowStatus;
     std::vector<float> err;
+    // opticalflow 2d point position of current frame using opticalflow
+    // algorithm
     std::vector<cv::Point2f> opticalKeyPointsCur;
     cv::Mat imagePre = m_frame_Pre->m_raw_image;
     cv::Mat imageCur = m_frame_cur->m_raw_image;
@@ -275,6 +278,7 @@ PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
         imagePre, imageCur, opticalFlowKeyPointsPreFloat, opticalKeyPointsCur,
         opticalFlowStatus, err, cv::Size(21, 21), 3);
 
+    // get current frame opticalflow position, and correspondance to mappoint id
     RemoveOpticalFlow3dMatchOutliers(opticalFlowStatus, opticalKeyPointsCur);
 
     m_match_points_opticalFlow_num =
@@ -288,8 +292,8 @@ PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
             << m_match_points_opticalFlow_num;
 
     ShowOpticalFlowpoints(m_frame_cur->m_opticalflow_point2ds);
+    // get currentframe 2d<->3d correspondance
     matchset_3d = OpticalFlowGenerate3DMatch(m_frame_cur, mapPointsObj);
-
     // VLOG(20) << "PointCloud tracker opticalFlowMatch process time: "
     //<< timer.Stop();
     return matchset_3d;
@@ -320,9 +324,7 @@ void RemoveOpticalFlowAndProjectionCommonMatch(
 }
 
 PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
-
     PS::MatchSet3D matchset_3d;
-
     const std::vector<MapPoint::Ptr> pointClouds = mObj->GetPointClouds();
     if (pointClouds.empty()) {
         LOG(ERROR) << "No pointclouds model here!";
@@ -372,9 +374,16 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
     std::vector<bool> matchKeyPointsState;
     m_projection_matches2dTo3d_cur.clear();
 
+#ifdef SUPERPOINT
+    // TODO(zhangye): use only norm2 for projection search?
+    ObjTrackerCommon::SearchByProjection_Superpoint(
+        projectPoints, pointClouds, projectFailState, keyPointsOrigin,
+        descriptors, matchKeyPointsState, m_projection_matches2dTo3d_cur);
+#else
     ObjTrackerCommon::SearchByProjection(
         projectPoints, pointClouds, projectFailState, keyPointsOrigin,
         descriptors, matchKeyPointsState, m_projection_matches2dTo3d_cur);
+#endif
 
     RemoveOpticalFlowAndProjectionCommonMatch(
         m_frame_cur, m_projection_matches2dTo3d_cur);

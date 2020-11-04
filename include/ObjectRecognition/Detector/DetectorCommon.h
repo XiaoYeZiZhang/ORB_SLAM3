@@ -22,6 +22,13 @@ void GetPointCloudBoundingBox(
 void FindMatchByKNN(
     const cv::Mat &frmDesp, const cv::Mat &pcDesp,
     std::vector<cv::DMatch> &goodMatches);
+void FindMatchByKNN_SuperPoint_Homography(
+    const std::vector<cv::KeyPoint> &keypoints1,
+    const std::vector<cv::KeyPoint> &keypoints2, const cv::Mat &frmDesp,
+    const cv::Mat &pcDesp, std::vector<cv::DMatch> &goodMatches);
+void FindMatchByKNN_SuperPoint(
+    const cv::Mat &frmDesp, const cv::Mat &pcDesp,
+    std::vector<cv::DMatch> &goodMatches);
 std::vector<cv::Mat> ToDescriptorVector(const cv::Mat &Descriptors);
 /*void FindMatchByBow(
     const cv::Mat &pcDesp, const cv::Mat &frmDesp, DBoW3::Vocabulary *&voc,

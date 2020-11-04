@@ -1004,7 +1004,6 @@ void KeyFrame::WriteToMemoryFor3DObject(
     Rcw = Tcw_4_4.block<3, 3>(0, 0);
     Tcw = Tcw_4_4.block<3, 1>(0, 3);
 
-    // TODO(zhangye): check coords
     Eigen::Matrix3d Rco = Rcw * Two.block<3, 3>(0, 0);
     Eigen::Vector3d tco = Rcw * Two.block<3, 1>(0, 3) + Tcw;
     auto init = mem_pos;

@@ -213,13 +213,13 @@ bool TestViewer::InitSLAM() {
 
     double scaleFactor = fsSettings["ORBextractor.scaleFactor"];
     int nlevels = fsSettings["ORBextractor.nLevels"];
-    int fastInit = fsSettings["ORBextractor.iniThFAST"];
-    int fastThreathold = fsSettings["ORBextractor.minThFAST"];
+    int fastInitThreshold = fsSettings["ORBextractor.iniThFAST"];
+    int fastMinThreshold = fsSettings["ORBextractor.minThFAST"];
 
     Parameters::GetInstance().SetScaleFactor(scaleFactor);
     Parameters::GetInstance().SetLevels(nlevels);
-    Parameters::GetInstance().SetFastInit(fastInit);
-    Parameters::GetInstance().SetFastThreathold(fastThreathold);
+    Parameters::GetInstance().SetFastInitThreshold(fastInitThreshold);
+    Parameters::GetInstance().SetFastMinThreshold(fastMinThreshold);
     mRGB = static_cast<bool>((int)fsSettings["Camera.RGB"]);
     bool is_recognition = false;
 
@@ -354,7 +354,6 @@ bool TestViewer::RunObjectRecognition() {
             imLeftRect, imRightRect, tframe, vector<ORB_SLAM3::IMU::Point>(),
             vstrImageLeft[ni]); // TODO change to monocular_inertial
 
-        // TODO(zhangye): imLeft or imLeftRect?????
         cv::Mat im_clone_left = imLeftRect.clone();
         int slam_state = SLAM->GetTrackingState();
 

@@ -20,17 +20,10 @@ bool MapPoint::Load(unsigned int &mem_pos, const char *mem) {
     GetDataFromMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
     Eigen::Vector3d posTmp;
 
-    // TODO(zhangye): the mappoint position, OPENGL Coords??? Need to change???
     // (Tco) SLAM Coords
     GetDataFromMem(&posTmp(0), ((mem) + mem_pos), sizeof(double), mem_pos);
     GetDataFromMem(&posTmp(1), ((mem) + mem_pos), sizeof(double), mem_pos);
     GetDataFromMem(&posTmp(2), ((mem) + mem_pos), sizeof(double), mem_pos);
-
-    /// pointcloud model is OpenGL coordiante, turn them to the
-    /// SLAM coordinate
-    /*mWorldPos(0) = posTmp(0);
-    mWorldPos(1) = -posTmp(2);
-    mWorldPos(2) = posTmp(1);*/
 
     mWorldPos(0) = posTmp(0);
     mWorldPos(1) = posTmp(1);
@@ -173,18 +166,7 @@ void KeyFrame::ReadFromMemory(unsigned int &mem_pos, const char *mem) {
     PutDataToMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
     VLOG(10) << "keyframe id: " << mnId;
     std::tie(mvKeypoints, mDescriptors) = UnpackORBFeatures(mem_pos, mem);
-    // TODO(zhangye): check keyframe pose, Tcw under OPENGL?? need to change to
-    // SLAM COords?
     UnPackCamCWFromMem(mem_pos, mem, mtcw, mRcw);
-
-    // KF pose in the model file is under the OpenGL coordinate,
-    // convert the coordinate to the SLAM coordinate
-    /*Eigen::Matrix3d Rgl2slam = Eigen::Matrix3d::Zero();
-    Rgl2slam(0, 0) = 1;
-    Rgl2slam(1, 2) = -1;
-    Rgl2slam(2, 1) = 1;
-    mRcw = mRcw * Rgl2slam.transpose();*/
-
     VLOG(10) << "size: "
              << ObjRecognition::CameraIntrinsic::GetInstance().Width() << " "
              << ObjRecognition::CameraIntrinsic::GetInstance().Height();
@@ -275,7 +257,6 @@ bool Object::LoadPointCloud(const int &mem_size, const char *mem) {
     GetDataFromMem(&cx, mem + mem_pos, sizeof(cx), mem_pos);
     GetDataFromMem(&cy, mem + mem_pos, sizeof(cy), mem_pos);
 
-    // TODO(zhangye): how to set the right boundingbox when scanning
     double bounding_box[24];
     GetDataFromMem(bounding_box, mem + mem_pos, 24 * sizeof(double), mem_pos);
     for (size_t index = 0; index < 8; index++) {
@@ -322,7 +303,6 @@ bool Object::LoadPointCloud(const int &mem_size, const char *mem) {
 
 void Object::AddKeyFrames2Database(
     const std::vector<ObjRecognition::KeyFrame::Ptr> &kfs) {
-
     for (const auto &itKF : kfs) {
         itKF->SetVocabulary(m_voc);
         itKF->ComputeBowFeatures();
@@ -334,10 +314,8 @@ void Object::AddKeyFrames2Database(
         m_keyframe_index_to_entry.insert(
             std::make_pair(kf_id, m_entry_to_keyframe_index.size()));
         m_entry_to_keyframe_index.emplace_back(kf_id);
-
         VLOG(10) << "KF id: " << kf_id << " BoW vec size: " << bowVec.size();
     }
-
     // timer.Stop();
 }
 
@@ -358,7 +336,6 @@ std::shared_ptr<KeyFrame> Object::GetKeyFrameByIndex(const int &nKFID) {
 
 std::shared_ptr<KeyFrame> Object::GetMatchFrameFromMap(
     const DBoW3::QueryResults &dbowRet, const int &retIndex) {
-
     std::shared_ptr<KeyFrame> pMostMatchFrame;
     if (dbowRet.size() <= retIndex) {
         VLOG(10) << "2DMatch DBoW query results, ret.size = " << dbowRet.size()
@@ -375,7 +352,6 @@ std::shared_ptr<KeyFrame> Object::GetMatchFrameFromMap(
                      << KFId;
         }
     }
-
     return pMostMatchFrame;
 }
 
@@ -401,16 +377,13 @@ std::vector<KeyFrame::Ptr> Object::FrameQueryMap(
 
     std::vector<std::shared_ptr<KeyFrame>> kf_matcheds;
     for (int index = 0; index < 2; index++) {
-
         std::shared_ptr<KeyFrame> kf_matched =
             GetMatchFrameFromMap(dbow_ret, index);
         if (kf_matched && kf_matched->GetKeyPoints().size() > 0) {
             kf_matcheds.push_back(kf_matched);
         }
     }
-
     // timer.Stop();
-
     return kf_matcheds;
 }
 

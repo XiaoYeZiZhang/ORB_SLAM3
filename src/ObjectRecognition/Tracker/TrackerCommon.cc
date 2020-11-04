@@ -5,6 +5,8 @@
 #include "Tracker/TrackerCommon.h"
 #include "Utility/Camera.h"
 #include "Utility/Utility.h"
+#include "ORBSLAM3/SuperPointMatcher.h"
+#include "mode.h"
 
 namespace ObjRecognition {
 namespace ObjTrackerCommon {
@@ -87,6 +89,7 @@ void Project(
     }
     VLOG(10) << "PointCloudObjTracker::Project done";
 }
+
 void GetFeaturesInArea(
     const Eigen::Vector2d &point, const int &width, const int &height,
     const std::vector<cv::KeyPoint> &keyPoints, std::vector<int> &vIndices) {
@@ -183,6 +186,80 @@ int SearchByProjection(
         }
         MapPointIndex mpIndex = i;
         // VLOG(5) << "Trackerbest: " << bestDist;
+        if (bestDist < kDistThreshold) {
+            //            if (bestDist < bestDist2 * kRatioThreshold) {
+            matches++;
+            matchKeyPointsState[j] = true;
+            matches2dTo3d.insert(
+                std::pair<int, MapPointIndex>(bestIndex, mpIndex));
+            //            }
+        }
+        j++;
+    }
+    // TODO(Zhangye) :check the orientation????
+    // timer_projection.Stop();
+    VLOG(20) << ("PointCloudObjTracker::SearchByProjection done");
+    return matches;
+}
+
+int SearchByProjection_Superpoint(
+    const std::vector<Eigen::Vector2d> &projectPoints,
+    const std::vector<MapPoint::Ptr> &pointClouds,
+    const std::vector<bool> &projectFailState,
+    const std::vector<cv::KeyPoint> &keyPoints, const cv::Mat &descriptors,
+    std::vector<bool> &matchKeyPointsState,
+    std::map<int, MapPointIndex> &matches2dTo3d) {
+    // STSLAMCommon::Timer timer_projection("Search by projection");
+
+    const int width = CameraIntrinsic::GetInstance().Width();
+    const int height = CameraIntrinsic::GetInstance().Height();
+    int matches = 0;
+    const float kDistThreshold = 0.3;
+    const float kRatioThreshold = 0.95;
+    matchKeyPointsState.resize(projectPoints.size());
+    for (int i = 0, j = 0; i < pointClouds.size() && j < projectPoints.size();
+         i++) {
+        if (projectFailState[i]) {
+            continue;
+        }
+
+        Eigen::Vector2d pointProject = projectPoints[j];
+        matchKeyPointsState[j] = false;
+        std::vector<int> vIndices;
+        vIndices.reserve(keyPoints.size());
+        // is this method need??  if the object is moved by a long distance???
+        GetFeaturesInArea(pointProject, width, height, keyPoints, vIndices);
+        if (vIndices.empty()) {
+            j++;
+            continue;
+        }
+        MapPoint::Ptr point = pointClouds[i];
+        cv::Mat pointDescriptor = point->GetDescriptor();
+
+        float bestDist = (float)INT_MAX;
+        float bestDist2 = (float)INT_MAX;
+        int bestIndex = -1;
+        for (int k = 0; k < vIndices.size(); k++) {
+            // keypoint id
+            int kpi = vIndices[k];
+            // if already match to a 3D point, continue
+            if (matches2dTo3d.find(kpi) != matches2dTo3d.end()) {
+                continue;
+            }
+            cv::Mat keyPointDescriptor = descriptors.row(kpi);
+            float norm_dist = ORB_SLAM3::SuperPointMatcher::DescriptorDistance(
+                pointDescriptor, keyPointDescriptor);
+
+            if (norm_dist < bestDist) {
+                bestDist2 = bestDist;
+                bestDist = norm_dist;
+                bestIndex = kpi;
+            } else if (norm_dist < bestDist2) {
+                bestDist2 = norm_dist;
+            }
+        }
+
+        MapPointIndex mpIndex = i;
         if (bestDist < kDistThreshold) {
             //            if (bestDist < bestDist2 * kRatioThreshold) {
             matches++;

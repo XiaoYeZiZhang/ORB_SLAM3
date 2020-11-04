@@ -51,7 +51,8 @@ cv::Mat ExpSO3(const cv::Mat &v) {
 }
 
 ViewerAR::ViewerAR() {
-    m_is_debug_mode = false;
+    m_is_scan_debug_mode = false;
+    m_is_SfM_debug_mode = false;
     m_is_stop = false;
     switch_window_flag = false;
     RegistEvents();
@@ -103,7 +104,6 @@ ViewerAR::ComputeBoundingbox_W(const pangolin::OpenGlMatrix &Twp_opengl) {
             m_boundingbox_p.m_vertex_list_p[i][0],
             m_boundingbox_p.m_vertex_list_p[i][1],
             m_boundingbox_p.m_vertex_list_p[i][2]);
-        // TODO(zhangye): transpose???
         Eigen::Vector4d p_4 =
             Eigen::Vector4d(point_p(0), point_p(1), point_p(2), 1.0f);
         Eigen::Matrix4d Twp = ChangeOpenglMatrix2EigenMatrix(Twp_opengl);
@@ -290,8 +290,8 @@ void ViewerAR::DrawScanInit(int w, int h) {
     menu_stop =
         std::make_unique<pangolin::Var<bool>>("menu.Finish Scan", false, false);
 
-    menu_debug =
-        std::make_unique<pangolin::Var<bool>>("menu.Debug", false, false);
+    menu_scan_debug =
+        std::make_unique<pangolin::Var<bool>>("menu.Scan Debug", false, false);
     m_boundingbox_p.SetSize(0.05);
     // plane grid number
     menu_ngrid =
@@ -301,6 +301,8 @@ void ViewerAR::DrawScanInit(int w, int h) {
     menu_drawMappoints = std::make_unique<pangolin::Var<bool>>(
         "menu.Draw Proj Mappoints", false, true);
 
+    menu_SfM_debug =
+        std::make_unique<pangolin::Var<bool>>("menu.SfM Debug", false, false);
     // handle keyboard event
     std::function<void(void)> decrease_shape_key_callback =
         std::bind(&ViewerAR::decrease_shape, this);
@@ -356,7 +358,9 @@ void ViewerAR::Draw(int w, int h) {
     vector<Plane *> vpPlane;
 
     while (true) {
-        m_is_debug_mode = *menu_debug;
+        m_is_scan_debug_mode = *menu_scan_debug;
+        m_is_SfM_debug_mode = *menu_SfM_debug;
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (!switch_window_flag) {

@@ -29,7 +29,7 @@ private:
         const string &strImuPath, vector<double> &vTimeStamps,
         vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro);
 
-    void DebugMode();
+    void ScanDebugMode();
     std::string m_result_dir;
     vector<string> vstrImageFilenames;
     vector<double> vTimestampsCam;
@@ -182,13 +182,13 @@ bool TestViewer::InitSLAM(char **argv) {
 
     double scaleFactor = fsSettings["ORBextractor.scaleFactor"];
     double nlevels = fsSettings["ORBextractor.nLevels"];
-    double fastInit = fsSettings["ORBextractor.iniThFAST"];
-    double fastThreathold = fsSettings["ORBextractor.minThFAST"];
+    double fastInitThreshold = fsSettings["ORBextractor.iniThFAST"];
+    double fastMinThreshold = fsSettings["ORBextractor.minThFAST"];
 
     Parameters::GetInstance().SetScaleFactor(scaleFactor);
     Parameters::GetInstance().SetLevels(nlevels);
-    Parameters::GetInstance().SetFastInit(fastInit);
-    Parameters::GetInstance().SetFastThreathold(fastThreathold);
+    Parameters::GetInstance().SetFastInitThreshold(fastInitThreshold);
+    Parameters::GetInstance().SetFastMinThreshold(fastMinThreshold);
 
     SLAM = new ORB_SLAM3::System(
         argv[1], argv[2], ORB_SLAM3::System::IMU_MONOCULAR, false, false);
@@ -205,9 +205,9 @@ bool TestViewer::InitSLAM(char **argv) {
     return true;
 }
 
-void TestViewer::DebugMode() {
+void TestViewer::ScanDebugMode() {
     while (true) {
-        if (!viewerAR.GetDebugFlag()) {
+        if (!viewerAR.GetScanDebugFlag()) {
             return;
         }
         usleep(1 * 1e5); // 1e6
@@ -293,7 +293,7 @@ bool TestViewer::RunScanner(char **argv) {
                 m_boundingbox_w);
             viewerAR.SetFixFlag(false);
         }
-        DebugMode();
+        ScanDebugMode();
         if (viewerAR.GetStopFlag()) {
             break;
         }

@@ -627,8 +627,6 @@ void MapPoint::WriteToMemoryFor3DObject(
     Tools::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
     Eigen::Vector3d pos = Eigen::Vector3d(
         mWorldPos.at<float>(0), mWorldPos.at<float>(1), mWorldPos.at<float>(2));
-    // TODO(zhangye): check coords
-    // Tco
     Tools::PutDataToMem(mem + mem_pos, &(pos(0)), sizeof(double), mem_pos);
     Tools::PutDataToMem(mem + mem_pos, &(pos(1)), sizeof(double), mem_pos);
     Tools::PutDataToMem(mem + mem_pos, &(pos(2)), sizeof(double), mem_pos);

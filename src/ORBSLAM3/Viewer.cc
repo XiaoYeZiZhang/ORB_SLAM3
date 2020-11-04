@@ -340,7 +340,6 @@ void Viewer::Draw() {
             Tools::DrawTxt("IMAGE: " + std::to_string(image_num), 220, 10);
             if (!(*menuFollowCamera)) {
                 cv::Mat cam_pos;
-                // TODO(zhangye): check the cam pos???
                 mpMapDrawer->GetCurrentCameraPos(cam_pos);
                 m_trajectory.push_back(cam_pos);
             }
