@@ -54,7 +54,8 @@ KeyFrame::KeyFrame()
       mNextKF(static_cast<KeyFrame *>(NULL)), mbFirstConnection(true),
       mpParent(NULL), mbNotErase(false), mbToBeErased(false), mbBad(false),
       mHalfBaseline(0), mbCurrentPlaceRecognition(false), mbHasHessian(false),
-      mnMergeCorrectedForKF(0), NLeft(0), NRight(0), mnNumberOfOpt(0) {
+      mnMergeCorrectedForKF(0), NLeft(0), NRight(0), mnNumberOfOpt(0),
+      mnNumberOfOpt_Superpoint(0) {
 }
 
 void KeyFrame::UndistortKeyPoints() {
@@ -119,7 +120,7 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB)
       mvLeftToRightMatch(F.mvLeftToRightMatch),
       mvRightToLeftMatch(F.mvRightToLeftMatch), mTlr(F.mTlr.clone()),
       mvKeysRight(F.mvKeysRight), NLeft(F.Nleft), NRight(F.Nright),
-      mTrl(F.mTrl), mnNumberOfOpt(0) {
+      mTrl(F.mTrl), mnNumberOfOpt(0), mnNumberOfOpt_Superpoint(0) {
 
     imgLeft = F.imgLeft.clone();
     imgRight = F.imgRight.clone();
@@ -356,18 +357,27 @@ void KeyFrame::AddSuperpointMapPoint(MapPoint *pMP, const size_t &idx) {
     mvpMapPoints_superpoint[idx] = pMP;
 }
 
-void KeyFrame::EraseMapPointMatch(const int &idx) {
+void KeyFrame::EraseMapPointMatch(const int &idx, const bool is_superpoint) {
     unique_lock<mutex> lock(mMutexFeatures);
-    mvpMapPoints[idx] = static_cast<MapPoint *>(NULL);
+    if (is_superpoint) {
+        mvpMapPoints_superpoint[idx] = static_cast<MapPoint *>(NULL);
+    } else {
+        mvpMapPoints[idx] = static_cast<MapPoint *>(NULL);
+    }
 }
 
-void KeyFrame::EraseMapPointMatch(MapPoint *pMP) {
+void KeyFrame::EraseMapPointMatch(MapPoint *pMP, const bool is_superpoint) {
     tuple<size_t, size_t> indexes = pMP->GetIndexInKeyFrame(this);
     size_t leftIndex = get<0>(indexes), rightIndex = get<1>(indexes);
-    if (leftIndex != -1)
-        mvpMapPoints[leftIndex] = static_cast<MapPoint *>(NULL);
-    if (rightIndex != -1)
-        mvpMapPoints[rightIndex] = static_cast<MapPoint *>(NULL);
+    if (!is_superpoint) {
+        if (leftIndex != -1)
+            mvpMapPoints[leftIndex] = static_cast<MapPoint *>(NULL);
+        if (rightIndex != -1)
+            mvpMapPoints[rightIndex] = static_cast<MapPoint *>(NULL);
+    } else {
+        if (leftIndex != -1)
+            mvpMapPoints_superpoint[leftIndex] = static_cast<MapPoint *>(NULL);
+    }
 }
 
 void KeyFrame::ReplaceMapPointMatch(const int &idx, MapPoint *pMP) {
@@ -411,6 +421,11 @@ int KeyFrame::TrackedMapPoints(const int &minObs) {
 vector<MapPoint *> KeyFrame::GetMapPointMatches() {
     unique_lock<mutex> lock(mMutexFeatures);
     return mvpMapPoints;
+}
+
+vector<MapPoint *> KeyFrame::GetMapPointMatches_SuperPoint() {
+    unique_lock<mutex> lock(mMutexFeatures);
+    return mvpMapPoints_superpoint;
 }
 
 MapPoint *KeyFrame::GetMapPoint(const size_t &idx) {

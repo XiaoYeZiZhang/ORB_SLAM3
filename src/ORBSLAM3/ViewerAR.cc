@@ -53,46 +53,50 @@ cv::Mat ExpSO3(const cv::Mat &v) {
 ViewerAR::ViewerAR() {
     m_is_scan_debug_mode = false;
     m_is_SfM_debug_mode = false;
+    m_is_SfM_continue_LBA_mode = false;
+    m_is_SfM_save_mpp_after_LBA_mode = false;
+    change_shape_unit = 0.02;
     m_is_stop = false;
+    m_is_fix = false;
     switch_window_flag = false;
     RegistEvents();
 }
 
 void ViewerAR::decrease_shape() {
-    m_boundingbox_p.SetChangeShapeOffset(-0.05);
+    m_boundingbox_p.SetChangeShapeOffset(-change_shape_unit);
 }
 
 void ViewerAR::increase_shape() {
-    m_boundingbox_p.SetChangeShapeOffset(0.05);
+    m_boundingbox_p.SetChangeShapeOffset(change_shape_unit);
 }
 
 void ViewerAR::up_move() {
-    m_boundingbox_p.MoveObject(-0.03, 1);
+    m_boundingbox_p.MoveObject(-change_shape_unit, 1);
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::down_move() {
-    m_boundingbox_p.MoveObject(+0.03, 1);
+    m_boundingbox_p.MoveObject(+change_shape_unit, 1);
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::left_move() {
-    m_boundingbox_p.MoveObject(-0.03, 0);
+    m_boundingbox_p.MoveObject(-change_shape_unit, 0);
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::right_move() {
-    m_boundingbox_p.MoveObject(0.03, 0);
+    m_boundingbox_p.MoveObject(change_shape_unit, 0);
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::front_move() {
-    m_boundingbox_p.MoveObject(0.03, 2);
+    m_boundingbox_p.MoveObject(change_shape_unit, 2);
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::back_move() {
-    m_boundingbox_p.MoveObject(-0.03, 2);
+    m_boundingbox_p.MoveObject(-change_shape_unit, 2);
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
@@ -123,8 +127,10 @@ void ViewerAR::SetCameraCalibration(
 }
 
 void ViewerAR::DrawMapPoints_SuperPoint(
-    const std::vector<double> &boundingbox_w_corner) {
-    mpMapDrawer->DrawMapPoints_SuperPoint(boundingbox_w_corner);
+    const std::vector<double> &boundingbox_w_corner,
+    const std::set<MapPoint *> mappoint_picked) {
+    mpMapDrawer->DrawMapPoints_SuperPoint(
+        boundingbox_w_corner, mappoint_picked);
 }
 
 std::vector<Map *> ViewerAR::GetAllMapPoints() {
@@ -262,7 +268,7 @@ void ViewerAR::SwitchWindow() {
                             0.0, 1.0f,
                             pangolin::Attach::Pix(m_scene.GetSceneBarWidth()),
                             1.0, (float)im_scan.cols / im_scan.rows)
-                        .SetHandler(new pangolin::Handler3D(s_cam_SfM));
+                        .SetHandler(mp_SfM_handler3d.get());
         d_cam_SfM.show = true;
     } else {
         d_cam_SfM.show = false;
@@ -272,7 +278,7 @@ void ViewerAR::SwitchWindow() {
                     0, 1.0f, pangolin::Attach::Pix(m_scene.GetSceneBarWidth()),
                     1.0f, (float)im_scan.cols / im_scan.rows)
                 .SetLock(pangolin::LockLeft, pangolin::LockTop)
-                .SetHandler(mp_handler3d.get());
+                .SetHandler(mp_scan_handler3d.get());
         d_cam_scan.show = true;
     }
     switch_window_flag = !switch_window_flag;
@@ -300,11 +306,14 @@ void ViewerAR::DrawScanInit(int w, int h) {
         std::make_unique<pangolin::Var<bool>>("menu.Draw Points", false, true);
     menu_drawMappoints = std::make_unique<pangolin::Var<bool>>(
         "menu.Draw Proj Mappoints", false, true);
-
     menu_SfM_debug =
         std::make_unique<pangolin::Var<bool>>("menu.SfM Debug", false, false);
     menu_SfM_continue = std::make_unique<pangolin::Var<bool>>(
         "menu.SfM Continue", false, false);
+    menu_SfM_continue_LBA = std::make_unique<pangolin::Var<bool>>(
+        "menu.SfM Continue LBA", false, false);
+    menu_SfM_savemmp_after_LBA = std::make_unique<pangolin::Var<bool>>(
+        "menu.SfM SaveMappoints", false, false);
     // handle keyboard event
     std::function<void(void)> decrease_shape_key_callback =
         std::bind(&ViewerAR::decrease_shape, this);
@@ -333,7 +342,7 @@ void ViewerAR::DrawScanInit(int w, int h) {
     pangolin::RegisterKeyPressCallback('b', back_key_callback);
     // define projection and initial movelview matrix: default
     s_cam_scan = pangolin::OpenGlRenderState();
-    mp_handler3d.reset(new MapHandler3D(s_cam_scan));
+    mp_scan_handler3d.reset(new MapHandler3D(s_cam_scan));
 
     d_cam_scan =
         pangolin::Display("image")
@@ -341,13 +350,131 @@ void ViewerAR::DrawScanInit(int w, int h) {
                 0, 1.0f, pangolin::Attach::Pix(m_scene.GetSceneBarWidth()),
                 1.0f, (float)w / h)
             .SetLock(pangolin::LockLeft, pangolin::LockTop)
-            .SetHandler(mp_handler3d.get());
+            .SetHandler(mp_scan_handler3d.get());
 }
 
 void ViewerAR::DrawSfMInit(int w, int h) {
     s_cam_SfM = pangolin::OpenGlRenderState(
         pangolin::ProjectionMatrix(1024, 768, 500, 500, 512, 389, 0.1, 1000),
         pangolin::ModelViewLookAt(0, -0.7, -3.5, 0, 0, 0, 0.0, -1.0, 0.0));
+    mp_SfM_handler3d.reset(new MapHandler3D(s_cam_SfM));
+
+    std::function<void(void)> stop_selected_2d_region_callback =
+        std::bind(&ViewerAR::Select2DRegion, this);
+    pangolin::RegisterKeyPressCallback(
+        pangolin::PANGO_CTRL + 's', stop_selected_2d_region_callback);
+}
+
+void ViewerAR::Select2DRegion() {
+    m_select_area_flag = mp_SfM_handler3d->GetSelected2DRegion(
+        m_region_left_down, m_region_right_top);
+}
+
+void Project3DXYZToUV(
+    M3DVector2d point_out, const M3DMatrix44d model_view,
+    const M3DMatrix44d proj, const int view_port[4],
+    const M3DVector3d point_in) {
+    M3DVector3d point_result;
+    gluProject(
+        point_in[0], point_in[1], point_in[2], model_view, proj, view_port,
+        &point_result[0], &point_result[1], &point_result[2]);
+    point_out[0] = point_result[0];
+    point_out[1] = point_result[1];
+}
+
+bool ViewerAR::DropInArea(
+    M3DVector3d x, const M3DMatrix44d model_view, const M3DMatrix44d proj,
+    const int viewport[4], const Eigen::Vector2d &left_bottom,
+    const Eigen::Vector2d &right_top) {
+    M3DVector2d win_coords;
+    Project3DXYZToUV(win_coords, model_view, proj, viewport, x);
+    if ((win_coords[0] < left_bottom[0] && win_coords[0] < right_top[0]) ||
+        (win_coords[0] > left_bottom[0] && win_coords[0] > right_top[0]))
+        return false;
+    if ((win_coords[1] < left_bottom[1] && win_coords[1] < right_top[1]) ||
+        (win_coords[1] > left_bottom[1] && win_coords[1] > right_top[1]))
+        return false;
+    return true;
+}
+
+void ViewerAR::Pick3DPointCloud() {
+    if (!m_select_area_flag)
+        return;
+    m_select_area_flag = false;
+    GLint viewport[4];
+    glPushMatrix();
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    pangolin::OpenGlMatrix modelview_matrix = s_cam_SfM.GetModelViewMatrix();
+    pangolin::OpenGlMatrix projection_matrix = s_cam_SfM.GetProjectionMatrix();
+
+    int covisualize_keyframe_num = 3;
+    auto all_mappoints = mpMapDrawer->mpAtlas_superpoint->GetAllMapPoints(
+        covisualize_keyframe_num);
+    for (auto mappoint : all_mappoints) {
+        cv::Mat pose_cv = mappoint->GetWorldPos();
+        Eigen::Vector3d pose;
+        cv::cv2eigen(pose_cv, pose);
+        GLdouble pose_array[3] = {pose[0], pose[1], pose[2]};
+        if (DropInArea(
+                pose_array, modelview_matrix.m, projection_matrix.m, viewport,
+                m_region_left_down, m_region_right_top)) {
+            if (!mappoints_picked.count(mappoint)) {
+                auto observations = mappoint->GetObservations();
+                for (auto observation : observations) {
+                    auto keyframe = observation.first;
+                    auto idx = std::get<0>(observation.second);
+                    auto keyframe_id = keyframe->mnId;
+                    cv::Mat img = keyframe->imgLeft.clone();
+                    std::vector<cv::KeyPoint> keypoints;
+                    cv::KeyPoint keypoint = keyframe->mvKeysUn_superpoint[idx];
+                    keypoints.emplace_back(keypoint);
+                    cv::drawKeypoints(img, keypoints, img);
+                    cv::imwrite(
+                        "/home/zhangye/data1/sfm/mappoints/" +
+                            std::to_string(mappoint->mnId) + "--" +
+                            std::to_string(keyframe_id) + ".png",
+                        img);
+                }
+                mappoints_picked.insert(mappoint);
+            }
+        }
+    }
+}
+
+void ViewerAR::DrawSelected2DRegion() {
+    if (!m_select_area_flag)
+        return;
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    gluOrtho2D(
+        m_scene.GetSceneBarWidth(),
+        m_scene.GetSceneWidth() + m_scene.GetSceneBarWidth(), 0,
+        m_scene.GetSceneHeight());
+
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glEnable(GL_BLEND);
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glColor4f(1.0, 1.0, 0, 0.2);
+    glRectf(
+        m_region_left_down.x(), m_region_left_down.y(), m_region_right_top.x(),
+        m_region_right_top.y());
+    glEnable(GL_LINE_STIPPLE);
+
+    glColor4f(1, 0, 0, 0.5);
+    glLineStipple(3, 0xAAAA);
+    glBegin(GL_LINE_STIPPLE);
+    glVertex2f(m_region_left_down.x(), m_region_left_down.y());
+    glVertex2f(m_region_right_top.x(), m_region_left_down.y());
+    glVertex2f(m_region_right_top.x(), m_region_right_top.y());
+    glVertex2f(m_region_left_down.x(), m_region_right_top.y());
+    glEnd();
+    glDisable(GL_LINE_STIPPLE);
+    glDisable(GL_BLEND);
 }
 
 void ViewerAR::Draw(int w, int h) {
@@ -363,6 +490,8 @@ void ViewerAR::Draw(int w, int h) {
         m_is_scan_debug_mode = *menu_scan_debug;
         m_is_SfM_debug_mode = *menu_SfM_debug;
         m_is_SfM_continue_mode = *menu_SfM_continue;
+        m_is_SfM_continue_LBA_mode = *menu_SfM_continue_LBA;
+        m_is_SfM_save_mpp_after_LBA_mode = *menu_SfM_savemmp_after_LBA;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (!switch_window_flag) {
@@ -487,7 +616,7 @@ void ViewerAR::Draw(int w, int h) {
                                     pangolin::Attach::Pix(
                                         m_scene.GetSceneBarWidth()),
                                     1.0, (float)im_scan.cols / im_scan.rows)
-                                .SetHandler(new pangolin::Handler3D(s_cam_SfM));
+                                .SetHandler(mp_SfM_handler3d.get());
                         d_cam_SfM.show = true;
 #else
                         break;
@@ -517,14 +646,19 @@ void ViewerAR::Draw(int w, int h) {
 
         } else {
 #ifdef SUPERPOINT
+            mpSystem->Shutdown();
             d_cam_SfM.show = true;
             d_cam_SfM.Activate(s_cam_SfM);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             pangolin::glDrawAxis(0.6f);
-            glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
-            pangolin::glDraw_z0(0.5f, 100);
+            //            glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
+            //            pangolin::glDraw_z0(0.5f, 100);
 
-            DrawMapPoints_SuperPoint(m_boundingbox_corner);
+            DrawSelected2DRegion();
+            Pick3DPointCloud();
+            DrawMapPoints_SuperPoint(m_boundingbox_corner, mappoints_picked);
+
+            // Pick3DPointCloud();
             if (m_is_SfMFinish) {
                 break;
             }
@@ -652,7 +786,7 @@ bool IsIntersectWithTriangle(
 void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
     if (m_boundingbox_p.IsExist()) {
         Eigen::Vector2d left_button;
-        if (mp_handler3d->GetLeftButtonPos(left_button)) {
+        if (mp_scan_handler3d->GetLeftButtonPos(left_button)) {
             m_boundingbox_p.minTriangleIndex = -1;
             m_mouseState.SetMousePoseX(
                 left_button.x() - m_scene.GetSceneBarWidth());

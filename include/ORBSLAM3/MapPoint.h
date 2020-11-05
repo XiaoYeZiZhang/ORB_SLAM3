@@ -143,12 +143,12 @@ public:
     int Observations();
 
     void AddObservation(KeyFrame *pKF, int idx, bool is_superpoint = false);
-    void EraseObservation(KeyFrame *pKF);
+    void EraseObservation(KeyFrame *pKF, const bool is_superpoint = false);
 
     std::tuple<int, int> GetIndexInKeyFrame(KeyFrame *pKF);
     bool IsInKeyFrame(KeyFrame *pKF);
 
-    void SetBadFlag();
+    void SetBadFlag(const bool is_superpoint = false);
     bool isBad();
 
     void Replace(MapPoint *pMP);

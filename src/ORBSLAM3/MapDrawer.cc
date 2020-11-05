@@ -129,7 +129,8 @@ bool MapDrawer::ParseViewerParamFile(cv::FileStorage &fSettings) {
 }
 
 void MapDrawer::DrawMapPoints_SuperPoint(
-    const std::vector<double> &boundingbox_w_corner) {
+    const std::vector<double> &boundingbox_w_corner,
+    const std::set<MapPoint *> mappoint_picked) {
     int covisualize_keyframe_num = 3;
     const vector<MapPoint *> &vpMPs =
         mpAtlas_superpoint->GetAllMapPoints(covisualize_keyframe_num);
@@ -149,17 +150,24 @@ void MapDrawer::DrawMapPoints_SuperPoint(
         if (vpMPs[i]->isBad() || spRefMPs.count(vpMPs[i]))
             continue;
         cv::Mat pos = vpMPs[i]->GetWorldPos();
-        if (pos.at<float>(0) > boundingbox_w_corner[0] &&
-            pos.at<float>(1) > boundingbox_w_corner[1] &&
-            pos.at<float>(2) > boundingbox_w_corner[2] &&
-            pos.at<float>(0) < boundingbox_w_corner[3] &&
-            pos.at<float>(1) < boundingbox_w_corner[4] &&
-            pos.at<float>(2) < boundingbox_w_corner[5]) {
-            glColor3f(1.0, 0.0, 0.0);
+        if (mappoint_picked.count(vpMPs[i])) {
+            glColor3f(0.0, 0.0, 1.0);
             glVertex3f(pos.at<float>(0), pos.at<float>(1), pos.at<float>(2));
         } else {
-            glColor3f(0.0, 1.0, 0.0);
-            glVertex3f(pos.at<float>(0), pos.at<float>(1), pos.at<float>(2));
+            if (pos.at<float>(0) > boundingbox_w_corner[0] &&
+                pos.at<float>(1) > boundingbox_w_corner[1] &&
+                pos.at<float>(2) > boundingbox_w_corner[2] &&
+                pos.at<float>(0) < boundingbox_w_corner[3] &&
+                pos.at<float>(1) < boundingbox_w_corner[4] &&
+                pos.at<float>(2) < boundingbox_w_corner[5]) {
+                glColor3f(1.0, 0.0, 0.0);
+                glVertex3f(
+                    pos.at<float>(0), pos.at<float>(1), pos.at<float>(2));
+            } else {
+                glColor3f(0.0, 1.0, 0.0);
+                glVertex3f(
+                    pos.at<float>(0), pos.at<float>(1), pos.at<float>(2));
+            }
         }
     }
     glEnd();

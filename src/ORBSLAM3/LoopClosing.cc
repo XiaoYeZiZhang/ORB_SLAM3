@@ -56,9 +56,10 @@ void LoopClosing::SetLocalMapper(LocalMapping *pLocalMapper) {
 }
 
 void LoopClosing::Run() {
+
     mbFinished = false;
 
-    while (1) {
+    while (false) {
         // NEW LOOP AND MERGE DETECTION ALGORITHM
         //----------------------------
         if (CheckNewKeyFrames()) {

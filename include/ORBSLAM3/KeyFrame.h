@@ -326,11 +326,12 @@ public:
     // MapPoint observation functions
     int GetNumberMPs();
     void AddMapPoint(MapPoint *pMP, const size_t &idx);
-    void EraseMapPointMatch(const int &idx);
-    void EraseMapPointMatch(MapPoint *pMP);
+    void EraseMapPointMatch(const int &idx, const bool is_superpoint = false);
+    void EraseMapPointMatch(MapPoint *pMP, const bool is_superpoint = false);
     void ReplaceMapPointMatch(const int &idx, MapPoint *pMP);
     std::set<MapPoint *> GetMapPoints();
     std::vector<MapPoint *> GetMapPointMatches();
+    vector<MapPoint *> GetMapPointMatches_SuperPoint();
     int TrackedMapPoints(const int &minObs);
     MapPoint *GetMapPoint(const size_t &idx);
 
@@ -435,6 +436,7 @@ public:
 
     // Number of optimizations by BA(amount of iterations in BA)
     long unsigned int mnNumberOfOpt;
+    long unsigned int mnNumberOfOpt_Superpoint;
 
     // Variables used by the keyframe database
     long unsigned int mnLoopQuery;

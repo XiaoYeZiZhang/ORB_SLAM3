@@ -85,17 +85,20 @@ SPextractor::SPextractor(
     torch::Device device(torch::kCUDA);
     model->to(device);
 
-    traced_module_480_640 = torch::jit::load(
-        "/home/zhangye/data1/traced_superpoint_model_480*640.pt");
-    traced_module_480_640.to(at::kCUDA);
+    traced_module_480_640 =
+        std::make_shared<torch::jit::script::Module>(torch::jit::load(
+            "/home/zhangye/data1/traced_superpoint_model_480*640.pt"));
+    traced_module_480_640->to(at::kCUDA);
 
-    traced_module_400_533 = torch::jit::load(
-        "/home/zhangye/data1/traced_superpoint_model_400*533.pt");
-    traced_module_400_533.to(at::kCUDA);
+    traced_module_400_533 =
+        std::make_shared<torch::jit::script::Module>(torch::jit::load(
+            "/home/zhangye/data1/traced_superpoint_model_400*533.pt"));
+    traced_module_400_533->to(at::kCUDA);
 
-    traced_module_333_444 = torch::jit::load(
-        "/home/zhangye/data1/traced_superpoint_model_333*444.pt");
-    traced_module_333_444.to(at::kCUDA);
+    traced_module_333_444 =
+        std::make_shared<torch::jit::script::Module>(torch::jit::load(
+            "/home/zhangye/data1/traced_superpoint_model_333*444.pt"));
+    traced_module_333_444->to(at::kCUDA);
 
     mvScaleFactor.resize(nlevels);
     mvLevelSigma2.resize(nlevels);

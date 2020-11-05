@@ -330,6 +330,11 @@ void TestViewer::SfMProcess() {
     // extract superpoint on each keyframe
     for (size_t i = 0; i < keyframes_for_SfM.size(); i++) {
         ORB_SLAM3::KeyFrame *keyframe = keyframes_for_SfM[i];
+
+        keyframe->mvKeys.clear();
+        keyframe->mvKeysUn.clear();
+        keyframe->mDescriptors = cv::Mat();
+
         cv::Mat Tcw_cv = keyframe->GetPose();
         Eigen::Matrix4d Tcw_eigen;
         cv::cv2eigen(Tcw_cv, Tcw_eigen);
@@ -370,15 +375,30 @@ void TestViewer::SfMProcess() {
     VLOG(0) << "All keyframe exract superpoint done !";
 
     for (auto key_num = 0; key_num < keyframes_for_SfM.size(); key_num++) {
-        if (viewerAR.GetSfMContinueFlag()) {
-        } else {
-            SfMDebugMode();
-        }
-
+        //        if (viewerAR.GetSfMContinueFlag()) {
+        //        } else {
+        //            SfMDebugMode();
+        //        }
         SLAM->mpLocalMapper->TriangulateForSuperPoint(
             keyframes_for_SfM, key_num);
     }
+    VLOG(0) << "SfM done!";
+    while (true) {
+        if (viewerAR.GetSfMContinueLBAFlag()) {
+            break;
+        } else {
+            usleep(3000);
+        }
+    }
     SLAM->mpLocalMapper->LocalBAForSuperPoint();
+
+    while (true) {
+        if (viewerAR.GetSaveMapPointAfterLBAFlag()) {
+            break;
+        } else {
+            usleep(3000);
+        }
+    }
 }
 
 // click boundingbox fix button:
@@ -498,8 +518,12 @@ bool TestViewer::RunScanner() {
             usleep((T - ttrack) * 1e6); // 1e6
     }
 
+#ifdef SUPERPOINT
+    // shut down before sfm, in viewerar.cc
+#else
     // Stop all threads
     SLAM->Shutdown();
+#endif
 
     std::string mappoint_save_path = slam_saved_path + "/" + mappoint_filename;
 #ifdef SUPERPOINT

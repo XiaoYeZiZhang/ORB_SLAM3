@@ -1627,7 +1627,7 @@ void Optimizer::LocalBundleAdjustment_Superpoint(Atlas *atlas_superpoint) {
     }
 
     optimizer.initializeOptimization();
-    int numPerform_it = optimizer.optimize(10);
+    int numPerform_it = optimizer.optimize(5);
 
     // Check inlier observations
     int nMonoBadObs = 0;
@@ -1729,8 +1729,8 @@ void Optimizer::LocalBundleAdjustment_Superpoint(Atlas *atlas_superpoint) {
         for (size_t i = 0; i < vToErase.size(); i++) {
             KeyFrame *pKFi = vToErase[i].first;
             MapPoint *pMPi = vToErase[i].second;
-            pKFi->EraseMapPointMatch(pMPi);
-            pMPi->EraseObservation(pKFi);
+            pKFi->EraseMapPointMatch(pMPi, true);
+            pMPi->EraseObservation(pKFi, true);
         }
     }
 
@@ -1748,7 +1748,7 @@ void Optimizer::LocalBundleAdjustment_Superpoint(Atlas *atlas_superpoint) {
         cv::Vec3d trasl = Tco_cn.rowRange(0, 3).col(3);
         double dist = cv::norm(trasl);
         pKFi->SetPose(Converter::toCvMat(SE3quat));
-        pKFi->mnNumberOfOpt += numPerform_it;
+        pKFi->mnNumberOfOpt_Superpoint += numPerform_it;
     }
 
     // Points

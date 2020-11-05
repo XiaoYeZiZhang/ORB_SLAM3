@@ -177,7 +177,7 @@ void MapPoint::AddObservation(
     }
 }
 
-void MapPoint::EraseObservation(KeyFrame *pKF) {
+void MapPoint::EraseObservation(KeyFrame *pKF, bool is_superpoint) {
     bool bBad = false;
     {
         unique_lock<mutex> lock(mMutexFeatures);
@@ -186,18 +186,22 @@ void MapPoint::EraseObservation(KeyFrame *pKF) {
             tuple<int, int> indexes = mObservations[pKF];
             int leftIndex = get<0>(indexes), rightIndex = get<1>(indexes);
 
-            if (leftIndex != -1) {
-                if (!pKF->mpCamera2 && pKF->mvuRight[leftIndex] >= 0)
-                    nObs -= 2;
-                else
+            if (!is_superpoint) {
+                if (leftIndex != -1) {
+                    if (!pKF->mpCamera2 && pKF->mvuRight[leftIndex] >= 0)
+                        nObs -= 2;
+                    else
+                        nObs--;
+                }
+                if (rightIndex != -1) {
                     nObs--;
+                }
+            } else {
+                if (leftIndex != -1) {
+                    nObs--;
+                }
             }
-            if (rightIndex != -1) {
-                nObs--;
-            }
-
             mObservations.erase(pKF);
-
             if (mpRefKF == pKF)
                 mpRefKF = mObservations.begin()->first;
 
@@ -208,7 +212,7 @@ void MapPoint::EraseObservation(KeyFrame *pKF) {
     }
 
     if (bBad)
-        SetBadFlag();
+        SetBadFlag(is_superpoint);
 }
 
 std::map<KeyFrame *, std::tuple<int, int>> MapPoint::GetObservations() {
@@ -221,7 +225,7 @@ int MapPoint::Observations() {
     return nObs;
 }
 
-void MapPoint::SetBadFlag() {
+void MapPoint::SetBadFlag(bool is_superpoint) {
     map<KeyFrame *, tuple<int, int>> obs;
     {
         unique_lock<mutex> lock1(mMutexFeatures);
@@ -235,11 +239,17 @@ void MapPoint::SetBadFlag() {
          mit != mend; mit++) {
         KeyFrame *pKF = mit->first;
         int leftIndex = get<0>(mit->second), rightIndex = get<1>(mit->second);
-        if (leftIndex != -1) {
-            pKF->EraseMapPointMatch(leftIndex);
-        }
-        if (rightIndex != -1) {
-            pKF->EraseMapPointMatch(rightIndex);
+        if (!is_superpoint) {
+            if (leftIndex != -1) {
+                pKF->EraseMapPointMatch(leftIndex);
+            }
+            if (rightIndex != -1) {
+                pKF->EraseMapPointMatch(rightIndex);
+            }
+        } else {
+            if (leftIndex != -1) {
+                pKF->EraseMapPointMatch(leftIndex, true);
+            }
         }
     }
 

@@ -41,9 +41,9 @@ class SPDetector {
 public:
     SPDetector(
         std::shared_ptr<SuperPoint> _model,
-        torch::jit::script::Module _traced_module_480_640,
-        torch::jit::script::Module _traced_module_400_533,
-        torch::jit::script::Module _traced_module_333_444);
+        std::shared_ptr<torch::jit::script::Module> _traced_module_480_640,
+        std::shared_ptr<torch::jit::script::Module> _traced_module_400_533,
+        std::shared_ptr<torch::jit::script::Module> _traced_module_333_444);
     void detect(cv::Mat &image, int level, bool cuda);
     void getKeyPoints(
         float threshold, int iniX, int maxX, int iniY, int maxY,
@@ -54,9 +54,9 @@ public:
 
 private:
     std::shared_ptr<SuperPoint> model;
-    torch::jit::script::Module traced_module_480_640;
-    torch::jit::script::Module traced_module_400_533;
-    torch::jit::script::Module traced_module_333_444;
+    std::shared_ptr<torch::jit::script::Module> traced_module_480_640;
+    std::shared_ptr<torch::jit::script::Module> traced_module_400_533;
+    std::shared_ptr<torch::jit::script::Module> traced_module_333_444;
     torch::Tensor mDesc;
     torch::Tensor mProb_cpu;
 };

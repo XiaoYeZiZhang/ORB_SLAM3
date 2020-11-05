@@ -98,7 +98,6 @@ bool Map::isImuInitialized() {
 void Map::EraseMapPoint(MapPoint *pMP) {
     unique_lock<mutex> lock(mMutexMap);
     mspMapPoints.erase(pMP);
-
     // TODO: This only erase the pointer.
     // Delete the MapPoint
 }
@@ -148,9 +147,8 @@ vector<MapPoint *> Map::GetAllMapPoints(const int covisualize_keyframe_num) {
             vector<MapPoint *>(mspMapPoints.begin(), mspMapPoints.end());
         std::vector<MapPoint *> good_mappoints;
         for (auto mappoint : allmappoints) {
-            if (!mappoint->isBad() &&
-                mappoint->GetObservations().size() > covisualize_keyframe_num &&
-                mappoint->GetFoundRatio() >= 0.25) {
+            if (!mappoint->isBad() && mappoint->GetObservations().size() >=
+                                          covisualize_keyframe_num) {
                 good_mappoints.emplace_back(mappoint);
             }
         }

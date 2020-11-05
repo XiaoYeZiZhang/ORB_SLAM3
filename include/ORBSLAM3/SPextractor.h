@@ -107,9 +107,9 @@ protected:
     std::vector<float> mvInvLevelSigma2;
 
     std::shared_ptr<SuperPoint> model;
-    torch::jit::script::Module traced_module_480_640;
-    torch::jit::script::Module traced_module_400_533;
-    torch::jit::script::Module traced_module_333_444;
+    std::shared_ptr<torch::jit::script::Module> traced_module_480_640;
+    std::shared_ptr<torch::jit::script::Module> traced_module_400_533;
+    std::shared_ptr<torch::jit::script::Module> traced_module_333_444;
     bool is_use_cuda;
 };
 } // namespace ORB_SLAM3

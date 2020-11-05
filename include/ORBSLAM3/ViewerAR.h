@@ -30,10 +30,13 @@
 #include "ORBSLAM3/System.h"
 #include "System.h"
 
+typedef double M3DVector2d[2];
+typedef double M3DVector3d[3];
+typedef double M3DVector4d[4];
+typedef double M3DMatrix44d[16];
 namespace ORB_SLAM3 {
 class System;
 struct MapHandler3D : public pangolin::Handler3D {
-
     MapHandler3D(
         pangolin::OpenGlRenderState &cam_state,
         pangolin::AxisDirection enforce_up = pangolin::AxisNone,
@@ -46,19 +49,32 @@ struct MapHandler3D : public pangolin::Handler3D {
     void Mouse(
         pangolin::View &display, pangolin::MouseButton button, int x, int y,
         bool pressed, int button_state) {
-
         pangolin::Handler3D::Mouse(
             display, button, x, y, pressed, button_state);
-
         if (pangolin::MouseButtonLeft == button) {
             if (button_state == 0) {
                 m_is_left_button_down = false;
-            }
-            if (button_state == 1) {
+            } else if (button_state == 1) {
                 m_left_button_pos.x() = x;
                 m_left_button_pos.y() = y;
                 m_is_left_button_down = true;
+            } else if (
+                button_state ==
+                pangolin::MouseButtonLeft + pangolin::KeyModifierCtrl) {
+                m_left_button_pos.x() = x;
+                m_left_button_pos.y() = y;
+                m_select_area_flag = true;
+            } else if (button_state == pangolin::KeyModifierCtrl) {
+                m_select_area_flag = false;
             }
+
+            m_region_right_top.x() = x;
+            m_region_right_top.y() = y;
+            m_region_left_bottom.x() = x;
+            m_region_left_bottom.y() = y;
+            VLOG(5) << "mousex: " << m_region_left_bottom.x() << " "
+                    << m_region_left_bottom.y() << m_region_right_top.x() << " "
+                    << m_region_right_top.y();
         }
 
         if (pangolin::MouseButtonRight == button) {
@@ -76,8 +92,8 @@ struct MapHandler3D : public pangolin::Handler3D {
         pangolin::Handler3D::MouseMotion(display, x, y, button_state);
         if (button_state ==
             pangolin::MouseButtonLeft + pangolin::KeyModifierCtrl) {
-            m_left_button_pos.x() = x;
-            m_left_button_pos.y() = y;
+            m_region_right_top.x() = x;
+            m_region_right_top.y() = y;
         }
     }
 
@@ -91,11 +107,23 @@ struct MapHandler3D : public pangolin::Handler3D {
         return m_is_left_button_down;
     }
 
+    int GetSelected2DRegion(
+        Eigen::Vector2d &region_left_bottom,
+        Eigen::Vector2d &region_right_top) {
+        region_left_bottom = m_region_left_bottom;
+        region_right_top = m_region_right_top;
+        return m_select_area_flag;
+    }
+
+    bool m_select_area_flag = false;
     bool m_is_left_button_down = false;
     bool m_is_right_button_down = false;
     pangolin::OpenGlRenderState *m_view_state;
     Eigen::Vector2d m_left_button_pos = Eigen::Vector2d::Zero();
     Eigen::Vector2d m_right_button_pos = Eigen::Vector2d::Zero();
+
+    Eigen::Vector2d m_region_left_bottom = Eigen::Vector2d::Zero();
+    Eigen::Vector2d m_region_right_top = Eigen::Vector2d::Zero();
 };
 
 class Plane {
@@ -126,7 +154,8 @@ public:
 class ViewerAR {
 public:
     ViewerAR();
-    std::unique_ptr<MapHandler3D> mp_handler3d;
+    std::unique_ptr<MapHandler3D> mp_scan_handler3d;
+    std::unique_ptr<MapHandler3D> mp_SfM_handler3d;
     void SetFPS(const float fps) {
         mFPS = fps;
         mT = 1e3 / fps;
@@ -143,6 +172,12 @@ public:
     }
     bool GetSfMContinueFlag() {
         return m_is_SfM_continue_mode;
+    }
+    bool GetSfMContinueLBAFlag() {
+        return m_is_SfM_continue_LBA_mode;
+    }
+    bool GetSaveMapPointAfterLBAFlag() {
+        return m_is_SfM_save_mpp_after_LBA_mode;
     }
     bool GetStopFlag() {
         return m_is_stop;
@@ -228,6 +263,12 @@ private:
     virtual void RegistEvents() {
     }
 
+    void DrawSelected2DRegion();
+    void Select2DRegion();
+    bool DropInArea(
+        M3DVector3d x, const M3DMatrix44d model_view, const M3DMatrix44d proj,
+        const int viewport[4], const Eigen::Vector2d &left_bottom,
+        const Eigen::Vector2d &right_top);
     // user interface
     void decrease_shape();
     void increase_shape();
@@ -265,14 +306,18 @@ private:
     std::unique_ptr<pangolin::Var<bool>> menu_drawMappoints;
     std::unique_ptr<pangolin::Var<bool>> menu_SfM_debug;
     std::unique_ptr<pangolin::Var<bool>> menu_SfM_continue;
+    std::unique_ptr<pangolin::Var<bool>> menu_SfM_continue_LBA;
+    std::unique_ptr<pangolin::Var<bool>> menu_SfM_savemmp_after_LBA;
+
     cv::Mat im_scan, Tcw_scan;
     int status_scan;
     vector<cv::KeyPoint> vKeys_scan;
     vector<MapPoint *> vMPs_scan;
 
-    void
-    DrawMapPoints_SuperPoint(const std::vector<double> &boundingbox_w_corner);
-
+    void DrawMapPoints_SuperPoint(
+        const std::vector<double> &boundingbox_w_corner,
+        const std::set<MapPoint *> mappoint_picked);
+    void Pick3DPointCloud();
     // scan
     Object m_boundingbox_p;
     MouseState m_mouseState;
@@ -281,6 +326,8 @@ private:
     bool m_is_scan_debug_mode;
     bool m_is_SfM_debug_mode;
     bool m_is_SfM_continue_mode;
+    bool m_is_SfM_continue_LBA_mode;
+    bool m_is_SfM_save_mpp_after_LBA_mode;
     bool m_is_stop;
     bool m_is_fix;
     bool m_is_SfMFinish;
@@ -291,6 +338,14 @@ private:
     pangolin::View d_cam_SfM;
     std::vector<Eigen::Vector3d> m_boundingbox_w;
     std::vector<double> m_boundingbox_corner;
+
+    // sfm visualization
+    bool m_select_area_flag = false;
+    Eigen::Vector2d m_region_right_top = Eigen::Vector2d::Zero();
+    Eigen::Vector2d m_region_left_down = Eigen::Vector2d::Zero();
+    std::set<MapPoint *> mappoints_picked;
+
+    float change_shape_unit;
 };
 } // namespace ORB_SLAM3
 
