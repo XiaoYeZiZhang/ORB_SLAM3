@@ -1467,8 +1467,19 @@ void Optimizer::LocalBundleAdjustment_Superpoint(Atlas *atlas_superpoint) {
     list<KeyFrame *> lLocalKeyFrames;
     std::vector<MapPoint *> lLocalMapPoints;
     std::vector<KeyFrame *> lFixedCameras;
+    std::vector<KeyFrame *> lAllCameras;
     lLocalMapPoints = currentMap->GetAllMapPoints();
-    lFixedCameras = currentMap->GetAllKeyFrames();
+    lAllCameras = currentMap->GetAllKeyFrames();
+
+    // add end 5 keyframe to optimize
+    for (auto iter = lAllCameras.begin(); iter != lAllCameras.end() - 5;
+         iter++) {
+        lFixedCameras.emplace_back(*iter);
+    }
+
+    for (auto iter = lAllCameras.end() - 5; iter != lAllCameras.end(); iter++) {
+        lLocalKeyFrames.push_back(*iter);
+    }
 
     int num_fixedKF = lFixedCameras.size();
     VLOG(0) << "SuperPoint LBA: There are " +
@@ -1490,19 +1501,19 @@ void Optimizer::LocalBundleAdjustment_Superpoint(Atlas *atlas_superpoint) {
 
     unsigned long maxKFid = 0;
     // Set Local KeyFrame vertices
-    //    for (list<KeyFrame *>::iterator lit = lLocalKeyFrames.begin(),
-    //                                    lend = lLocalKeyFrames.end();
-    //         lit != lend; lit++) {
-    //        KeyFrame *pKFi = *lit;
-    //        g2o::VertexSE3Expmap *vSE3 = new g2o::VertexSE3Expmap();
-    //        vSE3->setEstimate(Converter::toSE3Quat(pKFi->GetPose()));
-    //        vSE3->setId(pKFi->mnId);
-    //        vSE3->setMarginalized(false);
-    //        vSE3->setFixed(false);
-    //        optimizer.addVertex(vSE3);
-    //        if (pKFi->mnId > maxKFid)
-    //            maxKFid = pKFi->mnId;
-    //    }
+    for (list<KeyFrame *>::iterator lit = lLocalKeyFrames.begin(),
+                                    lend = lLocalKeyFrames.end();
+         lit != lend; lit++) {
+        KeyFrame *pKFi = *lit;
+        g2o::VertexSE3Expmap *vSE3 = new g2o::VertexSE3Expmap();
+        vSE3->setEstimate(Converter::toSE3Quat(pKFi->GetPose()));
+        vSE3->setId(pKFi->mnId);
+        vSE3->setMarginalized(false);
+        vSE3->setFixed(false);
+        optimizer.addVertex(vSE3);
+        if (pKFi->mnId > maxKFid)
+            maxKFid = pKFi->mnId;
+    }
 
     // Set Fixed KeyFrame vertices
     for (std::vector<KeyFrame *>::iterator lit = lFixedCameras.begin(),
@@ -1513,7 +1524,6 @@ void Optimizer::LocalBundleAdjustment_Superpoint(Atlas *atlas_superpoint) {
         vSE3->setEstimate(Converter::toSE3Quat(pKFi->GetPose()));
         vSE3->setId(pKFi->mnId);
         vSE3->setFixed(true);
-        vSE3->setMarginalized(false);
         optimizer.addVertex(vSE3);
         if (pKFi->mnId > maxKFid)
             maxKFid = pKFi->mnId;

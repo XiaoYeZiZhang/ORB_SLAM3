@@ -142,7 +142,7 @@ public:
     std::map<KeyFrame *, std::tuple<int, int>> GetObservations();
     int Observations();
 
-    void AddObservation(KeyFrame *pKF, int idx);
+    void AddObservation(KeyFrame *pKF, int idx, bool is_superpoint = false);
     void EraseObservation(KeyFrame *pKF);
 
     std::tuple<int, int> GetIndexInKeyFrame(KeyFrame *pKF);

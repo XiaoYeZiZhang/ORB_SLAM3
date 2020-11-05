@@ -20,39 +20,11 @@ public:
     // Computes the Hamming distance between two ORB descriptors
     static float DescriptorDistance(const cv::Mat &a, const cv::Mat &b);
 
-    // Search matches between Frame keypoints and projected MapPoints. Returns
-    // number of matches Used to track the local map (Tracking)
-    int SearchByProjection(
-        Frame &F, const std::vector<MapPoint *> &vpMapPoints,
-        const float th = 3, const bool bFarPoints = false,
-        const float thFarPoints = 50.0f);
-
     // Project MapPoints tracked in last frame into the current frame and search
     // matches. Used to track from previous frame (Tracking)
-    int SearchByProjection(
-        Frame &CurrentFrame, const Frame &LastFrame, const float th,
+    static int SearchByProjection(
+        KeyFrame &CurrentKeyFrame, KeyFrame &LastKeyFrame, const float th,
         const bool bMono);
-
-    // Project MapPoints seen in KeyFrame into the Frame and search matches.
-    // Used in relocalisation (Tracking)
-    int SearchByProjection(
-        Frame &CurrentFrame, KeyFrame *pKF,
-        const std::set<MapPoint *> &sAlreadyFound, const float th,
-        const int ORBdist);
-
-    // Project MapPoints using a Similarity Transformation and search matches.
-    // Used in loop detection (Loop Closing)
-    int SearchByProjection(
-        KeyFrame *pKF, cv::Mat Scw, const std::vector<MapPoint *> &vpPoints,
-        std::vector<MapPoint *> &vpMatched, int th, float ratioHamming = 1.0);
-
-    // Project MapPoints using a Similarity Transformation and search matches.
-    // Used in Place Recognition (Loop Closing and Merging)
-    int SearchByProjection(
-        KeyFrame *pKF, cv::Mat Scw, const std::vector<MapPoint *> &vpPoints,
-        const std::vector<KeyFrame *> &vpPointsKFs,
-        std::vector<MapPoint *> &vpMatched,
-        std::vector<KeyFrame *> &vpMatchedKF, int th, float ratioHamming = 1.0);
 
     // Search matches between MapPoints in a KeyFrame and ORB in a Frame.
     // Brute force constrained to ORB that belong to the same vocabulary node

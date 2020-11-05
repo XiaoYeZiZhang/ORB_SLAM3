@@ -512,13 +512,15 @@ void LocalMapping::LocalBAForSuperPoint() {
 void LocalMapping::TriangulateForSuperPoint(
     const std::vector<ORB_SLAM3::KeyFrame *> &allkeyframes,
     const int keyframe_num) {
+    if (keyframe_num == allkeyframes.size() - 1) {
+        return;
+    }
+
     SuperPointMatcher superPointmatcher(0.6, false);
     int nn = 20;
     ORB_SLAM3::KeyFrame *currentKeyFrame = allkeyframes[keyframe_num];
     const float ratioFactor = 1.5f * currentKeyFrame->mfScaleFactor_superpoint;
 
-    vector<ORB_SLAM3::KeyFrame *> vpNeighKFs =
-        currentKeyFrame->GetBestCovisibilityKeyFrames(nn);
     cv::Mat Rcw1 = currentKeyFrame->GetRotation();
     cv::Mat Rwc1 = Rcw1.t();
     cv::Mat tcw1 = currentKeyFrame->GetTranslation();
@@ -528,186 +530,215 @@ void LocalMapping::TriangulateForSuperPoint(
     cv::Mat Ow1 = currentKeyFrame->GetCameraCenter();
     ORB_SLAM3::GeometricCamera *pCamera1 = currentKeyFrame->mpCamera;
 
-    // neighbor keyframes
+    // get next keyframe
+    ORB_SLAM3::KeyFrame *pKF2 = allkeyframes[keyframe_num + 1];
+    ORB_SLAM3::GeometricCamera *pCamera2 = pKF2->mpCamera;
+    cv::Mat Ow2 = pKF2->GetCameraCenter();
+    cv::Mat F12 = ComputeF12(currentKeyFrame, pKF2);
+    vector<pair<size_t, size_t>> vMatchedIndices;
+
+    // triangulation search
+    superPointmatcher.SearchForTriangulation(
+        currentKeyFrame, pKF2, F12, vMatchedIndices);
+
+    cv::Mat Rcw2 = pKF2->GetRotation();
+    cv::Mat Rwc2 = Rcw2.t();
+    cv::Mat tcw2 = pKF2->GetTranslation();
+    cv::Mat Tcw2(3, 4, CV_32F);
+    Rcw2.copyTo(Tcw2.colRange(0, 3));
+    tcw2.copyTo(Tcw2.col(3));
+
+    const float &fx2 = pKF2->fx;
+    const float &fy2 = pKF2->fy;
+    const float &cx2 = pKF2->cx;
+    const float &cy2 = pKF2->cy;
+    const float &invfx2 = pKF2->invfx;
+    const float &invfy2 = pKF2->invfy;
+    const int nmatches = vMatchedIndices.size();
+
+    // show match
+    std::vector<cv::DMatch> matches;
+    for (int ikp = 0; ikp < nmatches; ikp++) {
+        const int &idx1 = vMatchedIndices[ikp].first;
+        const int &idx2 = vMatchedIndices[ikp].second;
+
+        const cv::KeyPoint &kp1 = currentKeyFrame->mvKeys_superpoint[idx1];
+        const cv::KeyPoint &kp2 = pKF2->mvKeys_superpoint[idx2];
+        matches.emplace_back(idx1, idx2, -1);
+    }
+
+    cv::Mat imshow_matches;
+    cv::drawMatches(
+        currentKeyFrame->imgLeft, currentKeyFrame->mvKeysUn_superpoint,
+        pKF2->imgLeft, pKF2->mvKeysUn_superpoint, matches, imshow_matches);
+    std::string image_name = std::to_string(currentKeyFrame->mnId) + "-" +
+                             std::to_string(pKF2->mnId) + ".png";
+    cv::imwrite(
+        "/home/zhangye/data1/sfm/matches/" + image_name, imshow_matches);
+    //            ObjRecognition::GlobalOcvViewer::UpdateView("SfM keyframe
+    //            matches",imshow_matches);
+
+    // Triangulate each match
+    for (int ikp = 0; ikp < nmatches; ikp++) {
+        const int &idx1 = vMatchedIndices[ikp].first;
+        const int &idx2 = vMatchedIndices[ikp].second;
+
+        const cv::KeyPoint &kp1 = currentKeyFrame->mvKeys_superpoint[idx1];
+        const cv::KeyPoint &kp2 = pKF2->mvKeys_superpoint[idx2];
+
+        // Check parallax between rays
+        cv::Mat xn1 = pCamera1->unprojectMat(kp1.pt);
+        cv::Mat xn2 = pCamera2->unprojectMat(kp2.pt);
+
+        cv::Mat ray1 = Rwc1 * xn1;
+        cv::Mat ray2 = Rwc2 * xn2;
+        const float cosParallaxRays =
+            ray1.dot(ray2) / (cv::norm(ray1) * cv::norm(ray2));
+
+        float cosParallaxStereo = cosParallaxRays + 1;
+        float cosParallaxStereo1 = cosParallaxStereo;
+        float cosParallaxStereo2 = cosParallaxStereo;
+
+        cosParallaxStereo = min(cosParallaxStereo1, cosParallaxStereo2);
+
+        cv::Mat x3D;
+        if (cosParallaxRays < cosParallaxStereo && cosParallaxRays > 0 &&
+                (cosParallaxRays < 0.9998) ||
+            (cosParallaxRays < 0.9998 && false)) {
+            // Linear Triangulation Method
+            cv::Mat A(4, 4, CV_32F);
+            A.row(0) = xn1.at<float>(0) * Tcw1.row(2) - Tcw1.row(0);
+            A.row(1) = xn1.at<float>(1) * Tcw1.row(2) - Tcw1.row(1);
+            A.row(2) = xn2.at<float>(0) * Tcw2.row(2) - Tcw2.row(0);
+            A.row(3) = xn2.at<float>(1) * Tcw2.row(2) - Tcw2.row(1);
+
+            cv::Mat w, u, vt;
+            cv::SVD::compute(A, w, u, vt, cv::SVD::MODIFY_A | cv::SVD::FULL_UV);
+
+            x3D = vt.row(3).t();
+
+            if (x3D.at<float>(3) == 0)
+                continue;
+
+            // Euclidean coordinates
+            x3D = x3D.rowRange(0, 3) / x3D.at<float>(3);
+
+        } else {
+            continue; // No stereo and very low parallax
+        }
+
+        cv::Mat x3Dt = x3D.t();
+
+        if (x3Dt.empty())
+            continue;
+        // Check triangulation in front of cameras
+        float z1 = Rcw1.row(2).dot(x3Dt) + tcw1.at<float>(2);
+        if (z1 <= 0)
+            continue;
+
+        float z2 = Rcw2.row(2).dot(x3Dt) + tcw2.at<float>(2);
+        if (z2 <= 0)
+            continue;
+
+        // Check reprojection error in first keyframe
+        const float &sigmaSquare1 =
+            currentKeyFrame->mvLevelSigma2_superpoint[kp1.octave];
+        const float x1 = Rcw1.row(0).dot(x3Dt) + tcw1.at<float>(0);
+        const float y1 = Rcw1.row(1).dot(x3Dt) + tcw1.at<float>(1);
+        const float invz1 = 1.0 / z1;
+
+        cv::Point2f uv1 = pCamera1->project(cv::Point3f(x1, y1, z1));
+        float errX1 = uv1.x - kp1.pt.x;
+        float errY1 = uv1.y - kp1.pt.y;
+
+        if ((errX1 * errX1 + errY1 * errY1) > 5.991 * sigmaSquare1)
+            continue;
+
+        // Check reprojection error in second keyframe
+        const float sigmaSquare2 = pKF2->mvLevelSigma2_superpoint[kp2.octave];
+        const float x2 = Rcw2.row(0).dot(x3Dt) + tcw2.at<float>(0);
+        const float y2 = Rcw2.row(1).dot(x3Dt) + tcw2.at<float>(1);
+        const float invz2 = 1.0 / z2;
+
+        cv::Point2f uv2 = pCamera2->project(cv::Point3f(x2, y2, z2));
+        float errX2 = uv2.x - kp2.pt.x;
+        float errY2 = uv2.y - kp2.pt.y;
+        if ((errX2 * errX2 + errY2 * errY2) > 5.991 * sigmaSquare2)
+            continue;
+
+        // Check scale consistency
+        cv::Mat normal1 = x3D - Ow1;
+        float dist1 = cv::norm(normal1);
+
+        cv::Mat normal2 = x3D - Ow2;
+        float dist2 = cv::norm(normal2);
+
+        if (dist1 == 0 || dist2 == 0)
+            continue;
+
+        if (mbFarPoints &&
+            (dist1 >= mThFarPoints || dist2 >= mThFarPoints)) // MODIFICATION
+            continue;
+
+        const float ratioDist = dist2 / dist1;
+        const float ratioOctave =
+            currentKeyFrame->mvScaleFactors_suerpoint[kp1.octave] /
+            pKF2->mvScaleFactors_suerpoint[kp2.octave];
+
+        if (ratioDist * ratioFactor < ratioOctave ||
+            ratioDist > ratioOctave * ratioFactor)
+            continue;
+
+        // Triangulation is succesfull
+        MapPoint *pMP = new MapPoint(
+            x3D, currentKeyFrame, mpAtlas_superpoint->GetCurrentMap());
+        pMP->AddObservation(currentKeyFrame, idx1, true);
+        pMP->AddObservation(pKF2, idx2, true);
+
+        currentKeyFrame->AddSuperpointMapPoint(pMP, idx1);
+        pKF2->AddSuperpointMapPoint(pMP, idx2);
+
+        pMP->ComputeDistinctiveDescriptors(true);
+        pMP->UpdateNormalAndDepth(true);
+
+        mpAtlas_superpoint->AddMapPoint(pMP);
+        mlpRecentAddedMapPoints_superpoint.push_back(pMP);
+    }
+
+    // project to other keyframes
+    vector<ORB_SLAM3::KeyFrame *> vpNeighKFs =
+        currentKeyFrame->GetBestCovisibilityKeyFrames(nn);
     for (size_t i = 0; i < vpNeighKFs.size(); i++) {
-        ORB_SLAM3::KeyFrame *pKF2 = vpNeighKFs[i];
-        if (pKF2->mvKeys_superpoint.size() <= 0) {
+        ORB_SLAM3::KeyFrame *neighbor_keyframe = vpNeighKFs[i];
+        if (neighbor_keyframe->mnId == currentKeyFrame->mnId ||
+            neighbor_keyframe->mnId == pKF2->mnId) {
             continue;
         }
-        ORB_SLAM3::GeometricCamera *pCamera2 = pKF2->mpCamera;
-        cv::Mat Ow2 = pKF2->GetCameraCenter();
-        cv::Mat F12 = ComputeF12(currentKeyFrame, pKF2);
-        vector<pair<size_t, size_t>> vMatchedIndices;
+        // project other keyframe mappoint to current keyframe
+        SuperPointMatcher::SearchByProjection(
+            *currentKeyFrame, *pKF2, 4.0, false);
+        SuperPointMatcher::SearchByProjection(
+            *pKF2, *currentKeyFrame, 4.0, false);
+    }
 
-        // triangulation search
-        superPointmatcher.SearchForTriangulation(
-            currentKeyFrame, pKF2, F12, vMatchedIndices);
+    for (auto mappoint : mpAtlas_superpoint->GetAllMapPoints()) {
+        auto mappoint_id = mappoint->mnId;
+        auto observations = mappoint->GetObservations();
+        for (auto observation : observations) {
+            auto keyframe = observation.first;
+            auto idx = std::get<0>(observation.second);
 
-        cv::Mat Rcw2 = pKF2->GetRotation();
-        cv::Mat Rwc2 = Rcw2.t();
-        cv::Mat tcw2 = pKF2->GetTranslation();
-        cv::Mat Tcw2(3, 4, CV_32F);
-        Rcw2.copyTo(Tcw2.colRange(0, 3));
-        tcw2.copyTo(Tcw2.col(3));
-
-        const float &fx2 = pKF2->fx;
-        const float &fy2 = pKF2->fy;
-        const float &cx2 = pKF2->cx;
-        const float &cy2 = pKF2->cy;
-        const float &invfx2 = pKF2->invfx;
-        const float &invfy2 = pKF2->invfy;
-        const int nmatches = vMatchedIndices.size();
-
-        // show match
-        std::vector<cv::DMatch> matches;
-        for (int ikp = 0; ikp < nmatches; ikp++) {
-            const int &idx1 = vMatchedIndices[ikp].first;
-            const int &idx2 = vMatchedIndices[ikp].second;
-
-            const cv::KeyPoint &kp1 = currentKeyFrame->mvKeys_superpoint[idx1];
-            const cv::KeyPoint &kp2 = pKF2->mvKeys_superpoint[idx2];
-            matches.emplace_back(idx1, idx2, -1);
-        }
-
-        cv::Mat imshow_matches;
-        cv::drawMatches(
-            currentKeyFrame->imgLeft, currentKeyFrame->mvKeysUn_superpoint,
-            pKF2->imgLeft, pKF2->mvKeysUn_superpoint, matches, imshow_matches);
-        std::string image_name = std::to_string(currentKeyFrame->mnId) + "-" +
-                                 std::to_string(pKF2->mnId) + ".png";
-        cv::imwrite("/home/zhangye/data1/sfm/" + image_name, imshow_matches);
-        //            ObjRecognition::GlobalOcvViewer::UpdateView("SfM keyframe
-        //            matches",imshow_matches);
-
-        // Triangulate each match
-        for (int ikp = 0; ikp < nmatches; ikp++) {
-            const int &idx1 = vMatchedIndices[ikp].first;
-            const int &idx2 = vMatchedIndices[ikp].second;
-
-            const cv::KeyPoint &kp1 = currentKeyFrame->mvKeys_superpoint[idx1];
-
-            const cv::KeyPoint &kp2 = pKF2->mvKeys_superpoint[idx2];
-
-            // Check parallax between rays
-            cv::Mat xn1 = pCamera1->unprojectMat(kp1.pt);
-            cv::Mat xn2 = pCamera2->unprojectMat(kp2.pt);
-
-            cv::Mat ray1 = Rwc1 * xn1;
-            cv::Mat ray2 = Rwc2 * xn2;
-            const float cosParallaxRays =
-                ray1.dot(ray2) / (cv::norm(ray1) * cv::norm(ray2));
-
-            float cosParallaxStereo = cosParallaxRays + 1;
-            float cosParallaxStereo1 = cosParallaxStereo;
-            float cosParallaxStereo2 = cosParallaxStereo;
-
-            cosParallaxStereo = min(cosParallaxStereo1, cosParallaxStereo2);
-
-            cv::Mat x3D;
-            if (cosParallaxRays < cosParallaxStereo && cosParallaxRays > 0 &&
-                    (cosParallaxRays < 0.9998) ||
-                (cosParallaxRays < 0.9998 && false)) {
-                // Linear Triangulation Method
-                cv::Mat A(4, 4, CV_32F);
-                A.row(0) = xn1.at<float>(0) * Tcw1.row(2) - Tcw1.row(0);
-                A.row(1) = xn1.at<float>(1) * Tcw1.row(2) - Tcw1.row(1);
-                A.row(2) = xn2.at<float>(0) * Tcw2.row(2) - Tcw2.row(0);
-                A.row(3) = xn2.at<float>(1) * Tcw2.row(2) - Tcw2.row(1);
-
-                cv::Mat w, u, vt;
-                cv::SVD::compute(
-                    A, w, u, vt, cv::SVD::MODIFY_A | cv::SVD::FULL_UV);
-
-                x3D = vt.row(3).t();
-
-                if (x3D.at<float>(3) == 0)
-                    continue;
-
-                // Euclidean coordinates
-                x3D = x3D.rowRange(0, 3) / x3D.at<float>(3);
-
-            } else {
-                continue; // No stereo and very low parallax
-            }
-
-            cv::Mat x3Dt = x3D.t();
-
-            if (x3Dt.empty())
-                continue;
-            // Check triangulation in front of cameras
-            float z1 = Rcw1.row(2).dot(x3Dt) + tcw1.at<float>(2);
-            if (z1 <= 0)
-                continue;
-
-            float z2 = Rcw2.row(2).dot(x3Dt) + tcw2.at<float>(2);
-            if (z2 <= 0)
-                continue;
-
-            // Check reprojection error in first keyframe
-            const float &sigmaSquare1 =
-                currentKeyFrame->mvLevelSigma2_superpoint[kp1.octave];
-            const float x1 = Rcw1.row(0).dot(x3Dt) + tcw1.at<float>(0);
-            const float y1 = Rcw1.row(1).dot(x3Dt) + tcw1.at<float>(1);
-            const float invz1 = 1.0 / z1;
-
-            cv::Point2f uv1 = pCamera1->project(cv::Point3f(x1, y1, z1));
-            float errX1 = uv1.x - kp1.pt.x;
-            float errY1 = uv1.y - kp1.pt.y;
-
-            if ((errX1 * errX1 + errY1 * errY1) > 5.991 * sigmaSquare1)
-                continue;
-
-            // Check reprojection error in second keyframe
-            const float sigmaSquare2 =
-                pKF2->mvLevelSigma2_superpoint[kp2.octave];
-            const float x2 = Rcw2.row(0).dot(x3Dt) + tcw2.at<float>(0);
-            const float y2 = Rcw2.row(1).dot(x3Dt) + tcw2.at<float>(1);
-            const float invz2 = 1.0 / z2;
-
-            cv::Point2f uv2 = pCamera2->project(cv::Point3f(x2, y2, z2));
-            float errX2 = uv2.x - kp2.pt.x;
-            float errY2 = uv2.y - kp2.pt.y;
-            if ((errX2 * errX2 + errY2 * errY2) > 5.991 * sigmaSquare2)
-                continue;
-
-            // Check scale consistency
-            cv::Mat normal1 = x3D - Ow1;
-            float dist1 = cv::norm(normal1);
-
-            cv::Mat normal2 = x3D - Ow2;
-            float dist2 = cv::norm(normal2);
-
-            if (dist1 == 0 || dist2 == 0)
-                continue;
-
-            if (mbFarPoints && (dist1 >= mThFarPoints ||
-                                dist2 >= mThFarPoints)) // MODIFICATION
-                continue;
-
-            const float ratioDist = dist2 / dist1;
-            const float ratioOctave =
-                currentKeyFrame->mvScaleFactors_suerpoint[kp1.octave] /
-                pKF2->mvScaleFactors_suerpoint[kp2.octave];
-
-            if (ratioDist * ratioFactor < ratioOctave ||
-                ratioDist > ratioOctave * ratioFactor)
-                continue;
-
-            // Triangulation is succesfull
-            MapPoint *pMP = new MapPoint(
-                x3D, currentKeyFrame, mpAtlas_superpoint->GetCurrentMap());
-
-            pMP->AddObservation(currentKeyFrame, idx1);
-            pMP->AddObservation(pKF2, idx2);
-
-            currentKeyFrame->AddSuperpointMapPoint(pMP, idx1);
-            pKF2->AddSuperpointMapPoint(pMP, idx2);
-
-            pMP->ComputeDistinctiveDescriptors(true);
-            pMP->UpdateNormalAndDepth(true);
-
-            mpAtlas_superpoint->AddMapPoint(pMP);
-            mlpRecentAddedMapPoints_superpoint.push_back(pMP);
+            auto keyframe_id = keyframe->mnId;
+            cv::Mat img = keyframe->imgLeft.clone();
+            std::vector<cv::KeyPoint> keypoints;
+            cv::KeyPoint keypoint = keyframe->mvKeysUn_superpoint[idx];
+            keypoints.emplace_back(keypoint);
+            cv::drawKeypoints(img, keypoints, img);
+            cv::imwrite(
+                "/home/zhangye/data1/sfm/mappoints/" +
+                    std::to_string(mappoint_id) + "--" +
+                    std::to_string(keyframe_id) + ".png",
+                img);
         }
     }
 }

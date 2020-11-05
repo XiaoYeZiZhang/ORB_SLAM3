@@ -234,10 +234,24 @@ bool TestViewer::InitSLAM(char **argv) {
     int fastInitThreshold = fsSettings["ORBextractor.iniThFAST"];
     int fastMinThreshold = fsSettings["ORBextractor.minThFAST"];
 
+    double SP_scaleFactor = fsSettings["SPextractor.scaleFactor"];
+    int SP_nLevels = fsSettings["SPextractor.nLevels"];
+    int SP_nFeatures = fsSettings["SPextractor.nFeatures"];
+
+    int ObjRecognition_ORB_nFeatures =
+        fsSettings["ORBextractor.objRecognitionFeatures"];
+
     Parameters::GetInstance().SetScaleFactor(scaleFactor);
     Parameters::GetInstance().SetLevels(nlevels);
     Parameters::GetInstance().SetFastInitThreshold(fastInitThreshold);
     Parameters::GetInstance().SetFastMinThreshold(fastMinThreshold);
+
+    Parameters::GetInstance().SetSPScaleFactor(SP_scaleFactor);
+    Parameters::GetInstance().SetSPFeatures(SP_nFeatures);
+    Parameters::GetInstance().SetSPLevels(SP_nLevels);
+
+    Parameters::GetInstance().SetObjRecognitionORBFeatures(
+        ObjRecognition_ORB_nFeatures);
 
     bool is_objRecognition = false;
 #ifdef OBJECTRECOGNITION

@@ -26,6 +26,19 @@ public:
         KORBExtractor_fastMinThrethold = minThre;
     }
 
+    void SetSPScaleFactor(double factor) {
+        KSPExtractor_scaleFactor = factor;
+    }
+    void SetSPLevels(int level) {
+        KSPExtractor_nlevels = level;
+    }
+    void SetSPFeatures(int features) {
+        KSPExtractor_nFeatures = features;
+    }
+    void SetObjRecognitionORBFeatures(int features) {
+        KObjRecognitionORB_nFeatures = features;
+    }
+
 public:
     int kObjectModelVersion;
     int kObjectModelKFWidth;
@@ -48,6 +61,12 @@ public:
     int KORBExtractor_nlevels;
     int KORBExtractor_fastInitThreshold;
     int KORBExtractor_fastMinThrethold;
+
+    double KSPExtractor_scaleFactor;
+    int KSPExtractor_nlevels;
+    int KSPExtractor_nFeatures;
+
+    int KObjRecognitionORB_nFeatures;
 };
 
 #endif // ORB_SLAM3_PARAMETERS_H

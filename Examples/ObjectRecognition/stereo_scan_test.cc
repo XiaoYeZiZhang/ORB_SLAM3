@@ -11,6 +11,7 @@
 #include "ORBSLAM3/System.h"
 #include "Utility/FileIO.h"
 #include "Utility/Camera.h"
+#include "Utility/Parameters.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
 #include "include/Tools.h"
 #include "ORBSLAM3/ViewerAR.h"
@@ -205,10 +206,25 @@ bool TestViewer::InitSLAM() {
     int nlevels = fsSettings["ORBextractor.nLevels"];
     double fastInitThreshold = fsSettings["ORBextractor.iniThFAST"];
     double fastMinThreshold = fsSettings["ORBextractor.minThFAST"];
+
+    double SP_scaleFactor = fsSettings["SPextractor.scaleFactor"];
+    int SP_nLevels = fsSettings["SPextractor.nLevels"];
+    int SP_nFeatures = fsSettings["SPextractor.nFeatures"];
+
+    int ObjRecognition_ORB_nFeatures =
+        fsSettings["ORBextractor.objRecognitionFeatures"];
+
     Parameters::GetInstance().SetScaleFactor(scaleFactor);
     Parameters::GetInstance().SetLevels(nlevels);
     Parameters::GetInstance().SetFastInitThreshold(fastInitThreshold);
     Parameters::GetInstance().SetFastMinThreshold(fastMinThreshold);
+
+    Parameters::GetInstance().SetSPScaleFactor(SP_scaleFactor);
+    Parameters::GetInstance().SetSPFeatures(SP_nFeatures);
+    Parameters::GetInstance().SetSPLevels(SP_nLevels);
+
+    Parameters::GetInstance().SetObjRecognitionORBFeatures(
+        ObjRecognition_ORB_nFeatures);
 
     bRGB = static_cast<bool>((int)fsSettings["Camera.RGB"]);
     fps = fsSettings["Camera.fps"];
@@ -221,8 +237,11 @@ bool TestViewer::InitSLAM() {
 
 void TestViewer::SfMDebugMode() {
     while (true) {
+        if (viewerAR.GetSfMContinueFlag()) {
+            return;
+        }
+
         if (!viewerAR.GetSfMDebugFlag()) {
-            VLOG(0) << viewerAR.GetSfMDebugFlag();
             viewerAR.SetSfMDebugReverse();
             return;
         }
@@ -304,10 +323,12 @@ void TestViewer::SfMProcess() {
     // TODO(zhangye): DO SFM USING SUPERPOINT
     VLOG(0) << "DOING SFM USING SUPERPOINT, PLEASE WAIT...";
     keyframes_for_SfM = SLAM->mpAtlas->GetAllKeyFrames();
-    ORB_SLAM3::SPextractor *SPextractor =
-        new ORB_SLAM3::SPextractor(3000, 1.2, 3, 0.015, 0.007, true);
-    for (size_t i = 0; i < keyframes_for_SfM.size(); i++) {
+    ORB_SLAM3::SPextractor *SPextractor = new ORB_SLAM3::SPextractor(
+        Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
+        Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007, true);
 
+    // extract superpoint on each keyframe
+    for (size_t i = 0; i < keyframes_for_SfM.size(); i++) {
         ORB_SLAM3::KeyFrame *keyframe = keyframes_for_SfM[i];
         cv::Mat Tcw_cv = keyframe->GetPose();
         Eigen::Matrix4d Tcw_eigen;
@@ -346,10 +367,14 @@ void TestViewer::SfMProcess() {
         keyframe->ComputeBoW_SuperPoint();
         keyframe->SetMap_SuperPoint(SLAM->mpAtlas_superpoint->GetCurrentMap());
     }
-
     VLOG(0) << "All keyframe exract superpoint done !";
+
     for (auto key_num = 0; key_num < keyframes_for_SfM.size(); key_num++) {
-        SfMDebugMode();
+        if (viewerAR.GetSfMContinueFlag()) {
+        } else {
+            SfMDebugMode();
+        }
+
         SLAM->mpLocalMapper->TriangulateForSuperPoint(
             keyframes_for_SfM, key_num);
     }

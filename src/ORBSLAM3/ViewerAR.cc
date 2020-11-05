@@ -303,6 +303,8 @@ void ViewerAR::DrawScanInit(int w, int h) {
 
     menu_SfM_debug =
         std::make_unique<pangolin::Var<bool>>("menu.SfM Debug", false, false);
+    menu_SfM_continue = std::make_unique<pangolin::Var<bool>>(
+        "menu.SfM Continue", false, false);
     // handle keyboard event
     std::function<void(void)> decrease_shape_key_callback =
         std::bind(&ViewerAR::decrease_shape, this);
@@ -360,7 +362,7 @@ void ViewerAR::Draw(int w, int h) {
     while (true) {
         m_is_scan_debug_mode = *menu_scan_debug;
         m_is_SfM_debug_mode = *menu_SfM_debug;
-
+        m_is_SfM_continue_mode = *menu_SfM_continue;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (!switch_window_flag) {

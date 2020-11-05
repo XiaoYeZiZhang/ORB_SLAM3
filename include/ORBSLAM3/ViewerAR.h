@@ -141,6 +141,9 @@ public:
     bool GetSfMDebugFlag() {
         return m_is_SfM_debug_mode;
     }
+    bool GetSfMContinueFlag() {
+        return m_is_SfM_continue_mode;
+    }
     bool GetStopFlag() {
         return m_is_stop;
     }
@@ -261,6 +264,7 @@ private:
     std::unique_ptr<pangolin::Var<bool>> menu_drawTrackedpoints;
     std::unique_ptr<pangolin::Var<bool>> menu_drawMappoints;
     std::unique_ptr<pangolin::Var<bool>> menu_SfM_debug;
+    std::unique_ptr<pangolin::Var<bool>> menu_SfM_continue;
     cv::Mat im_scan, Tcw_scan;
     int status_scan;
     vector<cv::KeyPoint> vKeys_scan;
@@ -276,6 +280,7 @@ private:
     Camera m_camera;
     bool m_is_scan_debug_mode;
     bool m_is_SfM_debug_mode;
+    bool m_is_SfM_continue_mode;
     bool m_is_stop;
     bool m_is_fix;
     bool m_is_SfMFinish;

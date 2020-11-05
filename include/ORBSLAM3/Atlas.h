@@ -103,7 +103,7 @@ public:
 
     // Method for get data in current map
     std::vector<KeyFrame *> GetAllKeyFrames();
-    std::vector<MapPoint *> GetAllMapPoints();
+    std::vector<MapPoint *> GetAllMapPoints(const int covis_keyframe_num = 0);
     std::vector<MapPoint *> GetReferenceMapPoints();
 
     vector<Map *> GetAllMaps();

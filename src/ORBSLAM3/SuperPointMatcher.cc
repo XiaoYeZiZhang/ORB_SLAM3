@@ -147,6 +147,130 @@ int SuperPointMatcher::SearchForTriangulation(
     return nmatches;
 }
 
+// project other keyframe mappoint to current keyframe
+int SuperPointMatcher::SearchByProjection(
+    KeyFrame &CurrentKeyFrame, KeyFrame &LastKeyFrame, const float th,
+    const bool bMono) {
+    int nmatches = 0;
+    // Rotation Histogram (to check rotation consistency)
+    vector<int> rotHist[HISTO_LENGTH];
+    for (int i = 0; i < HISTO_LENGTH; i++)
+        rotHist[i].reserve(500);
+    const float factor = 1.0f / HISTO_LENGTH;
+
+    cv::Mat Rcw_cur = CurrentKeyFrame.GetRotation();
+    cv::Mat tcw_cur = CurrentKeyFrame.GetTranslation();
+    const cv::Mat twc = -Rcw_cur.t() * tcw_cur;
+
+    cv::Mat Rcw_other = LastKeyFrame.GetRotation();
+    cv::Mat tcw_other = LastKeyFrame.GetTranslation();
+    const cv::Mat twc_other = Rcw_other * twc + tcw_other;
+
+    for (int i = 0; i < LastKeyFrame.N_superpoint; i++) {
+        MapPoint *pMP_superpoint = LastKeyFrame.GetSuperpointMapPoint(i);
+        if (pMP_superpoint) {
+            if (!pMP_superpoint->isBad()) {
+                // Project
+                cv::Mat x3Dw = pMP_superpoint->GetWorldPos();
+                cv::Mat x3Dc = Rcw_cur * x3Dw + tcw_cur;
+
+                const float xc = x3Dc.at<float>(0);
+                const float yc = x3Dc.at<float>(1);
+                const float invzc = 1.0 / x3Dc.at<float>(2);
+                if (invzc < 0)
+                    continue;
+
+                float u = CurrentKeyFrame.fx * xc * invzc + CurrentKeyFrame.cx;
+                float v = CurrentKeyFrame.fy * yc * invzc + CurrentKeyFrame.cy;
+
+                if (u < CurrentKeyFrame.mnMinX || u > CurrentKeyFrame.mnMaxX)
+                    continue;
+                if (v < CurrentKeyFrame.mnMinY || v > CurrentKeyFrame.mnMaxY)
+                    continue;
+
+                int nLastOctave = LastKeyFrame.mvKeys_superpoint[i].octave;
+                // Search in a window. Size depends on scale
+                float radius =
+                    th * CurrentKeyFrame.mvScaleFactors_suerpoint[nLastOctave];
+                vector<size_t> vIndices2;
+
+                vIndices2 =
+                    CurrentKeyFrame.GetFeaturesInArea_Superpoint(u, v, radius);
+                if (vIndices2.empty())
+                    continue;
+
+                const cv::Mat dMP = pMP_superpoint->GetDescriptor();
+
+                float bestDist = 256;
+                int bestIdx2 = -1;
+
+                for (vector<size_t>::const_iterator vit = vIndices2.begin(),
+                                                    vend = vIndices2.end();
+                     vit != vend; vit++) {
+                    const size_t i2 = *vit;
+                    if (CurrentKeyFrame.GetSuperpointMapPoint(i2))
+                        if (CurrentKeyFrame.GetSuperpointMapPoint(i2)
+                                ->Observations() > 0)
+                            continue;
+                    const cv::Mat &d =
+                        CurrentKeyFrame.mDescriptors_superpoint.row(i2);
+                    const float dist = DescriptorDistance(dMP, d);
+
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestIdx2 = i2;
+                    }
+                }
+
+                if (bestDist <= TH_LOW) {
+                    CurrentKeyFrame.AddSuperpointMapPoint(
+                        pMP_superpoint, bestIdx2);
+                    // TODO(zhangye): check this condition
+                    pMP_superpoint->AddObservation(
+                        &CurrentKeyFrame, bestIdx2, true);
+                    pMP_superpoint->ComputeDistinctiveDescriptors(true);
+                    pMP_superpoint->UpdateNormalAndDepth(true);
+
+                    nmatches++;
+
+                    if (false) {
+                        float rot =
+                            LastKeyFrame.mvKeysUn_superpoint[i].angle -
+                            CurrentKeyFrame.mvKeysUn_superpoint[bestIdx2].angle;
+                        if (rot < 0.0)
+                            rot += 360.0f;
+                        int bin = round(rot * factor);
+                        if (bin == HISTO_LENGTH)
+                            bin = 0;
+                        assert(bin >= 0 && bin < HISTO_LENGTH);
+                        rotHist[bin].push_back(bestIdx2);
+                    }
+                }
+            }
+        }
+    }
+
+    if (false) {
+        int ind1 = -1;
+        int ind2 = -1;
+        int ind3 = -1;
+
+        // ComputeThreeMaxima(rotHist,HISTO_LENGTH,ind1,ind2,ind3);
+
+        for (int i = 0; i < HISTO_LENGTH; i++) {
+            if (i != ind1 && i != ind2 && i != ind3) {
+                for (size_t j = 0, jend = rotHist[i].size(); j < jend; j++) {
+                    CurrentKeyFrame.AddSuperpointMapPoint(
+                        static_cast<MapPoint *>(NULL), rotHist[i][j]);
+                    nmatches--;
+                }
+            }
+        }
+    }
+
+    return nmatches;
+}
+
 bool SuperPointMatcher::CheckDistEpipolarLine(
     const cv::KeyPoint &kp1, const cv::KeyPoint &kp2, const cv::Mat &F12,
     const KeyFrame *pKF2) {

@@ -27,6 +27,7 @@
 #include "KannalaBrandt8.h"
 #include "ObjectRecognition/Utility/Camera.h"
 #include "include/Tools.h"
+#include "mode.h"
 
 namespace ORB_SLAM3 {
 
@@ -147,9 +148,15 @@ std::vector<KeyFrame *> Atlas::GetAllKeyFrames() {
     return mpCurrentMap->GetAllKeyFrames();
 }
 
-std::vector<MapPoint *> Atlas::GetAllMapPoints() {
+std::vector<MapPoint *> Atlas::GetAllMapPoints(const int covis_keyframe_num) {
     unique_lock<mutex> lock(mMutexAtlas);
-    return mpCurrentMap->GetAllMapPoints();
+    if (covis_keyframe_num) {
+        std::vector<MapPoint *> good_mappoints =
+            mpCurrentMap->GetAllMapPoints(covis_keyframe_num);
+        return good_mappoints;
+    } else {
+        return mpCurrentMap->GetAllMapPoints();
+    }
 }
 
 std::vector<MapPoint *> Atlas::GetReferenceMapPoints() {
@@ -315,8 +322,10 @@ unsigned int Atlas::GetMemSizeFor3DObject(
             mspMaps.begin(), mspMaps.end(), std::back_inserter(saved_map));
         sort(saved_map.begin(), saved_map.end(), compFunctor());
 
+        int covisualize_keyframe_num = 3;
         for (Map *pMi : saved_map) {
-            for (MapPoint *pMPi : pMi->GetAllMapPoints()) {
+            for (MapPoint *pMPi :
+                 pMi->GetAllMapPoints(covisualize_keyframe_num)) {
                 cv::Mat tmpPos = pMPi->GetWorldPos();
                 if (MappointInBoundingbox(tmpPos)) {
                     m_saved_mappoint_for_3dobject_.emplace_back(pMPi);

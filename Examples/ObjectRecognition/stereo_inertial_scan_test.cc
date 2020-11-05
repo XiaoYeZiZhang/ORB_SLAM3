@@ -8,6 +8,7 @@
 #include "ORBSLAM3/System.h"
 #include "Utility/GlobalSummary.h"
 #include "Utility/FileIO.h"
+#include "Utility/Parameters.h"
 #include "ORBSLAM3/ImuTypes.h"
 #include "Utility/Camera.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
@@ -263,11 +264,25 @@ bool TestViewer::InitSLAM() {
     int nlevels = fsSettings["ORBextractor.nLevels"];
     double fastInitThreshold = fsSettings["ORBextractor.iniThFAST"];
     double fastMinThreshold = fsSettings["ORBextractor.minThFAST"];
+
+    double SP_scaleFactor = fsSettings["SPextractor.scaleFactor"];
+    int SP_nLevels = fsSettings["SPextractor.nLevels"];
+    int SP_nFeatures = fsSettings["SPextractor.nFeatures"];
+
+    int ObjRecognition_ORB_nFeatures =
+        fsSettings["ORBextractor.objRecognitionFeatures"];
+
     Parameters::GetInstance().SetScaleFactor(scaleFactor);
     Parameters::GetInstance().SetLevels(nlevels);
     Parameters::GetInstance().SetFastInitThreshold(fastInitThreshold);
     Parameters::GetInstance().SetFastMinThreshold(fastMinThreshold);
 
+    Parameters::GetInstance().SetSPScaleFactor(SP_scaleFactor);
+    Parameters::GetInstance().SetSPFeatures(SP_nFeatures);
+    Parameters::GetInstance().SetSPLevels(SP_nLevels);
+
+    Parameters::GetInstance().SetObjRecognitionORBFeatures(
+        ObjRecognition_ORB_nFeatures);
     bRGB = static_cast<bool>((int)fsSettings["Camera.RGB"]);
     fps = fsSettings["Camera.fps"];
 
@@ -364,8 +379,9 @@ void TestViewer::SfMProcess() {
     VLOG(0) << "DOING SFM USING SUPERPOINT, PLEASE WAIT...";
     keyframes_for_SfM = SLAM->mpAtlas->GetAllKeyFrames();
 
-    ORB_SLAM3::SPextractor *SPextractor =
-        new ORB_SLAM3::SPextractor(3000, 1.2, 3, 0.015, 0.007, true);
+    ORB_SLAM3::SPextractor *SPextractor = new ORB_SLAM3::SPextractor(
+        Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
+        Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007, true);
     for (size_t i = 0; i < keyframes_for_SfM.size(); i++) {
         ORB_SLAM3::KeyFrame *keyframe = keyframes_for_SfM[i];
         cv::Mat Tcw_cv = keyframe->GetPose();

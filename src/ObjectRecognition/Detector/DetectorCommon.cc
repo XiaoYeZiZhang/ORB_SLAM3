@@ -374,35 +374,5 @@ void DrawBoundingBox(
     cv::line(showResult, boxProjResult[2], boxProjResult[6], color);
     cv::line(showResult, boxProjResult[3], boxProjResult[7], color);
 }
-
-void GetMaskKeypointAndDesp(
-    const cv::Mat &image,
-    const std::shared_ptr<ObjRecognition::FrameData> &frm) {
-    // select frame 52 to test
-    if (frm->mFrmIndex == 52) {
-        cv::Rect rect(192, 29, 123, 247);
-        cv::Mat imageShow;
-        cv::Mat imageSrc = image.clone();
-        cv::Mat imageRoi = imageSrc(rect);
-        cv::Mat mask = cv::Mat::zeros(imageSrc.size(), CV_8UC1);
-        mask(rect).setTo(255);
-        image.copyTo(imageShow, mask);
-        // cv::imshow("imageShow", imageShow);
-        // cv::waitKey(1);
-
-        // extract keypoints
-        cv::Ptr<cv::ORB> orb = cv::ORB::create(
-            2000, 1.2f, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
-        orb->detect(imageShow, frm->mKpts);
-        // compute descriptors
-        orb->compute(imageShow, frm->mKpts, frm->mDesp);
-    } else {
-        cv::Ptr<cv::ORB> orb = cv::ORB::create(
-            2000, 1.2f, 8, 31, 0, 2, cv::ORB::HARRIS_SCORE, 31, 20);
-        orb->detect(image, frm->mKpts);
-        // compute descriptors
-        orb->compute(image, frm->mKpts, frm->mDesp);
-    }
-}
 } // namespace ObjDetectionCommon
 } // namespace ObjRecognition

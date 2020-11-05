@@ -338,6 +338,9 @@ public:
     std::vector<size_t> GetFeaturesInArea(
         const float &x, const float &y, const float &r,
         const bool bRight = false) const;
+
+    vector<size_t> GetFeaturesInArea_Superpoint(
+        const float &x, const float &y, const float &r);
     cv::Mat UnprojectStereo(int i);
 
     // Image

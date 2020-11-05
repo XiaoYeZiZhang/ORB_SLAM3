@@ -776,6 +776,22 @@ void KeyFrame::EraseConnection(KeyFrame *pKF) {
         UpdateBestCovisibles();
 }
 
+vector<size_t> KeyFrame::GetFeaturesInArea_Superpoint(
+    const float &x, const float &y, const float &r) {
+    vector<size_t> vIndices;
+    vIndices.reserve(N_superpoint);
+    for (int k = 0; k < mvKeysUn_superpoint.size(); k++) {
+        const float distx = mvKeysUn_superpoint[k].pt.x - x;
+        const float disty = mvKeysUn_superpoint[k].pt.y - y;
+
+        if (fabs(distx) < r && fabs(disty) < r) {
+            vIndices.emplace_back(k);
+        }
+    }
+
+    return vIndices;
+}
+
 vector<size_t> KeyFrame::GetFeaturesInArea(
     const float &x, const float &y, const float &r, const bool bRight) const {
     vector<size_t> vIndices;

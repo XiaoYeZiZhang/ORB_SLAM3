@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <include/ORBSLAM3/SPextractor.h>
 #include "Utility/Thread/ThreadBase.h"
-#include "Visualizer/GlobalImageViewer.h"
+#include "Utility/Parameters.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionSystem.h"
 #include "Utility/FeatureExtractor/ORBExtractor.h"
 #include "mode.h"
@@ -210,15 +210,17 @@ int ObjRecogThread::Process() {
 
 #ifdef ORBPOINT
     // STSLAMCommon::Timer ORBExtractorTimer("ORBExtractor process");
-    SLAMCommon::ORBExtractor orb_extractor(2000, 1.2f, 8, 20, 7);
+    SLAMCommon::ORBExtractor orb_extractor(
+        Parameters::GetInstance().KObjRecognitionORB_nFeatures, 1.2f, 8, 20, 7);
     orb_extractor.DetectKeyPoints(cur_frame->img, cur_frame->mKpts);
     orb_extractor.ComputeDescriptors(
         cur_frame->img, cur_frame->mKpts, cur_frame->mDesp);
 #endif
 
 #ifdef SUPERPOINT
-    ORB_SLAM3::SPextractor *SPextractor =
-        new ORB_SLAM3::SPextractor(3000, 1.2, 3, 0.015, 0.007, true);
+    ORB_SLAM3::SPextractor *SPextractor = new ORB_SLAM3::SPextractor(
+        Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
+        Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007, true);
     (*SPextractor)(
         cur_frame->img, cv::Mat(), cur_frame->mKpts, cur_frame->mDesp);
 #endif

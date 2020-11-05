@@ -23,7 +23,6 @@
 #include "include/ORBSLAM3/ORBmatcher.h"
 #include "include/Tools.h"
 #include "ORBSLAM3/SuperPointMatcher.h"
-
 #include <mutex>
 
 namespace ORB_SLAM3 {
@@ -149,7 +148,8 @@ KeyFrame *MapPoint::GetReferenceKeyFrame() {
     return mpRefKF;
 }
 
-void MapPoint::AddObservation(KeyFrame *pKF, int idx) {
+void MapPoint::AddObservation(
+    KeyFrame *pKF, int idx, const bool is_superpoint) {
     unique_lock<mutex> lock(mMutexFeatures);
     tuple<int, int> indexes;
 
@@ -167,10 +167,14 @@ void MapPoint::AddObservation(KeyFrame *pKF, int idx) {
 
     mObservations[pKF] = indexes;
 
-    if (!pKF->mpCamera2 && pKF->mvuRight[idx] >= 0)
-        nObs += 2;
-    else
+    if (is_superpoint) {
         nObs++;
+    } else {
+        if (!pKF->mpCamera2 && pKF->mvuRight[idx] >= 0)
+            nObs += 2;
+        else
+            nObs++;
+    }
 }
 
 void MapPoint::EraseObservation(KeyFrame *pKF) {

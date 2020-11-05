@@ -84,7 +84,8 @@ public:
     int GetLastBigChangeIdx();
 
     std::vector<KeyFrame *> GetAllKeyFrames();
-    std::vector<MapPoint *> GetAllMapPoints();
+    std::vector<MapPoint *>
+    GetAllMapPoints(const int covisualize_keyframe_num = 0);
     std::vector<MapPoint *> GetReferenceMapPoints();
 
     long unsigned int MapPointsInMap();

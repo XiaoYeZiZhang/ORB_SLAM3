@@ -141,9 +141,23 @@ vector<KeyFrame *> Map::GetAllKeyFrames() {
     return vector<KeyFrame *>(mspKeyFrames.begin(), mspKeyFrames.end());
 }
 
-vector<MapPoint *> Map::GetAllMapPoints() {
+vector<MapPoint *> Map::GetAllMapPoints(const int covisualize_keyframe_num) {
     unique_lock<mutex> lock(mMutexMap);
-    return vector<MapPoint *>(mspMapPoints.begin(), mspMapPoints.end());
+    if (covisualize_keyframe_num) {
+        std::vector<MapPoint *> allmappoints =
+            vector<MapPoint *>(mspMapPoints.begin(), mspMapPoints.end());
+        std::vector<MapPoint *> good_mappoints;
+        for (auto mappoint : allmappoints) {
+            if (!mappoint->isBad() &&
+                mappoint->GetObservations().size() > covisualize_keyframe_num &&
+                mappoint->GetFoundRatio() >= 0.25) {
+                good_mappoints.emplace_back(mappoint);
+            }
+        }
+        return good_mappoints;
+    } else {
+        return vector<MapPoint *>(mspMapPoints.begin(), mspMapPoints.end());
+    }
 }
 
 long unsigned int Map::MapPointsInMap() {

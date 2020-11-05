@@ -28,4 +28,10 @@ Parameters::Parameters() {
     KORBExtractor_nlevels = 0;
     KORBExtractor_fastInitThreshold = 0;
     KORBExtractor_fastMinThrethold = 0;
+
+    KSPExtractor_scaleFactor = 0.0;
+    KSPExtractor_nlevels = 0;
+    KSPExtractor_nFeatures = 0;
+
+    KObjRecognitionORB_nFeatures = 0;
 }
