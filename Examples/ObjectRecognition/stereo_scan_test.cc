@@ -11,7 +11,6 @@
 #include "ORBSLAM3/System.h"
 #include "Utility/FileIO.h"
 #include "Utility/Camera.h"
-#include "Utility/Parameters.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
 #include "include/Tools.h"
 #include "ORBSLAM3/ViewerAR.h"
@@ -32,6 +31,7 @@ public:
     cv::Mat M1l;
     // yaml
     std::string voc_path;
+    std::string voc_path_superpoint;
     std::string data_path;
     std::string config_path;
     std::string slam_saved_path;
@@ -327,6 +327,10 @@ void TestViewer::SfMProcess() {
         Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
         Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007, true);
 
+    ORB_SLAM3::SUPERPOINTVocabulary *mpSuperpointvocabulary;
+    mpSuperpointvocabulary = new ORB_SLAM3::SUPERPOINTVocabulary();
+    mpSuperpointvocabulary->load(voc_path_superpoint);
+
     // extract superpoint on each keyframe
     for (size_t i = 0; i < keyframes_for_SfM.size(); i++) {
         ORB_SLAM3::KeyFrame *keyframe = keyframes_for_SfM[i];
@@ -350,7 +354,8 @@ void TestViewer::SfMProcess() {
         (*SPextractor)(
             keyframe->imgLeft, cv::Mat(), keyframe->mvKeys_superpoint,
             keyframe->mDescriptors_superpoint);
-        VLOG(0) << "Time taken by extract superpoint: "
+        VLOG(0) << "Time taken by extract superpoint " << std::to_string(i)
+                << "/" << std::to_string(keyframes_for_SfM.size() - 1) << ": "
                 << (duration_cast<std::chrono::microseconds>(
                         std::chrono::high_resolution_clock::now() - start))
                            .count() /
@@ -369,7 +374,7 @@ void TestViewer::SfMProcess() {
             SPextractor->GetInverseScaleSigmaSquares();
         keyframe->SetKeyPoints_Superpoints();
         // compute dbow
-        keyframe->ComputeBoW_SuperPoint();
+        keyframe->ComputeBoW_SuperPoint(mpSuperpointvocabulary);
         keyframe->SetMap_SuperPoint(SLAM->mpAtlas_superpoint->GetCurrentMap());
     }
     VLOG(0) << "All keyframe exract superpoint done !";
@@ -478,7 +483,6 @@ bool TestViewer::RunScanner() {
         std::chrono::monotonic_clock::time_point t1 =
             std::chrono::monotonic_clock::now();
 #endif
-
         cv::Mat Tcw = SLAM->TrackStereo(
             imLeftRect, imRightRect, tframe, vector<ORB_SLAM3::IMU::Point>(),
             vstrImageLeft[ni]); // TODO change to monocular_inertial
@@ -573,6 +577,7 @@ int main(int argc, char *argv[]) {
     }
 
     fsSettings["voc_path"] >> testViewer.voc_path;
+    fsSettings["voc_path_superpoint"] >> testViewer.voc_path_superpoint;
     fsSettings["data_path"] >> testViewer.data_path;
     fsSettings["config_path"] >> testViewer.config_path;
     fsSettings["saved_path"] >> testViewer.slam_saved_path;

@@ -27,6 +27,7 @@ public:
     cv::Mat M1l;
     // yaml
     std::string voc_path;
+    std::string voc_path_superpoint;
     std::string data_path;
     std::string config_path;
     std::string slam_saved_path;
@@ -105,8 +106,14 @@ bool TestViewer::InitObjectRecognition() {
     std::string cloud_point_model_dir =
         slam_saved_path + "/" + mappoint_filename;
 
+#ifdef SUPERPOINT
+    bool voc_load_res =
+        ObjRecognitionExd::ObjRecongManager::Instance().LoadORBVoc(
+            voc_path_superpoint);
+#else
     bool voc_load_res =
         ObjRecognitionExd::ObjRecongManager::Instance().LoadORBVoc(voc_path);
+#endif
     if (!voc_load_res) {
         LOG(ERROR) << "vocabulary load fail!";
     }
@@ -453,6 +460,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    fsSettings["voc_path_superpoint"] >> testViewer.voc_path_superpoint;
     fsSettings["voc_path"] >> testViewer.voc_path;
     fsSettings["data_path"] >> testViewer.data_path;
     fsSettings["config_path"] >> testViewer.config_path;

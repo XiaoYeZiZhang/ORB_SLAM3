@@ -617,21 +617,25 @@ unsigned int MapPoint::GetMemSizeFor3DObject(bool is_superpoint) {
     // deps size
     total_size += sizeof(int);
     total_size += sizeof(mpRefKF->mnId);
+    VLOG(5) << "mappoint 0: " << total_size;
     if (is_superpoint) {
-        total_size += 256 * sizeof(uchar);
+        total_size += 256 * sizeof(float);
     } else {
         total_size += 32 * sizeof(uchar);
     }
 
+    VLOG(5) << "mappoint 1: " << total_size;
     // ref_kf
     auto obs = std::move(GetObservations());
     unsigned int obsSize = obs.size();
     total_size += sizeof(obsSize);
     for (auto &curOb : obs) {
         total_size += sizeof(curOb.first);
+        total_size += sizeof(get<0>(curOb.second));
     }
     total_size += sizeof(mnVisible);
     total_size += sizeof(mnFound);
+    VLOG(5) << "mappoint 2: " << total_size;
     return total_size;
 }
 
@@ -653,7 +657,7 @@ void MapPoint::WriteToMemoryFor3DObject(
     cv::Mat desp = GetDescriptor();
     if (is_superpoint) {
         Tools::PutDataToMem(
-            mem + mem_pos, desp.data, 256 * sizeof(uchar), mem_pos);
+            mem + mem_pos, desp.data, 256 * sizeof(float), mem_pos);
     } else {
         Tools::PutDataToMem(
             mem + mem_pos, desp.data, 32 * sizeof(uchar), mem_pos);
@@ -665,7 +669,11 @@ void MapPoint::WriteToMemoryFor3DObject(
 
     for (auto &curOb : obs) {
         Tools::PutDataToMem(
-            mem + mem_pos, &curOb.first, sizeof(curOb.first->mnId), mem_pos);
+            mem + mem_pos, &(curOb.first->mnId), sizeof(curOb.first->mnId),
+            mem_pos);
+        Tools::PutDataToMem(
+            mem + mem_pos, &get<0>(curOb.second), sizeof(get<0>(curOb.second)),
+            mem_pos);
     }
     Tools::PutDataToMem(mem + mem_pos, &mnVisible, sizeof(mnVisible), mem_pos);
     Tools::PutDataToMem(mem + mem_pos, &mnFound, sizeof(mnFound), mem_pos);

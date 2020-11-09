@@ -164,11 +164,12 @@ void KeyFrame::ComputeBoW() {
     }
 }
 
-void KeyFrame::ComputeBoW_SuperPoint() {
+void KeyFrame::ComputeBoW_SuperPoint(
+    const ORB_SLAM3::SUPERPOINTVocabulary *superpoint_voc) {
     if (mBowVec_superpoint.empty() || mFeatVec_superpoint.empty()) {
         vector<cv::Mat> vCurrentDesc =
             Converter::toDescriptorVector(mDescriptors_superpoint);
-        mpORBvocabulary->transform(
+        superpoint_voc->transform(
             vCurrentDesc, mBowVec_superpoint, mFeatVec_superpoint, 4);
     }
 }
@@ -979,7 +980,7 @@ unsigned int KeyFrame::GetMemSizeFor3DObject(const bool is_superpoint) {
     unsigned int totalSize = 0;
     totalSize += sizeof(mnId);
     VLOG(5) << "getmem key 1: " << totalSize;
-    int nKpts = mvKeys.size();
+    unsigned int nKpts = mvKeys.size();
     if (is_superpoint) {
         nKpts = mvKeys_superpoint.size();
     }
@@ -993,7 +994,7 @@ unsigned int KeyFrame::GetMemSizeFor3DObject(const bool is_superpoint) {
         totalSize += nKpts * PerKeyPointSize;
         VLOG(5) << "getmem key 3: " << totalSize;
         if (is_superpoint) {
-            totalSize += nKpts * 256 * sizeof(uchar);
+            totalSize += nKpts * 256 * sizeof(float);
         } else {
             totalSize += nKpts * 32 * sizeof(uchar);
         }
@@ -1019,7 +1020,7 @@ void KeyFrame::WriteToMemoryFor3DObject(
 
     VLOG(5) << "write mem key 1:" << sizeof(mnId);
     if (is_superpoint) {
-        Tools::PackORBFeatures(
+        Tools::PackSUPERPOINTFeatures(
             mvKeys_superpoint, mDescriptors_superpoint, mem_pos, mem);
     } else {
         Tools::PackORBFeatures(mvKeys, mDescriptors, mem_pos, mem);

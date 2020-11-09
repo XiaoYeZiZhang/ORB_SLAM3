@@ -131,7 +131,7 @@ bool MapDrawer::ParseViewerParamFile(cv::FileStorage &fSettings) {
 void MapDrawer::DrawMapPoints_SuperPoint(
     const std::vector<double> &boundingbox_w_corner,
     const std::set<MapPoint *> mappoint_picked) {
-    int covisualize_keyframe_num = 3;
+    int covisualize_keyframe_num = 4;
     const vector<MapPoint *> &vpMPs =
         mpAtlas_superpoint->GetAllMapPoints(covisualize_keyframe_num);
     const vector<MapPoint *> &vpRefMPs =

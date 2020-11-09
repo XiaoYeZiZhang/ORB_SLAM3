@@ -200,6 +200,40 @@ static void PackCamCWToMem(
     VLOG(10) << "pose: " << QR.z();
 }
 
+static void PackSUPERPOINTFeatures(
+    const std::vector<cv::KeyPoint> &vKpts, const cv::Mat &desp,
+    unsigned int &mem_cur, char *mem) {
+    unsigned int nKpts = vKpts.size();
+    VLOG(10) << "keyframe kpts: " << nKpts;
+    PutDataToMem(mem + mem_cur, &(nKpts), sizeof(nKpts), mem_cur);
+    VLOG(5) << "write mem key 2:" << sizeof(nKpts);
+
+    if (nKpts == 0) {
+        LOG(FATAL) << "error: PackORBFeatures: nKpts.size = 0, mem_cur = "
+                   << mem_cur;
+        return;
+    }
+
+    auto init = mem_cur;
+    for (auto &kpt : vKpts) {
+        PutDataToMem(mem + mem_cur, &(kpt.pt.x), sizeof(kpt.pt.x), mem_cur);
+        PutDataToMem(mem + mem_cur, &(kpt.pt.y), sizeof(kpt.pt.y), mem_cur);
+        PutDataToMem(mem + mem_cur, &(kpt.size), sizeof(kpt.size), mem_cur);
+        PutDataToMem(mem + mem_cur, &(kpt.angle), sizeof(kpt.angle), mem_cur);
+        PutDataToMem(
+            mem + mem_cur, &(kpt.response), sizeof(kpt.response), mem_cur);
+        PutDataToMem(mem + mem_cur, &(kpt.octave), sizeof(kpt.octave), mem_cur);
+        PutDataToMem(
+            mem + mem_cur, &(kpt.class_id), sizeof(kpt.class_id), mem_cur);
+    }
+
+    VLOG(5) << "write mem key 3:" << mem_cur - init;
+    PutDataToMem(
+        (float *)(mem + mem_cur), desp.data,
+        desp.rows * desp.cols * sizeof(float), mem_cur);
+    VLOG(5) << "write mem key 4:" << desp.rows * desp.cols * sizeof(uchar);
+}
+
 static void PackORBFeatures(
     const std::vector<cv::KeyPoint> &vKpts, const cv::Mat &desp,
     unsigned int &mem_cur, char *mem) {

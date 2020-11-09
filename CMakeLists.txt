@@ -364,3 +364,6 @@ add_executable(stereo_inertial_scan_test
         Examples/ObjectRecognition/stereo_inertial_scan_test.cc)
 target_link_libraries( stereo_inertial_scan_test ${PROJECT_NAME})
 
+add_executable(scan_mappoint_show
+        Examples/ObjectRecognition/MapPointVisualization.cc)
+target_link_libraries(scan_mappoint_show ${PROJECT_NAME})

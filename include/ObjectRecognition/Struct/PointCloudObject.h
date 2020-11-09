@@ -32,7 +32,7 @@ public:
     cv::Mat &GetDescriptor();
     Eigen::Vector3d &GetPose();
     std::vector<std::pair<FrameIndex, cv::Mat>> &GetMultiDescriptor();
-    std::vector<FrameIndex> &GetRefKeyFrameID();
+    std::vector<std::pair<FrameIndex, int>> &GetObservations();
     void SetPose(const Eigen::Vector3d &pose);
     MapPointIndex &GetIndex();
     static int GetMemSize() {
@@ -49,7 +49,7 @@ private:
     Eigen::Vector3d mWorldPos;
     std::vector<std::pair<FrameIndex, cv::Mat>> m_multi_desps;
 
-    std::vector<FrameIndex> m_reference_kf_ids;
+    std::vector<std::pair<FrameIndex, int>> m_observations;
 
     int mnVisible;
     int mnFound;

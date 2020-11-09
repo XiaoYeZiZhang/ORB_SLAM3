@@ -408,7 +408,7 @@ void ViewerAR::Pick3DPointCloud() {
     pangolin::OpenGlMatrix modelview_matrix = s_cam_SfM.GetModelViewMatrix();
     pangolin::OpenGlMatrix projection_matrix = s_cam_SfM.GetProjectionMatrix();
 
-    int covisualize_keyframe_num = 3;
+    int covisualize_keyframe_num = 4;
     auto all_mappoints = mpMapDrawer->mpAtlas_superpoint->GetAllMapPoints(
         covisualize_keyframe_num);
     for (auto mappoint : all_mappoints) {

@@ -1,14 +1,9 @@
-/**
- * File: FORB.h
- * Date: June 2012
- * Author: Dorian Galvez-Lopez
- * Description: functions for ORB descriptors
- * License: see the LICENSE.txt file
- *
- */
+//
+// Created by root on 2020/11/9.
+//
 
-#ifndef __D_T_F_ORB__
-#define __D_T_F_ORB__
+#ifndef ORB_SLAM3_FSUPERPOINT_H
+#define ORB_SLAM3_FSUPERPOINT_H
 
 #include <opencv2/core/core.hpp>
 #include <vector>
@@ -19,13 +14,12 @@
 namespace DBoW2 {
 
 /// Functions to manipulate ORB descriptors
-class FORB : protected FClass {
+class FSUPERPOINT : protected FClass {
 public:
     /// Descriptor type
     typedef cv::Mat TDescriptor; // CV_8U
     /// Pointer to a single descriptor
     typedef const TDescriptor *pDescriptor;
-    /// Descriptor length (in bytes)
     static int L;
     /**
      * Calculates the mean value of a set of descriptors
@@ -71,4 +65,4 @@ public:
 
 } // namespace DBoW2
 
-#endif
+#endif // ORB_SLAM3_FSUPERPOINT_H

@@ -129,8 +129,7 @@ int read_compressed_voc(
 
 bool ObjRecongManager::LoadORBVoc(std::string &voc_path) {
     if (voc_.get()) {
-        voc_.get()->load("/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/"
-                         "Vocabulary/ORBvoc.txt");
+        voc_.get()->load(voc_path);
         return true;
     }
     return false;

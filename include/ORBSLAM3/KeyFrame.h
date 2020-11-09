@@ -411,7 +411,8 @@ public:
     void SetKeyPoints_Superpoints();
     void AddSuperpointMapPoint(MapPoint *pMP, const size_t &idx);
     MapPoint *GetSuperpointMapPoint(const size_t &idx);
-    void ComputeBoW_SuperPoint();
+    void ComputeBoW_SuperPoint(
+        const ORB_SLAM3::SUPERPOINTVocabulary *superpoint_voc);
 
 public:
     static long unsigned int nNextId;

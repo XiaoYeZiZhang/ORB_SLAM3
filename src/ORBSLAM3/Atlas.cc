@@ -322,7 +322,7 @@ unsigned int Atlas::GetMemSizeFor3DObject(
             mspMaps.begin(), mspMaps.end(), std::back_inserter(saved_map));
         sort(saved_map.begin(), saved_map.end(), compFunctor());
 
-        int covisualize_keyframe_num = 3;
+        int covisualize_keyframe_num = 4;
         for (Map *pMi : saved_map) {
             for (MapPoint *pMPi :
                  pMi->GetAllMapPoints(covisualize_keyframe_num)) {
@@ -417,7 +417,7 @@ bool Atlas::WriteToMemoryFor3DObject(
         pMPi->WriteToMemoryFor3DObject(
             mem_pos, mem, m_object_Two, is_superpoint);
     }
-    VLOG(0) << "saved mappoint num: " << nMPs;
+    VLOG(5) << "saved mappoint num: " << nMPs;
     VLOG(5) << "writememsize2" << mem_pos;
 
     // keyframe size:

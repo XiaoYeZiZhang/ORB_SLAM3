@@ -16,8 +16,8 @@
 #include "ORBSLAM3/FrameObjectProcess.h"
 #include "ORBSLAM3/ViewerAR.h"
 #include "mode.h"
-
 using namespace std;
+using namespace std::chrono;
 class TestViewer {
 public:
     bool InitSLAM();
@@ -33,6 +33,7 @@ public:
     cv::Mat M1l;
     // yaml
     std::string voc_path;
+    std::string voc_path_superpoint;
     std::string data_path;
     std::string config_path;
     std::string slam_saved_path;
@@ -382,6 +383,11 @@ void TestViewer::SfMProcess() {
     ORB_SLAM3::SPextractor *SPextractor = new ORB_SLAM3::SPextractor(
         Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
         Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007, true);
+
+    ORB_SLAM3::SUPERPOINTVocabulary *mpSuperpointvocabulary;
+    mpSuperpointvocabulary = new ORB_SLAM3::SUPERPOINTVocabulary();
+    mpSuperpointvocabulary->load(voc_path_superpoint);
+
     for (size_t i = 0; i < keyframes_for_SfM.size(); i++) {
         ORB_SLAM3::KeyFrame *keyframe = keyframes_for_SfM[i];
         keyframe->mvKeys.clear();
@@ -397,11 +403,17 @@ void TestViewer::SfMProcess() {
             keyframe->imgLeft,
             ObjRecognition::CameraIntrinsic::GetInstance().GetEigenK(), Rcw,
             tcw, m_boundingbox_w, mask);
-
+        auto start = std::chrono::high_resolution_clock::now();
         (*SPextractor)(
             keyframe->imgLeft, cv::Mat(), keyframe->mvKeys_superpoint,
             keyframe->mDescriptors_superpoint);
-
+        VLOG(0) << "Time taken by extract superpoint " << std::to_string(i)
+                << "/" << std::to_string(keyframes_for_SfM.size() - 1) << ": "
+                << (duration_cast<std::chrono::microseconds>(
+                        std::chrono::high_resolution_clock::now() - start))
+                           .count() /
+                       1000.0
+                << " ms" << std::endl;
         keyframe->mnScaleLevels_suerpoint = SPextractor->GetLevels();
         keyframe->mfScaleFactor_superpoint = SPextractor->GetScaleFactor();
         keyframe->mfLogScaleFactor_superpoint =
@@ -415,7 +427,7 @@ void TestViewer::SfMProcess() {
             SPextractor->GetInverseScaleSigmaSquares();
         keyframe->SetKeyPoints_Superpoints();
         // compute dbow
-        keyframe->ComputeBoW_SuperPoint();
+        keyframe->ComputeBoW_SuperPoint(mpSuperpointvocabulary);
         keyframe->SetMap_SuperPoint(SLAM->mpAtlas_superpoint->GetCurrentMap());
     }
 
@@ -632,6 +644,7 @@ int main(int argc, char *argv[]) {
     }
 
     fsSettings["voc_path"] >> testViewer.voc_path;
+    fsSettings["voc_path_superpoint"] >> testViewer.voc_path_superpoint;
     fsSettings["data_path"] >> testViewer.data_path;
     fsSettings["config_path"] >> testViewer.config_path;
     fsSettings["saved_path"] >> testViewer.slam_saved_path;
