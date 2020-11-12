@@ -947,17 +947,20 @@ void System::SetScanBoundingbox_W_Superpoint(
 }
 
 bool System::PackAtlasToMemoryFor3DObject_SuperPoint(
-    char **buffer_out, int &buffer_out_len,
+    char **buffer_out, long long &buffer_out_len,
     const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM) {
     std::string version = "V1.0.0.0";
     mpAtlas_superpoint->SetSavedKeyFramesFor3DObjet_Superpoint(
         keyframes_for_SfM);
     buffer_out_len = mpAtlas_superpoint->GetMemSizeFor3DObject(version, true);
+    VLOG(0) << "GetMemSize Done";
     bool ret = false;
+    VLOG(0) << "buffer_out_len" << buffer_out_len;
     if (buffer_out_len > 0) {
         *buffer_out = new char[buffer_out_len];
         ret = mpAtlas_superpoint->WriteToMemoryFor3DObject(
             buffer_out_len, *buffer_out, true);
+        VLOG(0) << "write to memory done";
         if (!ret) {
             LOG(FATAL) << "write atlas_superpoint to memory error!";
         }

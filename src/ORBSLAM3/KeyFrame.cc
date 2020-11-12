@@ -55,7 +55,7 @@ KeyFrame::KeyFrame()
       mpParent(NULL), mbNotErase(false), mbToBeErased(false), mbBad(false),
       mHalfBaseline(0), mbCurrentPlaceRecognition(false), mbHasHessian(false),
       mnMergeCorrectedForKF(0), NLeft(0), NRight(0), mnNumberOfOpt(0),
-      mnNumberOfOpt_Superpoint(0) {
+      mnNumberOfOpt_Superpoint(0), N_superpoint(-1) {
 }
 
 void KeyFrame::UndistortKeyPoints() {
@@ -120,7 +120,8 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB)
       mvLeftToRightMatch(F.mvLeftToRightMatch),
       mvRightToLeftMatch(F.mvRightToLeftMatch), mTlr(F.mTlr.clone()),
       mvKeysRight(F.mvKeysRight), NLeft(F.Nleft), NRight(F.Nright),
-      mTrl(F.mTrl), mnNumberOfOpt(0), mnNumberOfOpt_Superpoint(0) {
+      mTrl(F.mTrl), mnNumberOfOpt(0), mnNumberOfOpt_Superpoint(0),
+      N_superpoint(-1) {
 
     imgLeft = F.imgLeft.clone();
     imgRight = F.imgRight.clone();
@@ -963,6 +964,8 @@ void KeyFrame::SetKeyPoints(std::vector<cv::KeyPoint> &keypoints) {
 }
 
 void KeyFrame::SetKeyPoints_Superpoints() {
+    VLOG(0) << "keyframe superpoint keypoint size: "
+            << mvKeys_superpoint.size();
     N_superpoint = mvKeys_superpoint.size();
     VLOG(5) << "mappoint id, keypoint num: " << mnId << " " << N_superpoint;
     mvKeysUn_superpoint = mvKeys_superpoint;
@@ -976,8 +979,8 @@ void KeyFrame::SetDesps(const cv::Mat &desps) {
     mDescriptors = desps;
 }
 
-unsigned int KeyFrame::GetMemSizeFor3DObject(const bool is_superpoint) {
-    unsigned int totalSize = 0;
+long long KeyFrame::GetMemSizeFor3DObject(const bool is_superpoint) {
+    long long totalSize = 0;
     totalSize += sizeof(mnId);
     VLOG(5) << "getmem key 1: " << totalSize;
     unsigned int nKpts = mvKeys.size();
@@ -1013,12 +1016,12 @@ unsigned int KeyFrame::GetMemSizeFor3DObject(const bool is_superpoint) {
 }
 
 void KeyFrame::WriteToMemoryFor3DObject(
-    unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two,
+    long long &mem_pos, char *mem, const Eigen::Matrix4d &Two,
     const bool is_superpoint) {
     VLOG(10) << "keyframe id: " << mnId;
     Tools::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
 
-    VLOG(5) << "write mem key 1:" << sizeof(mnId);
+    VLOG(0) << "write mem key 1:" << sizeof(mnId);
     if (is_superpoint) {
         Tools::PackSUPERPOINTFeatures(
             mvKeys_superpoint, mDescriptors_superpoint, mem_pos, mem);
@@ -1040,7 +1043,7 @@ void KeyFrame::WriteToMemoryFor3DObject(
     Eigen::Vector3d tco = Rcw * Two.block<3, 1>(0, 3) + Tcw;
     auto init = mem_pos;
     Tools::PackCamCWToMem(tco, Rco, mem_pos, mem);
-    VLOG(5) << "write mem key 5:" << mem_pos - init;
+    VLOG(0) << "write mem key 5:" << mem_pos - init;
 
     VLOG(10) << "size: "
              << ObjRecognition::CameraIntrinsic::GetInstance().Width() << " "
@@ -1050,7 +1053,7 @@ void KeyFrame::WriteToMemoryFor3DObject(
         sizeof(char) * ObjRecognition::CameraIntrinsic::GetInstance().Width() *
             ObjRecognition::CameraIntrinsic::GetInstance().Height(),
         mem_pos);
-    VLOG(5) << "write mem key 6:"
+    VLOG(0) << "write mem key 6:"
             << sizeof(char) *
                    ObjRecognition::CameraIntrinsic::GetInstance().Width() *
                    ObjRecognition::CameraIntrinsic::GetInstance().Height();

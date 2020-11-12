@@ -153,10 +153,10 @@ void ObjectBase::GetPose(
         detector_state_.GetState() == DetectionGood ||
         detector_state_.GetState() == DetectionUnreliable) {
         detector_state_.GetData(Rwo, Rcw, two, tcw, state, frmIndex, timeStamp);
-        VLOG(0) << "Get Detector Pose: " << Rwo;
+        VLOG(5) << "Get Detector Pose: " << Rwo;
     } else {
         detector_state_.GetData(Rwo, Rcw, two, tcw, state, frmIndex, timeStamp);
-        VLOG(0) << "Get Detector Pose: " << Rwo;
+        VLOG(5) << "Get Detector Pose: " << Rwo;
         state = DetectionBad;
     }
 }

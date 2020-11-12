@@ -24,8 +24,8 @@ public:
     void Process(const std::shared_ptr<FrameData> &frm);
     void Reset();
     void Clear();
-    bool Load(const int &mem_size, const char *mem);
-    bool Save(int &mem_size, char **mem);
+    bool Load(const long long &mem_size, const char *mem);
+    bool Save(long long &mem_size, char **mem);
     void SetInfo();
     int GetInfo(std::string &info);
 

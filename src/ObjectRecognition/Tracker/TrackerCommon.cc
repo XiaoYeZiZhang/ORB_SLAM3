@@ -214,7 +214,8 @@ int SearchByProjection_Superpoint(
     const int width = CameraIntrinsic::GetInstance().Width();
     const int height = CameraIntrinsic::GetInstance().Height();
     int matches = 0;
-    const float kDistThreshold = 0.3;
+    // TODO(zhangye): need to change to the right value
+    const float kDistThreshold = 1.0;
     const float kRatioThreshold = 0.95;
     matchKeyPointsState.resize(projectPoints.size());
     for (int i = 0, j = 0; i < pointClouds.size() && j < projectPoints.size();
@@ -234,7 +235,7 @@ int SearchByProjection_Superpoint(
             continue;
         }
         MapPoint::Ptr point = pointClouds[i];
-        cv::Mat pointDescriptor = point->GetDescriptor();
+        cv::Mat pointDescriptor = point->GetDescriptor().t();
 
         float bestDist = (float)INT_MAX;
         float bestDist2 = (float)INT_MAX;

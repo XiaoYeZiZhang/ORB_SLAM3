@@ -113,8 +113,8 @@ public:
         return mId;
     }
 
-    virtual bool Load(const int &mem_size, const char *mem) = 0;
-    virtual bool Save(int &mem_size, char **mem) = 0;
+    virtual bool Load(const long long &mem_size, const char *mem) = 0;
+    virtual bool Save(long long &mem_size, char **mem) = 0;
 
     void TrackingStateSetPose(
         const ObjRecogState &trackerState, const FrameIndex &frmIndex,

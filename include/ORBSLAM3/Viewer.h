@@ -142,7 +142,6 @@ private:
     std::unique_ptr<pangolin::Var<bool>> menuShow3DObject;
     std::unique_ptr<pangolin::Var<bool>> menuShowMatched3DObject;
     std::unique_ptr<pangolin::Var<bool>> menuShowInertialGraph;
-    std::unique_ptr<pangolin::Var<bool>> menuLocalizationMode;
     std::unique_ptr<pangolin::Var<bool>> menuReset;
     std::unique_ptr<pangolin::Var<bool>> menuStepByStep; // false, true
     std::unique_ptr<pangolin::Var<bool>> menuStep;

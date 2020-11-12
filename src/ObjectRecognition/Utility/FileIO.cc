@@ -11,7 +11,7 @@ void LoadPointCloudModel(
     std::shared_ptr<ObjRecognition::Object> &object) {
 
     std::ifstream in;
-    int length;
+    long long length;
     in.open(model_path.c_str(), std::ios::in);
     if (!in.is_open()) {
         LOG(FATAL) << "Error opening the pointCloud file!";
@@ -33,7 +33,7 @@ void LoadPointCloudModel(
 }
 
 void ReadPointCloudModelToBuffer(
-    const std::string &model_path, char **buffer, int &buffer_len) {
+    const std::string &model_path, char **buffer, long long &buffer_len) {
 
     std::ifstream in;
     in.open(model_path.c_str(), std::ios::in);

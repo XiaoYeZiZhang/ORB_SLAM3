@@ -17,8 +17,8 @@ public:
     virtual void Process(const std::shared_ptr<FrameData> &frm) = 0;
     virtual void Reset() = 0;
     virtual void Clear() = 0;
-    virtual bool Load(const int &mem_size, const char *mem) = 0;
-    virtual bool Save(int &mem_size, char **mem) = 0;
+    virtual bool Load(const long long &mem_size, const char *mem) = 0;
+    virtual bool Save(long long &mem_size, char **mem) = 0;
 };
 } // namespace ObjRecognition
 

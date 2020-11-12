@@ -11,12 +11,12 @@ namespace ObjRecognition {
 
 template <class T1, class T2>
 void GetDataFromMem(
-    T1 *dst_mem, T2 *src_mem, const int mem_size, unsigned int &pos) {
+    T1 *dst_mem, T2 *src_mem, const int mem_size, long long &pos) {
     memcpy(dst_mem, src_mem, mem_size);
     pos += mem_size;
 }
 
-bool MapPoint::Load(unsigned int &mem_pos, const char *mem) {
+bool MapPoint::Load(long long &mem_pos, const char *mem) {
     GetDataFromMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
     Eigen::Vector3d posTmp;
     VLOG(5) << "mappoint 0: " << mem_pos;
@@ -115,13 +115,13 @@ const std::string MapPoint::GetInfo() {
 
 template <class T1, class T2>
 void PutDataToMem(
-    T1 *dst_mem, T2 *src_mem, const unsigned int mem_size, unsigned int &pos) {
+    T1 *dst_mem, T2 *src_mem, const unsigned int mem_size, long long &pos) {
     memcpy(dst_mem, src_mem, mem_size);
     pos += mem_size;
 }
 
 std::tuple<std::vector<cv::KeyPoint>, cv::Mat>
-UnpackORBFeatures(unsigned int &mem_cur, const char *mem) {
+UnpackORBFeatures(long long &mem_cur, const char *mem) {
     unsigned int nKpts = 0;
     PutDataToMem(&(nKpts), mem + mem_cur, sizeof(nKpts), mem_cur);
     VLOG(5) << "keyframe kpts: " << nKpts;
@@ -156,7 +156,7 @@ UnpackORBFeatures(unsigned int &mem_cur, const char *mem) {
 }
 
 void UnPackCamCWFromMem(
-    unsigned int &mem_pos, const char *mem, Eigen::Vector3d &Tcw,
+    long long &mem_pos, const char *mem, Eigen::Vector3d &Tcw,
     Eigen::Matrix3d &Rcw) {
     PutDataToMem(&Tcw(0), mem + mem_pos, sizeof(double), mem_pos);
     PutDataToMem(&Tcw(1), mem + mem_pos, sizeof(double), mem_pos);
@@ -171,7 +171,7 @@ void UnPackCamCWFromMem(
     VLOG(10) << "pose: " << QR.z();
 }
 
-void KeyFrame::ReadFromMemory(unsigned int &mem_pos, const char *mem) {
+void KeyFrame::ReadFromMemory(long long &mem_pos, const char *mem) {
     PutDataToMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
     VLOG(10) << "keyframe id: " << mnId;
     VLOG(5) << "keyframe read0:" << mem_pos;
@@ -246,9 +246,9 @@ Object::~Object() {
     VLOG(30) << "~PointCloudObject";
 }
 
-bool Object::LoadPointCloud(const int &mem_size, const char *mem) {
-    int mapPointNum;
-    unsigned int mem_pos = 0;
+bool Object::LoadPointCloud(const long long &mem_size, const char *mem) {
+    unsigned int mapPointNum;
+    long long mem_pos = 0;
     VLOG(3) << "model mem size: " << mem_size;
 
     char version_str[sizeof(m_version)];
@@ -408,7 +408,7 @@ std::shared_ptr<DBoW3::Vocabulary> &Object::GetVocabulary() {
     return m_voc;
 }
 
-bool Object::Save(int &mem_size, char **mem) {
+bool Object::Save(long long &mem_size, char **mem) {
     VLOG(3) << "PointCloudObject::Save";
     return true;
 }

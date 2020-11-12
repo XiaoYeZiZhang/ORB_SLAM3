@@ -15,45 +15,30 @@ namespace ORB_SLAM3 {
 
 struct SuperPoint : torch::nn::Module {
     SuperPoint();
-    std::vector<torch::Tensor> forward(torch::Tensor x);
-
-    torch::nn::Conv2d conv1a;
-    torch::nn::Conv2d conv1b;
-
-    torch::nn::Conv2d conv2a;
-    torch::nn::Conv2d conv2b;
-
-    torch::nn::Conv2d conv3a;
-    torch::nn::Conv2d conv3b;
-
-    torch::nn::Conv2d conv4a;
-    torch::nn::Conv2d conv4b;
-
-    torch::nn::Conv2d convPa;
-    torch::nn::Conv2d convPb;
-
-    // descriptor
-    torch::nn::Conv2d convDa;
-    torch::nn::Conv2d convDb;
 };
 
 class SPDetector {
 public:
     SPDetector(
-        std::shared_ptr<SuperPoint> _model,
         std::shared_ptr<torch::jit::script::Module> _traced_module_480_640,
         std::shared_ptr<torch::jit::script::Module> _traced_module_400_533,
         std::shared_ptr<torch::jit::script::Module> _traced_module_333_444);
+
+    SPDetector() {
+        traced_module_480_640 = NULL;
+        traced_module_400_533 = NULL;
+        traced_module_333_444 = NULL;
+    }
+
     void detect(cv::Mat &image, int level, bool cuda);
     void getKeyPoints(
         float threshold, int iniX, int maxX, int iniY, int maxY,
         std::vector<cv::KeyPoint> &keypoints, bool nms);
     void computeDescriptors(
         const std::vector<cv::KeyPoint> &keypoints, cv::Mat &descriptors,
-        const bool cuda);
+        bool cuda);
 
 private:
-    std::shared_ptr<SuperPoint> model;
     std::shared_ptr<torch::jit::script::Module> traced_module_480_640;
     std::shared_ptr<torch::jit::script::Module> traced_module_400_533;
     std::shared_ptr<torch::jit::script::Module> traced_module_333_444;

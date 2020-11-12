@@ -19,6 +19,12 @@
 using namespace std;
 class TestViewer {
 public:
+    TestViewer() {
+    }
+
+    ~TestViewer() {
+        delete SLAM;
+    }
     bool InitSLAM(char **argv);
     bool InitObjectRecognition(char **argv);
     bool RunObjectRecognition(char **argv);
@@ -105,7 +111,7 @@ bool TestViewer::InitObjectRecognition(char **argv) {
 
     int model_id = 0;
     char *cloud_point_model_buffer = nullptr;
-    int cloud_point_model_buf_size = 0;
+    long long cloud_point_model_buf_size = 0;
     LoadPointCloudModel(cloud_point_model_dir, m_pointCloud);
     ReadPointCloudModelToBuffer(
         cloud_point_model_dir, &cloud_point_model_buffer,

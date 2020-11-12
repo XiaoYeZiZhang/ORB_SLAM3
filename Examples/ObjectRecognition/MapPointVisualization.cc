@@ -5,11 +5,11 @@
 #include <iostream>
 #include <glog/logging.h>
 #include <pangolin/gl/gldraw.h>
-#include "GL/glu.h"
-#include "GL/glut.h"
-#include <Struct/PointCloudObject.h>
-#include <ORBSLAM3/ViewerAR.h>
-#include <Utility/FileIO.h>
+#include <GL/glu.h>
+#include "Struct/PointCloudObject.h"
+#include "ORBSLAM3/ViewerAR.h"
+#include "Utility/FileIO.h"
+#include "mode.h"
 
 using std::cout;
 using std::endl;
@@ -123,8 +123,6 @@ public:
 
     void DrawInit(const int w, const int h);
 
-    void RegistPangolinUI();
-
     void Draw(const int w, const int h);
 
     void DrawPointCloud();
@@ -148,6 +146,9 @@ public:
 
 public:
     std::shared_ptr<ObjRecognition::Object> point_cloud_object_;
+    int GetSideBarWidth() {
+        return pangolin_side_bar;
+    }
 
 private:
     std::shared_ptr<pangolin::Var<bool>> show_boundingbox_;
@@ -164,6 +165,8 @@ private:
     std::unique_ptr<MapHandler3D_ShowMapPoint> mp_ShowMappoint_handler3d;
 
     std::unique_ptr<pangolin::Var<bool>> menu_stop;
+
+    int pangolin_side_bar = 100;
 };
 
 void Project3DXYZToUV(
@@ -280,6 +283,9 @@ void PointCloudModelViewer::DrawMapPoints_SuperPoint(
 
 void PointCloudModelViewer::Draw(const int w, const int h) {
     while (true) {
+        if (*menu_stop) {
+            break;
+        }
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         d_cam_ShowMappoint.Activate(s_cam_ShowMappoint);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -294,7 +300,7 @@ void PointCloudModelViewer::Draw(const int w, const int h) {
 
 void PointCloudModelViewer::DrawInit(const int w, const int h) {
     pangolin::CreatePanel("menu").SetBounds(
-        0.0, 1.0, 0.0, pangolin::Attach::Pix(200));
+        0.0, 1.0, 0.0, pangolin::Attach::Pix(pangolin_side_bar));
     menu_stop =
         std::make_unique<pangolin::Var<bool>>("menu.Stop", false, false);
 
@@ -310,25 +316,11 @@ void PointCloudModelViewer::DrawInit(const int w, const int h) {
         new MapHandler3D_ShowMapPoint(s_cam_ShowMappoint));
     d_cam_ShowMappoint =
         pangolin::CreateDisplay()
-            .SetBounds(0.0, 1.0, pangolin::Attach::Pix(200), 1.0, (float)w / h)
+            .SetBounds(
+                0.0, 1.0, pangolin::Attach::Pix(pangolin_side_bar), 1.0,
+                (float)w / h)
             .SetHandler(mp_ShowMappoint_handler3d.get());
     d_cam_ShowMappoint.show = true;
-}
-
-void PointCloudModelViewer::RegistPangolinUI() {
-    pangolin::CreatePanel("menu").SetBounds(0.0, 1.0, 0.9, 1.0);
-    show_boundingbox_ = std::make_shared<pangolin::Var<bool>>(
-        "menu.Show BoundingBox", true, true);
-    show_pointcloud_ = std::make_shared<pangolin::Var<bool>>(
-        "menu.Show PointCloud", true, true);
-    m_show_keyframe =
-        std::make_shared<pangolin::Var<bool>>("menu.Show KeyFrame", true, true);
-
-    std::function<void(void)> stop_select_2d_region_callback =
-        std::bind(&PointCloudModelViewer::Select2DRegion, this);
-
-    pangolin::RegisterKeyPressCallback(
-        pangolin::PANGO_CTRL + 's', stop_select_2d_region_callback);
 }
 
 void PointCloudModelViewer::DrawPointCloud() {
@@ -471,7 +463,7 @@ void PointCloudModelViewer::DrawSelected2DRegion(const int w, const int h) {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadIdentity();
-    gluOrtho2D(200, w + 200, 0, h);
+    gluOrtho2D(pangolin_side_bar, w + pangolin_side_bar, 0, h);
 
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
@@ -531,7 +523,14 @@ int main(int argc, char **argv) {
     }
 
     std::string model_file;
+#ifdef SUPERPOINT
+    fsSettings["mappoint_filename_superpoint"] >> model_file;
+    VLOG(0) << "Show Superpoint Mappoint Model";
+#else
     fsSettings["mappoint_filename"] >> model_file;
+    VLOG(0) << "Show ORB Mappoint Model";
+#endif
+
     std::string data_path;
     fsSettings["saved_path"] >> data_path;
     std::string model_path = data_path + "/" + model_file;
@@ -549,13 +548,13 @@ int main(int argc, char **argv) {
     std::vector<ObjRecognition::MapPoint::Ptr> pointcloud =
         viewer->point_cloud_object_->GetPointClouds();
     LOG(INFO) << "point cloud size: " << pointcloud.size();
-    pangolin::CreateWindowAndBind("MappointViewer", w + 200, h);
+    pangolin::CreateWindowAndBind(
+        "MappointViewer", w + viewer->GetSideBarWidth(), h);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     viewer->DrawInit(w, h);
-    //    viewer.RegistPangolinUI();
     viewer->Draw(w, h);
     return 0;
 }

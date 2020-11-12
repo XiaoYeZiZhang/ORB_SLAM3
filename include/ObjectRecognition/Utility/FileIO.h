@@ -13,7 +13,7 @@ void LoadPointCloudModel(
     std::shared_ptr<ObjRecognition::Object> &object);
 
 void ReadPointCloudModelToBuffer(
-    const std::string &model_path, char **buffer, int &buffer_len);
+    const std::string &model_path, char **buffer, long long &buffer_len);
 std::string GetTimeStampString();
 bool CreateFolder(std::string file_path_name);
 void LoadVoc(

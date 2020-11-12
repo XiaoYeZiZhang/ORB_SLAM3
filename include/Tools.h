@@ -103,7 +103,7 @@ static void GetBoundingBoxMask(
 
 template <class T1, class T2>
 static void PutDataToMem(
-    T1 *dst_mem, T2 *src_mem, const unsigned int mem_size, unsigned int &pos) {
+    T1 *dst_mem, T2 *src_mem, const unsigned int mem_size, long long &pos) {
     memcpy(dst_mem, src_mem, mem_size);
     pos += mem_size;
 }
@@ -186,8 +186,8 @@ static void ChangeCV44ToGLMatrixFloat(
 }
 
 static void PackCamCWToMem(
-    const Eigen::Vector3d &Tcw, const Eigen::Matrix3d &Rcw,
-    unsigned int &mem_pos, char *mem) {
+    const Eigen::Vector3d &Tcw, const Eigen::Matrix3d &Rcw, long long &mem_pos,
+    char *mem) {
     PutDataToMem(mem + mem_pos, &Tcw(0), sizeof(double), mem_pos);
     PutDataToMem(mem + mem_pos, &Tcw(1), sizeof(double), mem_pos);
     PutDataToMem(mem + mem_pos, &Tcw(2), sizeof(double), mem_pos);
@@ -202,7 +202,7 @@ static void PackCamCWToMem(
 
 static void PackSUPERPOINTFeatures(
     const std::vector<cv::KeyPoint> &vKpts, const cv::Mat &desp,
-    unsigned int &mem_cur, char *mem) {
+    long long &mem_cur, char *mem) {
     unsigned int nKpts = vKpts.size();
     VLOG(10) << "keyframe kpts: " << nKpts;
     PutDataToMem(mem + mem_cur, &(nKpts), sizeof(nKpts), mem_cur);
@@ -236,7 +236,7 @@ static void PackSUPERPOINTFeatures(
 
 static void PackORBFeatures(
     const std::vector<cv::KeyPoint> &vKpts, const cv::Mat &desp,
-    unsigned int &mem_cur, char *mem) {
+    long long &mem_cur, char *mem) {
     unsigned int nKpts = vKpts.size();
     VLOG(10) << "keyframe kpts: " << nKpts;
     PutDataToMem(mem + mem_cur, &(nKpts), sizeof(nKpts), mem_cur);

@@ -604,12 +604,12 @@ void PointCloudObjDetector::Clear() {
     VLOG(10) << "PointCloudObjDetector::Clear";
 }
 
-bool PointCloudObjDetector::Load(const int &mem_size, const char *mem) {
+bool PointCloudObjDetector::Load(const long long &mem_size, const char *mem) {
     VLOG(10) << "PointCloudObjDetector::Load";
     return mObj->LoadPointCloud(mem_size, mem);
 }
 
-bool PointCloudObjDetector::Save(int &mem_size, char **mem) {
+bool PointCloudObjDetector::Save(long long &mem_size, char **mem) {
     VLOG(10) << "PointCloudObjDetector::Save";
     return mObj->Save(mem_size, mem);
 }

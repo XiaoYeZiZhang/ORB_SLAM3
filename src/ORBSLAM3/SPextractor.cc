@@ -81,10 +81,7 @@ SPextractor::SPextractor(
     float _minThFAST, bool _is_use_cuda)
     : nfeatures(_nfeatures), scaleFactor(_scaleFactor), nlevels(_nlevels),
       iniThFAST(_iniThFAST), minThFAST(_minThFAST), is_use_cuda(_is_use_cuda) {
-    model = make_shared<SuperPoint>();
     torch::Device device(torch::kCUDA);
-    model->to(device);
-
     traced_module_480_640 =
         std::make_shared<torch::jit::script::Module>(torch::jit::load(
             "/home/zhangye/data1/traced_superpoint_model_480*640.pt"));
@@ -131,6 +128,9 @@ SPextractor::SPextractor(
         nDesiredFeaturesPerScale *= factor;
     }
     mnFeaturesPerLevel[nlevels - 1] = std::max(nfeatures - sumFeatures, 0);
+
+    detector = SPDetector(
+        traced_module_480_640, traced_module_400_533, traced_module_333_444);
 }
 
 vector<cv::KeyPoint> SPextractor::DistributeOctTree(
@@ -377,9 +377,6 @@ void SPextractor::ComputeKeyPointsWithMask(
     const float W = 30;
 
     for (int level = 0; level < nlevels; ++level) {
-        SPDetector detector(
-            model, traced_module_480_640, traced_module_400_533,
-            traced_module_333_444);
         detector.detect(mvImagePyramid[level], level, is_use_cuda);
 
         const int minBorderX = 0; // EDGE_THRESHOLD - 3;
@@ -475,10 +472,8 @@ void SPextractor::ComputeKeyPointsOctTree(
     allKeypoints.resize(nlevels);
     vector<cv::Mat> vDesc;
     const float W = 30;
+
     for (int level = 0; level < nlevels; ++level) {
-        SPDetector detector(
-            model, traced_module_480_640, traced_module_400_533,
-            traced_module_333_444);
         detector.detect(mvImagePyramid[level], level, is_use_cuda);
 
         const int minBorderX = 0; // EDGE_THRESHOLD - 3;

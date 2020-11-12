@@ -444,7 +444,6 @@ void Viewer::Draw() {
                 *menuShowInertialGraph = true;
                 *menuShowKeyFrames = true;
                 *menuShowPoints = true;
-                *menuLocalizationMode = false;
                 bFollow = true;
                 *menuFollowCamera = false;
                 *menuShow3DObject = true;

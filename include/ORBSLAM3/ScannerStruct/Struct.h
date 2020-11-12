@@ -69,7 +69,11 @@ public:
 
     float m_vertex_list_p[8][3];
     GLint m_index_list[12][2];
-    std::map<int, std::vector<int>> triangle_plane;
+    std::map<int, std::pair<std::vector<int>, Eigen::Vector3d>> triangle_plane;
+#if 0
+    std::map<int, std::map<int, std::vector<Eigen::Vector3d>>>
+        small_triangle_plane;
+#endif
     int minTriangleIndex = -1;
 
 private:

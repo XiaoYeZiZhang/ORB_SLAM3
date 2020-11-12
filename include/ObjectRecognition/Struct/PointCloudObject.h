@@ -25,7 +25,7 @@ typedef long unsigned int MapPointIndex;
 class MapPoint {
 public:
     typedef std::shared_ptr<MapPoint> Ptr;
-    bool Load(unsigned int &mem_pos, const char *mem);
+    bool Load(long long &mem_pos, const char *mem);
     bool Save(int &mem_size, char **mem);
     bool IsBad();
 
@@ -60,7 +60,7 @@ public:
     typedef std::shared_ptr<KeyFrame> Ptr;
 
     int GetID();
-    void ReadFromMemory(unsigned int &mem_pos, const char *mem);
+    void ReadFromMemory(long long &mem_pos, const char *mem);
     void SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);
     void GetPose(Eigen::Matrix3d &Rcw, Eigen::Vector3d &tcw);
     cv::Mat &GetRawImage();
@@ -101,13 +101,13 @@ class Object : public ObjectBase {
 public:
     Object(int id);
     virtual ~Object();
-    bool Load(const int &mem_size, const char *mem) {
+    bool Load(const long long &mem_size, const char *mem) {
         return true;
     };
-    bool LoadPointCloud(const int &mem_size, const char *mem);
+    bool LoadPointCloud(const long long &mem_size, const char *mem);
     bool LoadMesh(const int &mem_size, const char *mem);
     void SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);
-    bool Save(int &mem_size, char **mem);
+    bool Save(long long &mem_size, char **mem);
     std::vector<MapPoint::Ptr> &GetPointClouds();
     std::vector<KeyFrame::Ptr> &GetKeyFrames();
     void SetDatabase(const std::shared_ptr<DBoW3::Database> &database);

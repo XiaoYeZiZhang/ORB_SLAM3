@@ -167,7 +167,7 @@ int ObjRecongManager::LoadDic(char const *buffer, int buffer_len) {
 }
 
 int ObjRecongManager::LoadModel(
-    const int id, const char *buffer, int buffer_len) {
+    const int id, const char *buffer, long long buffer_len) {
     VLOG(10) << "ObjRecong Manager LoadModel";
     std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
     if (IsUninitializedState()) {

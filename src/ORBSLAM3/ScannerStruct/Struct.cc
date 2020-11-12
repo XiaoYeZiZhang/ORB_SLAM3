@@ -176,36 +176,37 @@ void Object::SetAllTriangles() {
         minCornerPoint(0), maxCornerPoint(1), maxCornerPoint(2));
     Eigen::Vector3d point7 = Eigen::Vector3d(
         maxCornerPoint(0), maxCornerPoint(1), maxCornerPoint(2));
+
     // front
     t1.SetVertex(point6, point7, point4);
     t2.SetVertex(point7, point4, point5);
-    triangle_plane[1] = {6, 7, 5, 4};
-    triangle_plane[2] = {6, 7, 5, 4};
+    triangle_plane[1] = {{6, 7, 5, 4}, Eigen::Vector3d(0, 0, 1)};
+    triangle_plane[2] = {{6, 7, 5, 4}, Eigen::Vector3d(0, 0, 1)};
     // back
     t3.SetVertex(point2, point3, point0);
     t4.SetVertex(point3, point0, point1);
-    triangle_plane[3] = {2, 3, 1, 0};
-    triangle_plane[4] = {2, 3, 1, 0};
+    triangle_plane[3] = {{3, 2, 0, 1}, Eigen::Vector3d(0, 0, -1)};
+    triangle_plane[4] = {{3, 2, 0, 1}, Eigen::Vector3d(0, 0, -1)};
     // left
     t5.SetVertex(point2, point6, point4);
     t6.SetVertex(point2, point4, point0);
-    triangle_plane[5] = {2, 0, 4, 6};
-    triangle_plane[6] = {2, 0, 4, 6};
+    triangle_plane[5] = {{2, 6, 4, 0}, Eigen::Vector3d(-1, 0, 0)};
+    triangle_plane[6] = {{2, 6, 4, 0}, Eigen::Vector3d(-1, 0, 0)};
     // right
     t7.SetVertex(point3, point7, point5);
     t8.SetVertex(point3, point5, point1);
-    triangle_plane[7] = {3, 7, 5, 1};
-    triangle_plane[8] = {3, 7, 5, 1};
+    triangle_plane[7] = {{7, 3, 1, 5}, Eigen::Vector3d(1, 0, 0)};
+    triangle_plane[8] = {{7, 3, 1, 5}, Eigen::Vector3d(1, 0, 0)};
     // up
     t9.SetVertex(point3, point2, point6);
     t10.SetVertex(point3, point6, point0);
-    triangle_plane[9] = {2, 3, 7, 6};
-    triangle_plane[10] = {2, 3, 7, 6};
+    triangle_plane[9] = {{2, 3, 7, 6}, Eigen::Vector3d(0, 1, 0)};
+    triangle_plane[10] = {{2, 3, 7, 6}, Eigen::Vector3d(0, 1, 0)};
     // down
     t11.SetVertex(point0, point1, point4);
     t12.SetVertex(point1, point4, point5);
-    triangle_plane[11] = {0, 1, 5, 4};
-    triangle_plane[12] = {0, 1, 5, 4};
+    triangle_plane[11] = {{0, 1, 5, 4}, Eigen::Vector3d(0, -1, 0)};
+    triangle_plane[12] = {{0, 1, 5, 4}, Eigen::Vector3d(0, -1, 0)};
 
     triangles.clear();
     triangles = {t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12};

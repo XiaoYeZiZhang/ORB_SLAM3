@@ -141,8 +141,8 @@ public:
     bool MappointInBoundingbox(const cv::Mat &pos_mat);
     void GetBoundingBoxCoordsRange();
     bool WriteToMemoryFor3DObject(
-        const unsigned int &mem_size, char *mem, const bool is_superpoint);
-    unsigned int
+        const long long &mem_size, char *mem, const bool is_superpoint);
+    long long
     GetMemSizeFor3DObject(const std::string &version, const bool is_superpoint);
     void SetScanBoundingbox_W(const std::vector<Eigen::Vector3d> &boundingbox);
     std::set<Map *> mspMaps;

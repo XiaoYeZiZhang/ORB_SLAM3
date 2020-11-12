@@ -290,13 +290,13 @@ bool Atlas::MappointInBoundingbox(const cv::Mat &mappoint_pos) {
     }
 }
 
-unsigned int Atlas::GetMemSizeFor3DObject(
+long long Atlas::GetMemSizeFor3DObject(
     const std::string &version, const bool is_superpoint) {
     // already set boundingbox
     GetBoundingBoxCoordsRange();
     m_3dobject_version_ = version;
 
-    unsigned int nTotalSize = 0;
+    long long nTotalSize = 0;
     if (!mspMaps.empty()) {
         // version
         nTotalSize += m_3dobject_version_.size();
@@ -310,7 +310,7 @@ unsigned int Atlas::GetMemSizeFor3DObject(
         // bounding box + scale
         nTotalSize += 27 * sizeof(double);
 
-        VLOG(5) << "getmemsize1" << nTotalSize;
+        VLOG(0) << "getmemsize1" << nTotalSize;
         nTotalSize += sizeof(unsigned int);
         std::vector<Map *> saved_map;
         struct compFunctor {
@@ -322,7 +322,11 @@ unsigned int Atlas::GetMemSizeFor3DObject(
             mspMaps.begin(), mspMaps.end(), std::back_inserter(saved_map));
         sort(saved_map.begin(), saved_map.end(), compFunctor());
 
-        int covisualize_keyframe_num = 4;
+#ifdef SUPERPOINT
+        int covisualize_keyframe_num = 8;
+#else
+        int covisualize_keyframe_num = 5;
+#endif
         for (Map *pMi : saved_map) {
             for (MapPoint *pMPi :
                  pMi->GetAllMapPoints(covisualize_keyframe_num)) {
@@ -339,7 +343,7 @@ unsigned int Atlas::GetMemSizeFor3DObject(
             return 0;
         }
 
-        VLOG(5) << "getmemsize2" << nTotalSize;
+        VLOG(0) << "getmemsize2" << nTotalSize;
         if (!is_superpoint) {
             for (Map *pMi : saved_map) {
                 for (KeyFrame *pKFi : pMi->GetAllKeyFrames()) {
@@ -353,15 +357,15 @@ unsigned int Atlas::GetMemSizeFor3DObject(
             nTotalSize += item->GetMemSizeFor3DObject(is_superpoint);
             VLOG(5) << "get mem id: " << item->mnId << " " << nTotalSize;
         }
-        VLOG(5) << "getmemsize3" << nTotalSize;
+        VLOG(0) << "getmemsize3" << nTotalSize;
     }
 
     return nTotalSize;
 }
 
 bool Atlas::WriteToMemoryFor3DObject(
-    const unsigned int &mem_size, char *mem, const bool is_superpoint) {
-    unsigned int mem_pos = 0;
+    const long long &mem_size, char *mem, const bool is_superpoint) {
+    long long mem_pos = 0;
     const auto &camera_intrinsic =
         ObjRecognition::CameraIntrinsic::GetInstance();
     char version_str[sizeof(m_3dobject_version_)];
@@ -417,19 +421,21 @@ bool Atlas::WriteToMemoryFor3DObject(
         pMPi->WriteToMemoryFor3DObject(
             mem_pos, mem, m_object_Two, is_superpoint);
     }
-    VLOG(5) << "saved mappoint num: " << nMPs;
+    VLOG(0) << "saved mappoint num: " << nMPs;
     VLOG(5) << "writememsize2" << mem_pos;
 
     // keyframe size:
     Tools::PutDataToMem(mem + mem_pos, &nKFs, sizeof(nKFs), mem_pos);
 
+    int num = 0;
     for (KeyFrame *pKFi : m_saved_keyframe_for_3dobject_) {
         pKFi->WriteToMemoryFor3DObject(
             mem_pos, mem, m_object_Two, is_superpoint);
-        VLOG(5) << "write mem id: " << pKFi->mnId << " " << mem_pos;
+        VLOG(0) << "write mem id: " << num++ << " " << mem_pos;
     }
 
-    VLOG(5) << "writememsize3" << mem_pos;
+    VLOG(0) << "save keyframes num: " << nKFs;
+    VLOG(0) << "writememsize3" << mem_pos;
     return mem_pos == mem_size;
 }
 

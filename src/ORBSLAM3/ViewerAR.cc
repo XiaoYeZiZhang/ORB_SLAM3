@@ -408,7 +408,11 @@ void ViewerAR::Pick3DPointCloud() {
     pangolin::OpenGlMatrix modelview_matrix = s_cam_SfM.GetModelViewMatrix();
     pangolin::OpenGlMatrix projection_matrix = s_cam_SfM.GetProjectionMatrix();
 
-    int covisualize_keyframe_num = 4;
+#ifdef SUPERPOINT
+    int covisualize_keyframe_num = 8;
+#else
+    int covisualize_keyframe_num = 5;
+#endif
     auto all_mappoints = mpMapDrawer->mpAtlas_superpoint->GetAllMapPoints(
         covisualize_keyframe_num);
     for (auto mappoint : all_mappoints) {
@@ -729,12 +733,11 @@ void ViewerAR::GetImagePose(
 }
 
 Eigen::Vector3d ViewerAR::GetRay(
+    const float mouse_x, const float mouse_y,
     const Eigen::Matrix4d &transformationMatrix,
     const Eigen::Matrix4d &projectionMatrix) {
-    float x =
-        (2.0f * m_mouseState.GetMousePoseX()) / m_scene.GetSceneWidth() - 1.0f;
-    float y =
-        1.0f - (2.0f * m_mouseState.GetMousePoseY()) / m_scene.GetSceneHeight();
+    float x = (2.0f * mouse_x) / m_scene.GetSceneWidth() - 1.0f;
+    float y = 1.0f - (2.0f * mouse_y) / m_scene.GetSceneHeight();
     float z = 1.0f;
     Eigen::Vector3d ray_nds = Eigen::Vector3d(x, y, z);
     Eigen::Vector4d ray_clip =
@@ -784,7 +787,219 @@ bool IsIntersectWithTriangle(
 }
 
 void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
+#if 0
+    Eigen::Matrix4d transformationMatrix = Eigen::Matrix4d::Identity();
+    Eigen::Matrix4d projectionMatrix = Eigen::Matrix4d::Identity();
+    GLfloat view_model[16];
+    glGetFloatv(GL_MODELVIEW_MATRIX, view_model);
+    GLdouble projection[16];
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);
+    transformationMatrix << view_model[0], view_model[1], view_model[2],
+        view_model[3], view_model[4], view_model[5], view_model[6],
+        view_model[7], view_model[8], view_model[9], view_model[10],
+        view_model[11], view_model[12], view_model[13], view_model[14],
+        view_model[15];
+
+    projectionMatrix << projection[0], projection[1], projection[2],
+        projection[3], projection[4], projection[5], projection[6],
+        projection[7], projection[8], projection[9], projection[10],
+        projection[11], projection[12], projection[13], projection[14],
+        projection[15];
+        if (m_is_fix) {
+            m_boundingbox_p.minTriangleIndex = -1;
+            // interaction scan
+            Eigen::Vector3d ray = GetRay(
+                m_scene.GetSceneWidth() / 2, m_scene.GetSceneHeight() / 2,
+                transformationMatrix.transpose(),
+                projectionMatrix.transpose());
+            // from world point to camera
+            Eigen::Vector3d ray_dir_w = (m_camera.GetCamPos() -
+            ray).normalized();
+            //            glBegin(GL_LINES);
+            //            glColor3f(1.0, 1.0, 0.0);
+            //            glVertex3f(
+            //                m_camera.GetCamPos()[0],
+            m_camera.GetCamPos()[1],
+            //                m_camera.GetCamPos()[2]);
+            //            glVertex3f(ray(0), ray(1), ray(2));
+            //            glEnd();
+            Eigen::Vector3d CameraPosition_w = m_camera.GetCamPos();
+            // change to plane coords
+            Eigen::Vector3d CameraPosition_p =
+                Change2PlaneCoords(Twp, CameraPosition_w, true);
+            Eigen::Vector3d ray_dir_p = Change2PlaneCoords(Twp, ray_dir_w,
+            false); float minDistance = INT_MAX; Eigen::Vector3d
+            intersection_point = Eigen::Vector3d::Zero();
+
+            for (size_t i = 0; i < m_boundingbox_p.GetAllTriangles().size();
+            i++) {
+                Triangle thisTriangle = m_boundingbox_p.GetAllTriangles()[i];
+                if (i == 0) {
+                    auto pts = thisTriangle.GetVertex();
+                }
+                float t;
+                float u;
+                float v;
+
+                // use plane coords to compute intersection
+                if (IsIntersectWithTriangle(
+                        CameraPosition_p, ray_dir_p,
+                        thisTriangle.GetVertex()[0],
+                        thisTriangle.GetVertex()[1],
+                        thisTriangle.GetVertex()[2], t, u, v)) {
+
+                    Eigen::Vector3d intersectionPoint =
+                        (1 - u - v) * thisTriangle.GetVertex()[0] +
+                        thisTriangle.GetVertex()[1] * u +
+                        thisTriangle.GetVertex()[2] * v;
+
+                    float distance =
+                        pow((intersectionPoint(0) - CameraPosition_p[0]), 2) +
+                        pow((intersectionPoint(1) - CameraPosition_p[1]), 2) +
+                        pow((intersectionPoint(2) - CameraPosition_p[2]), 2);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        m_boundingbox_p.minTriangleIndex = i;
+                        intersection_point = intersectionPoint;
+                    }
+                }
+            }
+
+            // draw this intersection plane
+            if (m_boundingbox_p.minTriangleIndex != -1) {
+                // draw: under plane coords:
+                glPushMatrix();
+                Twp.Multiply();
+                glBegin(GL_QUADS);
+                glColor3f(0.0f, 0.0f, 1.0f);
+                Eigen::Vector3d plane_norm_dir =
+                    m_boundingbox_p
+                        .triangle_plane[m_boundingbox_p.minTriangleIndex + 1]
+                        .second -
+                    Eigen::Vector3d(0, 0, 0);
+
+                double radian_angle = atan2(
+                    plane_norm_dir.cross(ray_dir_p).norm(),
+                    plane_norm_dir.transpose() * ray_dir_p);
+                // draw small cube
+                if (radian_angle < 1 / 6 * 3.14 &&
+                    intersection_point != Eigen::Vector3d::Zero()) {
+
+                    vector<int> point_id = {
+                        m_boundingbox_p
+                            .triangle_plane[m_boundingbox_p.minTriangleIndex +
+                            1] .first[0],
+                        m_boundingbox_p
+                            .triangle_plane[m_boundingbox_p.minTriangleIndex +
+                            1] .first[1],
+                        m_boundingbox_p
+                            .triangle_plane[m_boundingbox_p.minTriangleIndex +
+                            1] .first[2],
+                        m_boundingbox_p
+                            .triangle_plane[m_boundingbox_p.minTriangleIndex +
+                            1] .first[3]};
+
+                    auto point0 =
+                        m_boundingbox_p.m_vertex_list_p
+                            [m_boundingbox_p
+                                 .triangle_plane
+                                     [m_boundingbox_p.minTriangleIndex + 1]
+                                 .first[0]];
+                    auto point1 =
+                        m_boundingbox_p.m_vertex_list_p
+                            [m_boundingbox_p
+                                 .triangle_plane
+                                     [m_boundingbox_p.minTriangleIndex + 1]
+                                 .first[1]];
+                    auto point2 =
+                        m_boundingbox_p.m_vertex_list_p
+                            [m_boundingbox_p
+                                 .triangle_plane
+                                     [m_boundingbox_p.minTriangleIndex + 1]
+                                 .first[2]];
+                    auto point3 =
+                        m_boundingbox_p.m_vertex_list_p
+                            [m_boundingbox_p
+                                 .triangle_plane
+                                     [m_boundingbox_p.minTriangleIndex + 1]
+                                 .first[3]];
+
+                    if (point_id[0] == 6) {
+                        if(intersection_point.x() < (point1[0] - point0[0])
+                        / 3.0) { }else if(intersection_point.x() < (point1[0]
+                        - point0[0]) * (2.0 / 3.0)) {
+
+                        }else {
+
+                        }
+                    }else if(point_id[0] == 7) {
+                        if(intersection_point.z() < (point0[2] - point1[2])
+                        / 3.0) {
+
+                        }else if(intersection_point.z() < (point0[2] -
+                        point1[2]) * (2.0 / 3.0)) {
+
+                        }else {
+
+                        }
+                    }else if(point_id[0] == 3) {
+                        if(intersection_point.x() < (point0[0] - point1[0])
+                        / 3.0) {
+
+                        }else if(intersection_point.x() < (point0[0] -
+                        point1[0]) * (2.0 / 3.0)) {
+
+                        }else {
+
+                        }
+                    }else if(point_id[0] == 2 && point_id[1] == 6) {
+                        if(intersection_point.z() < (point1[2] - point0[2])
+                        / 3.0) {
+
+                        }else if(intersection_point.z() < (point1[2] -
+                        point0[2]) * (2.0 / 3.0)) {
+
+                        }else {
+
+                        }
+                    }else if(point_id[0] == 2 && point_id[1] == 3) {
+                        if(intersection_point.x() < (point1[0] - point0[0])
+                        / 3.0) {
+
+                        }else if(intersection_point.x() < (point1[0] -
+                        point0[0]) * (2.0 / 3.0)) {
+
+                        }else {
+
+                        }
+                    }
+                }
+                glEnd();
+                glPopMatrix();
+            } else {
+            }
+        }
+#endif
+
     if (m_boundingbox_p.IsExist()) {
+        Eigen::Matrix4d transformationMatrix = Eigen::Matrix4d::Identity();
+        Eigen::Matrix4d projectionMatrix = Eigen::Matrix4d::Identity();
+        GLfloat view_model[16];
+        glGetFloatv(GL_MODELVIEW_MATRIX, view_model);
+        GLdouble projection[16];
+        glGetDoublev(GL_PROJECTION_MATRIX, projection);
+        transformationMatrix << view_model[0], view_model[1], view_model[2],
+            view_model[3], view_model[4], view_model[5], view_model[6],
+            view_model[7], view_model[8], view_model[9], view_model[10],
+            view_model[11], view_model[12], view_model[13], view_model[14],
+            view_model[15];
+
+        projectionMatrix << projection[0], projection[1], projection[2],
+            projection[3], projection[4], projection[5], projection[6],
+            projection[7], projection[8], projection[9], projection[10],
+            projection[11], projection[12], projection[13], projection[14],
+            projection[15];
+
         Eigen::Vector2d left_button;
         if (mp_scan_handler3d->GetLeftButtonPos(left_button)) {
             m_boundingbox_p.minTriangleIndex = -1;
@@ -797,49 +1012,18 @@ void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
             m_boundingbox_p.minTriangleIndex = -1;
             m_boundingbox_p.SetChangeShapeOffset(0.0);
 
-            Eigen::Matrix4d transformationMatrix = Eigen::Matrix4d::Identity();
-            Eigen::Matrix4d projectionMatrix = Eigen::Matrix4d::Identity();
-            GLfloat view_model[16];
-            glGetFloatv(GL_MODELVIEW_MATRIX, view_model);
-            GLdouble projection[16];
-            glGetDoublev(GL_PROJECTION_MATRIX, projection);
-            transformationMatrix << view_model[0], view_model[1], view_model[2],
-                view_model[3], view_model[4], view_model[5], view_model[6],
-                view_model[7], view_model[8], view_model[9], view_model[10],
-                view_model[11], view_model[12], view_model[13], view_model[14],
-                view_model[15];
-
-            projectionMatrix << projection[0], projection[1], projection[2],
-                projection[3], projection[4], projection[5], projection[6],
-                projection[7], projection[8], projection[9], projection[10],
-                projection[11], projection[12], projection[13], projection[14],
-                projection[15];
-
             Eigen::Vector3d ray = GetRay(
+                m_mouseState.GetMousePoseX(), m_mouseState.GetMousePoseY(),
                 transformationMatrix.transpose(), projectionMatrix.transpose());
 
             Eigen::Vector3d ray_dir = (ray - m_camera.GetCamPos()).normalized();
-            ray = m_camera.GetCamPos() + ray_dir * 5.0f;
-
-            //            glBegin(GL_LINES);
-            //            glColor3f(1.0, 1.0, 0.0);
-            //            glVertex3f(
-            //                m_camera.GetCamPos()[0], m_camera.GetCamPos()[1],
-            //                m_camera.GetCamPos()[2]);
-            //            glVertex3f(ray(0), ray(1), ray(2));
-            //            glEnd();
-
             // ray and campos: under world coords
             Eigen::Vector3d CameraPosition_w = m_camera.GetCamPos();
-            //            Eigen::Vector3d RayDir_w = ray;
-            Eigen::Vector3d RayDir_w = ray_dir;
             // change to plane coords
             Eigen::Vector3d CameraPosition_p =
                 Change2PlaneCoords(Twp, CameraPosition_w, true);
-            Eigen::Vector3d RayDir_p = Change2PlaneCoords(Twp, RayDir_w, false);
-
+            Eigen::Vector3d ray_dir_p = Change2PlaneCoords(Twp, ray_dir, false);
             // m_boundingbox_p: under plane coords
-            //      intersection
             float minDistance = INT_MAX;
             for (size_t i = 0; i < m_boundingbox_p.GetAllTriangles().size();
                  i++) {
@@ -853,7 +1037,8 @@ void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
 
                 // use plane coords to compute intersection
                 if (IsIntersectWithTriangle(
-                        CameraPosition_p, RayDir_p, thisTriangle.GetVertex()[0],
+                        CameraPosition_p, ray_dir_p,
+                        thisTriangle.GetVertex()[0],
                         thisTriangle.GetVertex()[1],
                         thisTriangle.GetVertex()[2], t, u, v)) {
 
@@ -882,22 +1067,26 @@ void ViewerAR::ChangeShape(pangolin::OpenGlMatrix Twp) {
                 Twp.Multiply();
                 glBegin(GL_QUADS);
                 glColor3f(0.0f, 0.0f, 1.0f);
-                glVertex3fv(
-                    m_boundingbox_p.m_vertex_list_p
-                        [m_boundingbox_p.triangle_plane
-                             [m_boundingbox_p.minTriangleIndex + 1][0]]);
-                glVertex3fv(
-                    m_boundingbox_p.m_vertex_list_p
-                        [m_boundingbox_p.triangle_plane
-                             [m_boundingbox_p.minTriangleIndex + 1][1]]);
-                glVertex3fv(
-                    m_boundingbox_p.m_vertex_list_p
-                        [m_boundingbox_p.triangle_plane
-                             [m_boundingbox_p.minTriangleIndex + 1][2]]);
-                glVertex3fv(
-                    m_boundingbox_p.m_vertex_list_p
-                        [m_boundingbox_p.triangle_plane
-                             [m_boundingbox_p.minTriangleIndex + 1][3]]);
+                glVertex3fv(m_boundingbox_p.m_vertex_list_p
+                                [m_boundingbox_p
+                                     .triangle_plane
+                                         [m_boundingbox_p.minTriangleIndex + 1]
+                                     .first[0]]);
+                glVertex3fv(m_boundingbox_p.m_vertex_list_p
+                                [m_boundingbox_p
+                                     .triangle_plane
+                                         [m_boundingbox_p.minTriangleIndex + 1]
+                                     .first[1]]);
+                glVertex3fv(m_boundingbox_p.m_vertex_list_p
+                                [m_boundingbox_p
+                                     .triangle_plane
+                                         [m_boundingbox_p.minTriangleIndex + 1]
+                                     .first[2]]);
+                glVertex3fv(m_boundingbox_p.m_vertex_list_p
+                                [m_boundingbox_p
+                                     .triangle_plane
+                                         [m_boundingbox_p.minTriangleIndex + 1]
+                                     .first[3]]);
                 glEnd();
                 glPopMatrix();
             } else {
@@ -962,6 +1151,55 @@ void ViewerAR::DrawBoundingbox(const float x, const float y, const float z) {
                     .m_vertex_list_p[m_boundingbox_p.m_index_list[i][j]]);
         }
     }
+    glEnd();
+
+    // draw plane color
+    glBegin(GL_QUADS);
+    glColor4f(0.0f, 1.0f, 0.0f, 0.2f);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[0]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[1]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[5]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[4]);
+    glEnd();
+
+    glBegin(GL_QUADS);
+    glColor4f(0.0f, 1.0f, 0.0f, 0.2f);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[2]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[3]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[7]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[6]);
+    glEnd();
+
+    glBegin(GL_QUADS);
+    glColor4f(0.0f, 1.0f, 0.0f, 0.2f);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[2]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[0]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[4]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[6]);
+    glEnd();
+
+    glBegin(GL_QUADS);
+    glColor4f(0.0f, 1.0f, 0.0f, 0.2f);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[3]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[7]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[5]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[1]);
+    glEnd();
+
+    glBegin(GL_QUADS);
+    glColor4f(0.0f, 1.0f, 0.0f, 0.2f);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[6]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[7]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[5]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[4]);
+    glEnd();
+
+    glBegin(GL_QUADS);
+    glColor4f(0.0f, 1.0f, 0.0f, 0.2f);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[2]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[3]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[1]);
+    glVertex3fv(m_boundingbox_p.m_vertex_list_p[0]);
     glEnd();
 }
 

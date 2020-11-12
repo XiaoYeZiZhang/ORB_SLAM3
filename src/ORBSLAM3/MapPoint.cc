@@ -609,8 +609,8 @@ void MapPoint::UpdateMap(Map *pMap) {
     mpMap = pMap;
 }
 
-unsigned int MapPoint::GetMemSizeFor3DObject(bool is_superpoint) {
-    int total_size = 0;
+long long MapPoint::GetMemSizeFor3DObject(bool is_superpoint) {
+    long long total_size = 0;
     total_size += sizeof(mnId);
     // position
     total_size += 3 * sizeof(double);
@@ -640,7 +640,7 @@ unsigned int MapPoint::GetMemSizeFor3DObject(bool is_superpoint) {
 }
 
 void MapPoint::WriteToMemoryFor3DObject(
-    unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two,
+    long long &mem_pos, char *mem, const Eigen::Matrix4d &Two,
     bool is_superpoint) {
     Tools::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
     Eigen::Vector3d pos = Eigen::Vector3d(

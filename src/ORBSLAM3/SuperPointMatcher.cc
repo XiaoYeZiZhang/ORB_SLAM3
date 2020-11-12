@@ -14,6 +14,42 @@ SuperPointMatcher::SuperPointMatcher(float nnratio, bool checkOri)
     : mfNNratio(nnratio), mbCheckOrientation(checkOri) {
 }
 
+void SuperPointMatcher::FindMatchByBruteForce(
+    const std::vector<cv::KeyPoint> &keypoints1,
+    const std::vector<cv::KeyPoint> &keypoints2, const cv::Mat &frmDesp,
+    const cv::Mat &pcDesp, std::vector<cv::DMatch> &goodMatches) {
+    std::vector<cv::DMatch> matches;
+    cv::BFMatcher matcher(cv::NormTypes::NORM_L2, true);
+    matcher.match(frmDesp, pcDesp, matches);
+
+    VLOG(15) << "after distance Ratio matches size: " << matches.size();
+
+    const int kgoodMatchesThreshold = 200;
+    for (auto &match : matches) {
+        goodMatches.push_back(match);
+    }
+
+    // Prepare data for findHomography
+    std::vector<cv::Point2f> srcPoints(goodMatches.size());
+    std::vector<cv::Point2f> dstPoints(goodMatches.size());
+
+    for (size_t i = 0; i < goodMatches.size(); i++) {
+        srcPoints[i] = keypoints2[goodMatches[i].trainIdx].pt;
+        dstPoints[i] = keypoints1[goodMatches[i].queryIdx].pt;
+    }
+
+    std::vector<uchar> inliersMask(srcPoints.size());
+    auto homography =
+        findHomography(srcPoints, dstPoints, CV_FM_RANSAC, 6.0, inliersMask);
+
+    std::vector<cv::DMatch> inliers;
+    for (size_t i = 0; i < inliersMask.size(); i++) {
+        if (inliersMask[i])
+            inliers.push_back(matches[i]);
+    }
+    goodMatches.swap(inliers);
+}
+
 int SuperPointMatcher::SearchForTriangulation(
     KeyFrame *pKF1, KeyFrame *pKF2, const cv::Mat &F12,
     std::vector<pair<size_t, size_t>> &vMatchedPairs) {
@@ -43,81 +79,151 @@ int SuperPointMatcher::SearchForTriangulation(
 
     const float factor = 1.0f / HISTO_LENGTH;
 
-    DBoW2::FeatureVector::const_iterator f1it = vFeatVec1.begin();
-    DBoW2::FeatureVector::const_iterator f2it = vFeatVec2.begin();
-    DBoW2::FeatureVector::const_iterator f1end = vFeatVec1.end();
-    DBoW2::FeatureVector::const_iterator f2end = vFeatVec2.end();
+#if 1
+    // use brute force method
+    std::vector<cv::DMatch> good_matches;
+    FindMatchByBruteForce(
+        pKF1->mvKeysUn_superpoint, pKF2->mvKeysUn_superpoint,
+        pKF1->mDescriptors_superpoint, pKF2->mDescriptors_superpoint,
+        good_matches);
 
-    while (f1it != f1end && f2it != f2end) {
-        if (f1it->first == f2it->first) {
-            for (size_t i1 = 0, iend1 = f1it->second.size(); i1 < iend1; i1++) {
-                const size_t idx1 = f1it->second[i1];
-                MapPoint *pMP1 = pKF1->GetSuperpointMapPoint(idx1);
-                // If there is already a MapPoint skip
-                if (pMP1)
-                    continue;
-                const cv::KeyPoint &kp1 = pKF1->mvKeysUn_superpoint[idx1];
-                const cv::Mat &d1 = pKF1->mDescriptors_superpoint.row(idx1);
+    for (int i = 0; i < good_matches.size(); i++) {
+        const size_t idx1 = good_matches[i].queryIdx;
+        MapPoint *pMP1 = pKF1->GetSuperpointMapPoint(idx1);
+        // If there is already a MapPoint skip
+        if (pMP1)
+            continue;
+        const cv::KeyPoint &kp1 = pKF1->mvKeysUn_superpoint[idx1];
+        const cv::Mat &d1 = pKF1->mDescriptors_superpoint.row(idx1);
 
-                float bestDist = TH_LOW;
-                int bestIdx2 = -1;
+        float bestDist = TH_LOW;
+        int bestIdx2 = -1;
+        size_t idx2 = good_matches[i].trainIdx;
+        MapPoint *pMP2 = pKF2->GetSuperpointMapPoint(idx2);
 
-                for (size_t i2 = 0, iend2 = f2it->second.size(); i2 < iend2;
-                     i2++) {
-                    size_t idx2 = f2it->second[i2];
-                    MapPoint *pMP2 = pKF2->GetSuperpointMapPoint(idx2);
+        // If we have already matched or there is a MapPoint skip
+        if (vbMatched2[idx2] || pMP2)
+            continue;
 
-                    // If we have already matched or there is a MapPoint skip
-                    if (vbMatched2[idx2] || pMP2)
-                        continue;
+        const cv::Mat &d2 = pKF2->mDescriptors_superpoint.row(idx2);
+        const float dist = DescriptorDistance(d1, d2);
 
-                    const cv::Mat &d2 = pKF2->mDescriptors_superpoint.row(idx2);
-                    const float dist = DescriptorDistance(d1, d2);
+        if (dist > TH_LOW || dist > bestDist)
+            continue;
 
-                    if (dist > TH_LOW || dist > bestDist)
-                        continue;
+        const cv::KeyPoint &kp2 = pKF2->mvKeysUn_superpoint[idx2];
 
-                    const cv::KeyPoint &kp2 = pKF2->mvKeysUn_superpoint[idx2];
+        const float distex = ex - kp2.pt.x;
+        const float distey = ey - kp2.pt.y;
+        if (distex * distex + distey * distey <
+            100 * pKF2->mvScaleFactors_suerpoint[kp2.octave])
+            continue;
 
-                    const float distex = ex - kp2.pt.x;
-                    const float distey = ey - kp2.pt.y;
-                    if (distex * distex + distey * distey <
-                        100 * pKF2->mvScaleFactors_suerpoint[kp2.octave])
-                        continue;
+        if (CheckDistEpipolarLine(kp1, kp2, F12, pKF2)) {
+            bestIdx2 = idx2;
+        }
 
-                    if (CheckDistEpipolarLine(kp1, kp2, F12, pKF2)) {
-                        bestIdx2 = idx2;
-                        bestDist = dist;
-                    }
-                }
+        if (bestIdx2 >= 0) {
+            const cv::KeyPoint &kp2 = pKF2->mvKeysUn_superpoint[bestIdx2];
+            vMatches12[idx1] = bestIdx2;
+            nmatches++;
 
-                if (bestIdx2 >= 0) {
-                    const cv::KeyPoint &kp2 =
-                        pKF2->mvKeysUn_superpoint[bestIdx2];
-                    vMatches12[idx1] = bestIdx2;
-                    nmatches++;
-
-                    if (false) {
-                        float rot = kp1.angle - kp2.angle;
-                        if (rot < 0.0)
-                            rot += 360.0f;
-                        int bin = round(rot * factor);
-                        if (bin == HISTO_LENGTH)
-                            bin = 0;
-                        assert(bin >= 0 && bin < HISTO_LENGTH);
-                        rotHist[bin].push_back(idx1);
-                    }
-                }
+            if (false) {
+                float rot = kp1.angle - kp2.angle;
+                if (rot < 0.0)
+                    rot += 360.0f;
+                int bin = round(rot * factor);
+                if (bin == HISTO_LENGTH)
+                    bin = 0;
+                assert(bin >= 0 && bin < HISTO_LENGTH);
+                rotHist[bin].push_back(idx1);
             }
-
-            f1it++;
-            f2it++;
-        } else if (f1it->first < f2it->first) {
-            f1it = vFeatVec1.lower_bound(f2it->first);
-        } else {
-            f2it = vFeatVec2.lower_bound(f1it->first);
         }
     }
+#endif
+
+#if 0
+        DBoW2::FeatureVector::const_iterator f1it = vFeatVec1.begin();
+        DBoW2::FeatureVector::const_iterator f2it = vFeatVec2.begin();
+        DBoW2::FeatureVector::const_iterator f1end = vFeatVec1.end();
+        DBoW2::FeatureVector::const_iterator f2end = vFeatVec2.end();
+
+        while (f1it != f1end && f2it != f2end) {
+            if (f1it->first == f2it->first) {
+                for (size_t i1 = 0, iend1 = f1it->second.size(); i1 < iend1;
+                i1++) {
+                    const size_t idx1 = f1it->second[i1];
+                    MapPoint *pMP1 = pKF1->GetSuperpointMapPoint(idx1);
+                    // If there is already a MapPoint skip
+                    if (pMP1)
+                        continue;
+                    const cv::KeyPoint &kp1 = pKF1->mvKeysUn_superpoint[idx1];
+                    const cv::Mat &d1 =
+                    pKF1->mDescriptors_superpoint.row(idx1);
+
+                    float bestDist = TH_LOW;
+                    int bestIdx2 = -1;
+
+                    for (size_t i2 = 0, iend2 = f2it->second.size(); i2 <
+                    iend2;
+                         i2++) {
+                        size_t idx2 = f2it->second[i2];
+                        MapPoint *pMP2 = pKF2->GetSuperpointMapPoint(idx2);
+
+                        // If we have already matched or there is a MapPoint
+                        if (vbMatched2[idx2] || pMP2)
+                            continue;
+
+                        const cv::Mat &d2 =
+                        pKF2->mDescriptors_superpoint.row(idx2);
+                        const float dist = DescriptorDistance(d1, d2);
+
+                        if (dist > TH_LOW || dist > bestDist)
+                            continue;
+
+                        const cv::KeyPoint &kp2 =
+                        pKF2->mvKeysUn_superpoint[idx2];
+
+                        const float distex = ex - kp2.pt.x;
+                        const float distey = ey - kp2.pt.y;
+                        if (distex * distex + distey * distey <
+                            100 * pKF2->mvScaleFactors_suerpoint[kp2.octave])
+                            continue;
+
+                        if (CheckDistEpipolarLine(kp1, kp2, F12, pKF2)) {
+                            bestIdx2 = idx2;
+                            bestDist = dist;
+                        }
+                    }
+
+                    if (bestIdx2 >= 0) {
+                        const cv::KeyPoint &kp2 =
+                            pKF2->mvKeysUn_superpoint[bestIdx2];
+                        vMatches12[idx1] = bestIdx2;
+                        nmatches++;
+
+                        if (false) {
+                            float rot = kp1.angle - kp2.angle;
+                            if (rot < 0.0)
+                                rot += 360.0f;
+                            int bin = round(rot * factor);
+                            if (bin == HISTO_LENGTH)
+                                bin = 0;
+                            assert(bin >= 0 && bin < HISTO_LENGTH);
+                            rotHist[bin].push_back(idx1);
+                        }
+                    }
+                }
+
+                f1it++;
+                f2it++;
+            } else if (f1it->first < f2it->first) {
+                f1it = vFeatVec1.lower_bound(f2it->first);
+            } else {
+                f2it = vFeatVec2.lower_bound(f1it->first);
+            }
+        }
+#endif
 
     if (false) {
         int ind1 = -1;
@@ -355,7 +461,6 @@ int SuperPointMatcher::SearchByProjection(
                         &CurrentKeyFrame, bestIdx2, true);
                     pMP_superpoint->ComputeDistinctiveDescriptors(true);
                     pMP_superpoint->UpdateNormalAndDepth(true);
-
                     nmatches++;
 
                     if (false) {

@@ -22,7 +22,7 @@ public:
     int CreateWithConfig();
     int LoadDic(char const *buffer, int buffer_len);
     bool LoadORBVoc(std::string &voc_path);
-    int LoadModel(const int id, const char *buffer, int buffer_len);
+    int LoadModel(const int id, const char *buffer, long long buffer_len);
 
     ObjRecognition::ObjRecogResult GetObjRecognitionResult();
     int SetObjRecongInfo();

@@ -15,7 +15,7 @@ namespace ORB_SLAM3 {
 
 class SuperPointMatcher {
 public:
-    SuperPointMatcher(float nnratio = 0.6, bool checkOri = true);
+    explicit SuperPointMatcher(float nnratio = 0.6, bool checkOri = true);
 
     // Computes the Hamming distance between two ORB descriptors
     static float DescriptorDistance(const cv::Mat &a, const cv::Mat &b);
@@ -23,8 +23,14 @@ public:
     // Project MapPoints tracked in last frame into the current frame and search
     // matches. Used to track from previous frame (Tracking)
     static int SearchByProjection(
-        KeyFrame &CurrentKeyFrame, KeyFrame &LastKeyFrame, const float th,
-        const bool bMono);
+        KeyFrame &CurrentKeyFrame, KeyFrame &LastKeyFrame, float th,
+        bool bMono);
+
+    // Brute Force
+    static void FindMatchByBruteForce(
+        const std::vector<cv::KeyPoint> &keypoints1,
+        const std::vector<cv::KeyPoint> &keypoints2, const cv::Mat &frmDesp,
+        const cv::Mat &pcDesp, std::vector<cv::DMatch> &goodMatches);
 
     // Search matches between MapPoints in a KeyFrame and ORB in a Frame.
     // Brute force constrained to ORB that belong to the same vocabulary node

@@ -192,7 +192,7 @@ public:
 
     bool PackAtlasToMemoryFor3DObject(char **buffer_out, int &buffer_out_len);
     bool PackAtlasToMemoryFor3DObject_SuperPoint(
-        char **buffer_out, int &buffer_out_len,
+        char **buffer_out, long long &buffer_out_len,
         const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM);
     void SetScanBoundingbox_W(const std::vector<Eigen::Vector3d> &boundingbox);
     void SetScanBoundingbox_W_Superpoint(

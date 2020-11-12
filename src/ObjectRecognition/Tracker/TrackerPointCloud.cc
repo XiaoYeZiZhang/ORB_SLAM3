@@ -796,12 +796,12 @@ void PointCloudObjTracker::Clear() {
     VLOG(10) << "PointCloudObjTracker::Clear";
 }
 
-bool PointCloudObjTracker::Load(const int &mem_size, const char *mem) {
+bool PointCloudObjTracker::Load(const long long &mem_size, const char *mem) {
     VLOG(30) << "PointCloudObjTracker::Load";
     return mObj->LoadPointCloud(mem_size, mem);
 }
 
-bool PointCloudObjTracker::Save(int &mem_size, char **mem) {
+bool PointCloudObjTracker::Save(long long &mem_size, char **mem) {
     VLOG(30) << "PointCloudObjTracker::Save";
     return mObj->Save(mem_size, mem);
 }

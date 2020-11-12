@@ -251,6 +251,7 @@ private:
     float fx, fy, cx, cy;
 
     Eigen::Vector3d GetRay(
+        const float mouse_x, const float mouse_y,
         const Eigen::Matrix4d &transformationMatrix,
         const Eigen::Matrix4d &projectionMatrix);
     Eigen::Vector3d Change2PlaneCoords(

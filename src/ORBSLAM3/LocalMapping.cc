@@ -521,7 +521,7 @@ void LocalMapping::TriangulateForSuperPoint(
             << "/" << std::to_string(allkeyframes.size() - 1);
 
     SuperPointMatcher superPointmatcher(0.6, false);
-    int nn = 20;
+    int nn = 10;
     ORB_SLAM3::KeyFrame *currentKeyFrame = allkeyframes[keyframe_num];
     const float ratioFactor = 1.5f * currentKeyFrame->mfScaleFactor_superpoint;
 
@@ -538,7 +538,7 @@ void LocalMapping::TriangulateForSuperPoint(
         currentKeyFrame->GetBestCovisibilityKeyFrames(nn);
     for (size_t i = 0; i < vpNeighKFs.size(); i++) {
         ORB_SLAM3::KeyFrame *pKF2 = vpNeighKFs[i];
-        if (pKF2->mvKeysUn_superpoint.size() <= 0) {
+        if (pKF2->N_superpoint == -1) {
             continue;
         }
 
@@ -546,7 +546,7 @@ void LocalMapping::TriangulateForSuperPoint(
         cv::Mat Ow2 = pKF2->GetCameraCenter();
         cv::Mat vBaseline = Ow2 - Ow1;
         const float baseline = cv::norm(vBaseline);
-        if (baseline < pKF2->mb)
+        if (baseline * 3 < pKF2->mb)
             continue;
         //            const float medianDepthKF2 =
         //            pKF2->ComputeSceneMedianDepth(2); const float

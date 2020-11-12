@@ -18,6 +18,11 @@
 using namespace std;
 class TestViewer {
 public:
+    TestViewer() {
+    }
+    ~TestViewer() {
+        delete SLAM;
+    }
     bool InitSLAM();
     bool InitObjectRecognition();
     bool RunObjectRecognition();
@@ -34,6 +39,7 @@ public:
     std::string config_path;
     std::string slam_saved_path;
     std::string mappoint_filename;
+    std::string mappoint_filename_superpoint;
     std::string dataset_name;
 
 private:
@@ -149,8 +155,13 @@ bool TestViewer::InitObjectRecognition() {
     // ObjRecognitionExd::ObjRecongManager::Instance().LoadDic(voc_buf,
     // voc_buf_size);
 
+#ifdef SUPERPOINT
+    std::string cloud_point_model_dir =
+        slam_saved_path + "/" + mappoint_filename_superpoint;
+#else
     std::string cloud_point_model_dir =
         slam_saved_path + "/" + mappoint_filename;
+#endif
 
 #ifdef SUPERPOINT
     bool voc_load_res =
@@ -166,7 +177,7 @@ bool TestViewer::InitObjectRecognition() {
 
     int model_id = 0;
     char *cloud_point_model_buffer = nullptr;
-    int cloud_point_model_buf_size = 0;
+    long long cloud_point_model_buf_size = 0;
     LoadPointCloudModel(cloud_point_model_dir, m_pointCloud);
     ReadPointCloudModelToBuffer(
         cloud_point_model_dir, &cloud_point_model_buffer,
@@ -540,10 +551,12 @@ int main(int argc, char *argv[]) {
 
     fsSettings["voc_path_superpoint"] >> testViewer.voc_path_superpoint;
     fsSettings["voc_path"] >> testViewer.voc_path;
-    fsSettings["data_path"] >> testViewer.data_path;
+    fsSettings["data_path_objRecognition"] >> testViewer.data_path;
     fsSettings["config_path"] >> testViewer.config_path;
     fsSettings["saved_path"] >> testViewer.slam_saved_path;
     fsSettings["mappoint_filename"] >> testViewer.mappoint_filename;
+    fsSettings["mappoint_filename_superpoint"] >>
+        testViewer.mappoint_filename_superpoint;
     fsSettings["dataset_name"] >> testViewer.dataset_name;
     bool initial_slam_result = testViewer.InitSLAM();
 

@@ -1,7 +1,10 @@
 %YAML:1.0
-mappoint_filename: "box_superpoint.bin"
+mappoint_filename: "box.bin"
+mappoint_filename_superpoint: "box_superpoint.bin"
 saved_path: "/home/zhangye/data/saved"
 voc_path: "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/ORBvoc.txt"
-data_path: "/home/zhangye/data/objectRecognition/scan_realsense/1602479931"
+voc_path_superpoint: "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/Superpoint/superpoint_voc.yml.gz"
+data_path_scan: "/home/zhangye/data/objectRecognition/scan_realsense/1602479931"
+data_path_objRecognition: "/home/zhangye/data/objectRecognition/scan_realsense/1602998926"
 config_path: "/home/zhangye/data/objectRecognition/scan_realsense/realsense_stereo_params.yaml"
 dataset_name: "dataset_box"

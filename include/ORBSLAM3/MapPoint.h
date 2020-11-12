@@ -183,9 +183,9 @@ public:
         map<long unsigned int, KeyFrame *> &mpKFid,
         map<long unsigned int, MapPoint *> &mpMPid);
 
-    unsigned int GetMemSizeFor3DObject(bool is_superpoint = false);
+    long long GetMemSizeFor3DObject(bool is_superpoint = false);
     void WriteToMemoryFor3DObject(
-        unsigned int &mem_pos, char *mem, const Eigen::Matrix4d &Two,
+        long long &mem_pos, char *mem, const Eigen::Matrix4d &Two,
         bool is_superpoint = false);
 
 public:
