@@ -127,7 +127,7 @@ int read_compressed_voc(
     return res;
 }
 
-bool ObjRecongManager::LoadORBVoc(std::string &voc_path) {
+bool ObjRecongManager::LoadVoc(std::string &voc_path) {
     if (voc_.get()) {
         voc_.get()->load(voc_path);
         return true;
@@ -167,7 +167,8 @@ int ObjRecongManager::LoadDic(char const *buffer, int buffer_len) {
 }
 
 int ObjRecongManager::LoadModel(
-    const int id, const char *buffer, long long buffer_len) {
+    const int id, const char *buffer, long long buffer_len,
+    std::shared_ptr<ObjRecognition::Object> &object) {
     VLOG(10) << "ObjRecong Manager LoadModel";
     std::lock_guard<std::mutex> lck(mMutexForPublicAPI);
     if (IsUninitializedState()) {
@@ -186,6 +187,7 @@ int ObjRecongManager::LoadModel(
         LOG(ERROR) << "Load PointCloud failed, not set model";
         return -1;
     }
+    object = object_;
 
     object_->SetVocabulary(voc_);
     objrecog_thread_.SetModel(object_);

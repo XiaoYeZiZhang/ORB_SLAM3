@@ -727,7 +727,7 @@ bool Tracking::ParseORBParamFile(cv::FileStorage &fSettings) {
         mpIniORBextractor = new ORBextractor(
             5 * nFeatures, fScaleFactor, nLevels, fIniThFAST, fMinThFAST);
 
-    cout << endl << "ORB Extractor Parameters: " << endl;
+    cout << endl << "SLAM ORB Extractor Parameters: " << endl;
     cout << "- Number of Features: " << nFeatures << endl;
     cout << "- Scale Levels: " << nLevels << endl;
     cout << "- Scale Factor: " << fScaleFactor << endl;

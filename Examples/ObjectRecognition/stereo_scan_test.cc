@@ -19,6 +19,15 @@ using namespace std;
 using namespace std::chrono;
 class TestViewer {
 public:
+    TestViewer() {
+#ifdef SUPERPOINT
+        SPextractor =
+            std::make_shared<ORB_SLAM3::SPextractor>(ORB_SLAM3::SPextractor(
+                Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
+                Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007,
+                true));
+#endif
+    }
     bool InitSLAM();
     bool RunScanner();
     bool SaveMappointFor3DObject(const std::string save_path);
@@ -65,6 +74,10 @@ private:
     float fps = -1;
     cv::Mat K;
     std::vector<Eigen::Vector3d> m_boundingbox_w;
+
+#ifdef SUPERPOINT
+    std::shared_ptr<ORB_SLAM3::SPextractor> SPextractor;
+#endif
 };
 
 bool TestViewer::SaveMappointFor3DObject_SuperPoint(
@@ -324,15 +337,10 @@ void TestViewer::FindMatchByKNN(
 }
 
 void TestViewer::SfMProcess() {
+#ifdef SUPERPOINT
     // TODO(zhangye): DO SFM USING SUPERPOINT
     VLOG(0) << "DOING SFM USING SUPERPOINT, PLEASE WAIT...";
     keyframes_for_SfM = SLAM->mpAtlas->GetAllKeyFrames();
-    std::shared_ptr<ORB_SLAM3::SPextractor> SPextractor =
-        std::make_shared<ORB_SLAM3::SPextractor>(ORB_SLAM3::SPextractor(
-            Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
-            Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007,
-            true));
-
     ORB_SLAM3::SUPERPOINTVocabulary *mpSuperpointvocabulary;
     mpSuperpointvocabulary = new ORB_SLAM3::SUPERPOINTVocabulary();
     mpSuperpointvocabulary->load(voc_path_superpoint);
@@ -410,6 +418,7 @@ void TestViewer::SfMProcess() {
     //            usleep(3000);
     //        }
     //    }
+#endif
 }
 
 // click boundingbox fix button:

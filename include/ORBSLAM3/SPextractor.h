@@ -106,12 +106,10 @@ protected:
     std::vector<float> mvLevelSigma2;
     std::vector<float> mvInvLevelSigma2;
 
-    std::shared_ptr<torch::jit::script::Module> traced_module_480_640;
-    std::shared_ptr<torch::jit::script::Module> traced_module_400_533;
-    std::shared_ptr<torch::jit::script::Module> traced_module_333_444;
+    torch::jit::script::Module traced_module_480_640;
+    torch::jit::script::Module traced_module_400_533;
+    torch::jit::script::Module traced_module_333_444;
     bool is_use_cuda;
-
-    SPDetector detector;
 };
 } // namespace ORB_SLAM3
 

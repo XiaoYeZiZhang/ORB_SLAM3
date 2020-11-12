@@ -15,6 +15,7 @@ build/
 lib/
 bin/
 
+Vocabulary/Superpoint/superpoint_voc.yml.gz
 cmake_modules/
 cmake-build-debug/
 cmake-build-release/

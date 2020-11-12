@@ -1381,7 +1381,7 @@ namespace DBoW3{
         while(!ifile.eof()){
             std::string snode;
             getline(ifile,snode);
-            if (counter++%100==0)std::cerr<<".";
+            //if (counter++%100==0)std::cerr<<".";
             // std::cout<<snode<<std::endl;
             if (snode.size()==0)break;
             std::stringstream ssnode(snode);

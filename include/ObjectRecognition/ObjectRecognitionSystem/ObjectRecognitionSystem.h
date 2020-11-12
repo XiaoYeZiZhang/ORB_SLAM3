@@ -4,6 +4,7 @@
 
 #ifndef ORB_SLAM3_OBJECTRECOGNITIONSYSTEM_H
 #define ORB_SLAM3_OBJECTRECOGNITIONSYSTEM_H
+#include <include/ORBSLAM3/SPextractor.h>
 #include "Tracker/TrackerPointCloud.h"
 #include "Detector/DetectorPointCloud.h"
 #include "Struct/PointCloudObject.h"
@@ -16,6 +17,9 @@ class ObjRecogThread : public Common::ThreadBase {
 
 public:
     ObjRecogThread();
+    ~ObjRecogThread() {
+        delete SPextractor;
+    }
 
     int Init();
 
@@ -56,6 +60,7 @@ private:
     int frame_processed_num_ = 0;
 
     std::mutex mMutexInfoBuffer;
+    ORB_SLAM3::SPextractor *SPextractor = NULL;
 };
 } // namespace ObjRecognition
 #endif // ORB_SLAM3_OBJECTRECOGNITIONSYSTEM_H

@@ -104,7 +104,7 @@ bool TestViewer::InitObjectRecognition(char **argv) {
     std::string cloud_point_model_dir = argv[5];
 
     bool voc_load_res =
-        ObjRecognitionExd::ObjRecongManager::Instance().LoadORBVoc(voc_path);
+        ObjRecognitionExd::ObjRecongManager::Instance().LoadVoc(voc_path);
     if (!voc_load_res) {
         LOG(ERROR) << "vocabulary load fail!";
     }
@@ -112,12 +112,12 @@ bool TestViewer::InitObjectRecognition(char **argv) {
     int model_id = 0;
     char *cloud_point_model_buffer = nullptr;
     long long cloud_point_model_buf_size = 0;
-    LoadPointCloudModel(cloud_point_model_dir, m_pointCloud);
     ReadPointCloudModelToBuffer(
         cloud_point_model_dir, &cloud_point_model_buffer,
         cloud_point_model_buf_size);
     ObjRecognitionExd::ObjRecongManager::Instance().LoadModel(
-        model_id, cloud_point_model_buffer, cloud_point_model_buf_size);
+        model_id, cloud_point_model_buffer, cloud_point_model_buf_size,
+        m_pointCloud);
     SLAM->SetPointCloudModel(m_pointCloud);
     SLAM->mpViewer->SetPointCloudModel(m_pointCloud);
     SaveResultInit();

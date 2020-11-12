@@ -21,15 +21,15 @@ void NMS2(
     int border, int dist_thresh, int img_width, int img_height);
 
 SPDetector::SPDetector(
-    std::shared_ptr<torch::jit::script::Module> _traced_module_480_640,
-    std::shared_ptr<torch::jit::script::Module> _traced_module_400_533,
-    std::shared_ptr<torch::jit::script::Module> _traced_module_333_444)
-    : traced_module_480_640(std::move(_traced_module_480_640)),
-      traced_module_400_533(std::move(_traced_module_400_533)),
-      traced_module_333_444(std::move(_traced_module_333_444)) {
-    traced_module_480_640->to(torch::Device(torch::kCUDA));
-    traced_module_400_533->to(torch::Device(torch::kCUDA));
-    traced_module_333_444->to(torch::Device(torch::kCUDA));
+    torch::jit::script::Module _traced_module_480_640,
+    torch::jit::script::Module _traced_module_400_533,
+    torch::jit::script::Module _traced_module_333_444)
+    : traced_module_480_640(_traced_module_480_640),
+      traced_module_400_533(_traced_module_400_533),
+      traced_module_333_444(_traced_module_333_444) {
+    traced_module_480_640.to(torch::Device(torch::kCUDA));
+    traced_module_400_533.to(torch::Device(torch::kCUDA));
+    traced_module_333_444.to(torch::Device(torch::kCUDA));
 }
 
 // get network output
@@ -49,15 +49,15 @@ void SPDetector::detect(cv::Mat &img, int level, bool cuda) {
 
     torch::Tensor semi;
     if (level == 0) {
-        auto out_test = traced_module_480_640->forward(inputs).toGenericDict();
+        auto out_test = traced_module_480_640.forward(inputs).toGenericDict();
         semi = out_test.at("semi").toTensor();
         mDesc = out_test.at("desc").toTensor();
     } else if (level == 1) {
-        auto out_test = traced_module_400_533->forward(inputs).toGenericDict();
+        auto out_test = traced_module_400_533.forward(inputs).toGenericDict();
         semi = out_test.at("semi").toTensor();
         mDesc = out_test.at("desc").toTensor();
     } else if (level == 2) {
-        auto out_test = traced_module_333_444->forward(inputs).toGenericDict();
+        auto out_test = traced_module_333_444.forward(inputs).toGenericDict();
         semi = out_test.at("semi").toTensor();
         mDesc = out_test.at("desc").toTensor();
     }

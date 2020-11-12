@@ -13,6 +13,9 @@
 namespace ObjRecognition {
 
 ObjRecogThread::ObjRecogThread() : ThreadBase(1, false) {
+    SPextractor = new ORB_SLAM3::SPextractor(
+        Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
+        Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007, true);
 }
 
 int ObjRecogThread::Init() {
@@ -57,13 +60,11 @@ int ObjRecogThread::SetModel(const std::shared_ptr<Object> &object) {
     object_->GetDatabase()->size();
 
     auto allKFs = object_->GetKeyFrames();
-
     object_->AddKeyFrames2Database(allKFs);
 
     pointcloudobj_detector_->SetPointCloudObj(object_);
     pointcloudobj_tracker_->SetPointCloudObj(object_);
     VLOG(0) << "tracker and detector thread load object " << object_->GetId();
-
     return 0;
 }
 
@@ -218,11 +219,10 @@ int ObjRecogThread::Process() {
 #endif
 
 #ifdef SUPERPOINT
-    ORB_SLAM3::SPextractor *SPextractor = new ORB_SLAM3::SPextractor(
-        Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
-        Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007, true);
+
     (*SPextractor)(
         cur_frame->img, cv::Mat(), cur_frame->mKpts, cur_frame->mDesp);
+    VLOG(0) << "Superpoint per frame: " << cur_frame->mKpts.size();
 #endif
 
     // VLOG(10) << "ORBExtractor process time: " << ORBExtractorTimer.Stop();

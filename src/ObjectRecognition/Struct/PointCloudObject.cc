@@ -318,17 +318,13 @@ void Object::AddKeyFrames2Database(
     for (const auto &itKF : kfs) {
         itKF->SetVocabulary(m_voc);
         itKF->ComputeBowFeatures();
-        auto bowVec = std::move(itKF->GetBowVec());
-        auto vFeatVec = std::move(itKF->GetBowFeatVec());
-        m_database->add(bowVec, vFeatVec);
+        m_database->add(itKF->GetBowVec(), itKF->GetBowFeatVec());
         ObjRecognition::FrameIndex kf_id = itKF->GetID();
         m_mp_keyframes.emplace(std::make_pair(kf_id, itKF));
         m_keyframe_index_to_entry.insert(
             std::make_pair(kf_id, m_entry_to_keyframe_index.size()));
         m_entry_to_keyframe_index.emplace_back(kf_id);
-        VLOG(10) << "KF id: " << kf_id << " BoW vec size: " << bowVec.size();
     }
-    // timer.Stop();
 }
 
 int Object::GetKeyFrameIndexByEntryId(int entry_id) {

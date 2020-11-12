@@ -23,11 +23,8 @@ PointCloudObjDetector::~PointCloudObjDetector() {
 
 void PointCloudObjDetector::SetPointCloudObj(
     const std::shared_ptr<Object> &pObj) {
-    VLOG(0) << "PointCloud detector set obj begin";
     CHECK_NOTNULL(pObj.get());
     mObj = pObj;
-
-    VLOG(0) << "PointCloud detector set obj success";
 }
 
 void PointCloudObjDetector::SetVoc(

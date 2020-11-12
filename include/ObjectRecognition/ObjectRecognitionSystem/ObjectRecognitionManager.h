@@ -21,8 +21,10 @@ public:
     int Run(const ObjRecognition::ObjRecogFrameCallbackData &platform_frame);
     int CreateWithConfig();
     int LoadDic(char const *buffer, int buffer_len);
-    bool LoadORBVoc(std::string &voc_path);
-    int LoadModel(const int id, const char *buffer, long long buffer_len);
+    bool LoadVoc(std::string &voc_path);
+    int LoadModel(
+        const int id, const char *buffer, long long buffer_len,
+        std::shared_ptr<ObjRecognition::Object> &object);
 
     ObjRecognition::ObjRecogResult GetObjRecognitionResult();
     int SetObjRecongInfo();

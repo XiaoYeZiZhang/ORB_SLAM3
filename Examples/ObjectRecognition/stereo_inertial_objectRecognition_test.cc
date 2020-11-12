@@ -163,14 +163,16 @@ bool TestViewer::InitObjectRecognition() {
         slam_saved_path + "/" + mappoint_filename;
 #endif
 
+    VLOG(0) << "Load Vocabulary Start";
 #ifdef SUPERPOINT
-    bool voc_load_res =
-        ObjRecognitionExd::ObjRecongManager::Instance().LoadORBVoc(
-            voc_path_superpoint);
+    bool voc_load_res = ObjRecognitionExd::ObjRecongManager::Instance().LoadVoc(
+        voc_path_superpoint);
 #else
     bool voc_load_res =
-        ObjRecognitionExd::ObjRecongManager::Instance().LoadORBVoc(voc_path);
+        ObjRecognitionExd::ObjRecongManager::Instance().LoadVoc(voc_path);
 #endif
+    VLOG(0) << "Load Vocabulary Done!";
+
     if (!voc_load_res) {
         LOG(ERROR) << "vocabulary load fail!";
     }
@@ -178,12 +180,14 @@ bool TestViewer::InitObjectRecognition() {
     int model_id = 0;
     char *cloud_point_model_buffer = nullptr;
     long long cloud_point_model_buf_size = 0;
-    LoadPointCloudModel(cloud_point_model_dir, m_pointCloud);
     ReadPointCloudModelToBuffer(
         cloud_point_model_dir, &cloud_point_model_buffer,
         cloud_point_model_buf_size);
     ObjRecognitionExd::ObjRecongManager::Instance().LoadModel(
-        model_id, cloud_point_model_buffer, cloud_point_model_buf_size);
+        model_id, cloud_point_model_buffer, cloud_point_model_buf_size,
+        m_pointCloud);
+
+    delete[] cloud_point_model_buffer;
     SLAM->SetPointCloudModel(m_pointCloud);
     SLAM->mpViewer->SetPointCloudModel(m_pointCloud);
     SaveResultInit();

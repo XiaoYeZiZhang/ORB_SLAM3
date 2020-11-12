@@ -20,14 +20,11 @@ struct SuperPoint : torch::nn::Module {
 class SPDetector {
 public:
     SPDetector(
-        std::shared_ptr<torch::jit::script::Module> _traced_module_480_640,
-        std::shared_ptr<torch::jit::script::Module> _traced_module_400_533,
-        std::shared_ptr<torch::jit::script::Module> _traced_module_333_444);
+        torch::jit::script::Module _traced_module_480_640,
+        torch::jit::script::Module _traced_module_400_533,
+        torch::jit::script::Module _traced_module_333_444);
 
     SPDetector() {
-        traced_module_480_640 = NULL;
-        traced_module_400_533 = NULL;
-        traced_module_333_444 = NULL;
     }
 
     void detect(cv::Mat &image, int level, bool cuda);
@@ -39,9 +36,9 @@ public:
         bool cuda);
 
 private:
-    std::shared_ptr<torch::jit::script::Module> traced_module_480_640;
-    std::shared_ptr<torch::jit::script::Module> traced_module_400_533;
-    std::shared_ptr<torch::jit::script::Module> traced_module_333_444;
+    torch::jit::script::Module traced_module_480_640;
+    torch::jit::script::Module traced_module_400_533;
+    torch::jit::script::Module traced_module_333_444;
     torch::Tensor mDesc;
     torch::Tensor mProb_cpu;
 };
