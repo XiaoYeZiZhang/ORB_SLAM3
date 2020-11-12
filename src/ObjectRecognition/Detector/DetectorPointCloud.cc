@@ -7,6 +7,7 @@
 #include "ObjectRecognition/Utility/Utility.h"
 #include "Detector/DetectorCommon.h"
 #include "Utility/Camera.h"
+#include "Utility/Statistics.h"
 #include "Utility/Parameters.h"
 #include "Detector/DetectorPointCloud.h"
 #include "Optimizer/LBAOptimizer.h"
@@ -121,8 +122,9 @@ std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
         matchs_2ds.push_back(matches);
     }
 
-    // STSLAMCommon::StatsCollector stats_collector("detector 2D matches num");
-    // stats_collector.AddSample(matches2d_count);
+    STATISTICS_UTILITY::StatsCollector detector_2d_matches(
+        "detector 2D matches num");
+    detector_2d_matches.AddSample(matches2d_count);
 
     MatchKeyFramesShow(frm, kf_matches);
     return matchs_2ds;
@@ -201,9 +203,10 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatch() {
 
     knn_match_num_ = goodMatches.size();
     VLOG(5) << "detection goodMatches num: " << goodMatches.size();
-    // STSLAMCommon::StatsCollector stats_collector_knn(
-    //"detector knn matches num");
-    // stats_collector_knn.AddSample(knn_match_num_);
+
+    STATISTICS_UTILITY::StatsCollector stats_collector_knn(
+        "detector knn matches num");
+    stats_collector_knn.AddSample(knn_match_num_);
 
     const int kGoodMatchNumTh =
         Parameters::GetInstance().kDetectorKNNMatchNumTh;
@@ -377,12 +380,12 @@ bool PointCloudObjDetector::PoseSolver(
     }
 
     VLOG(5) << "detection inlier num: " << pnp_inliers_num_;
-    // STSLAMCommon::StatsCollector stats_collector_pnp_3d(
-    //"detector pnp 3d inlier num");
-    // stats_collector_pnp_3d.AddSample(pnp_inliers_3d_num_);
-    // STSLAMCommon::StatsCollector stats_collector_pnp_2d(
-    //"detector pnp 2d inlier num");
-    // stats_collector_pnp_2d.AddSample(pnp_inliers_2d_num_);
+    STATISTICS_UTILITY::StatsCollector stats_collector_pnp_3d(
+        "detector pnp 3d inlier num");
+    stats_collector_pnp_3d.AddSample(pnp_inliers_3d_num_);
+    STATISTICS_UTILITY::StatsCollector stats_collector_pnp_2d(
+        "detector pnp 2d inlier num");
+    stats_collector_pnp_2d.AddSample(pnp_inliers_2d_num_);
 
     // VLOG(10) << "detection poseSolver process time:"
     //<< detectionPoseSolverTime.Stop();
@@ -617,15 +620,17 @@ void PointCloudObjDetector::ResultRecord() {
         Eigen::Matrix3d Rcw;
         Eigen::Vector3d tcw;
         m_frame_cur->GetCameraPose(Rcw, tcw);
-        /*STSLAMCommon::StatsCollector pointCloudDetectionNum(
+        STATISTICS_UTILITY::StatsCollector pointCloudDetectionNum(
             "pointCloud detection good num");
         pointCloudDetectionNum.IncrementOne();
-        GlobalSummary::AddPose(
-            "detector_camera_pose",
-            {m_frame_cur->m_time_stamp, {Eigen::Quaterniond(Rcw), tcw}});
-        GlobalSummary::AddPose(
-            "detector_obj_pose", {m_frame_cur->m_time_stamp,
-                                  {Eigen::Quaterniond(Rco_cur_), tco_cur_}});*/
+        //        GlobalSummary::AddPose(
+        //            "detector_camera_pose",
+        //            {m_frame_cur->m_time_stamp, {Eigen::Quaterniond(Rcw),
+        //            tcw}});
+        //        GlobalSummary::AddPose(
+        //            "detector_obj_pose", {m_frame_cur->m_time_stamp,
+        //                                  {Eigen::Quaterniond(Rco_cur_),
+        //                                  tco_cur_}});
     }
 }
 

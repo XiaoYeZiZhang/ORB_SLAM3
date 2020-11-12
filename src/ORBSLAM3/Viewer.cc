@@ -437,6 +437,7 @@ void Viewer::Draw() {
             if (*menuStop) {
                 SetFinish();
                 mpSystem->Shutdown();
+                break;
             }
 
             if (*menuReset) {

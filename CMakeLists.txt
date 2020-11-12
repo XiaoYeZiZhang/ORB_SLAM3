@@ -154,6 +154,9 @@ set(ORBSLAM3_CAMERAMODEL_FILES
         include/CameraModels/KannalaBrandt8.h)
 
 set(OBJECTRECOGNITION_FILES
+        include/ObjectRecognition/Utility/Statistics.h
+        src/ObjectRecognition/Utility/Statistics.cc
+        include/ObjectRecognition/Utility/Accumulator.h
         include/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionManager.h
         include/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionSystem.h
         include/ObjectRecognition/Interface/HandleBase.h

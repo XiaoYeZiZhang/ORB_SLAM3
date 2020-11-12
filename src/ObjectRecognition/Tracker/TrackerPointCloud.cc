@@ -9,6 +9,7 @@
 #include "Tracker/TrackerPointCloud.h"
 #include "Utility/Parameters.h"
 #include "Utility/Camera.h"
+#include "Utility/Statistics.h"
 #include "Tracker/TrackerCommon.h"
 #include "mode.h"
 
@@ -285,9 +286,9 @@ PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
         m_frame_cur->m_opticalflow_matches2dto3d.size();
     VLOG(5) << "opticalFlow KeyPoints in current frame num: "
             << m_frame_cur->m_opticalflow_point2ds.size();
-    // STSLAMCommon::StatsCollector stats_collector_projection(
-    //"tracker opticalFlow match num");
-    // stats_collector_projection.AddSample(m_match_points_opticalFlow_num);
+    STATISTICS_UTILITY::StatsCollector stats_collector_opt(
+        "tracker opticalFlow match num");
+    stats_collector_opt.AddSample(m_match_points_opticalFlow_num);
     VLOG(5) << "tracking opticalFlow matchPointsNum:"
             << m_match_points_opticalFlow_num;
 
@@ -360,9 +361,9 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
         false);
     m_project_success_mappoint_num = projectPoints.size();
 
-    // STSLAMCommon::StatsCollector stats_collector_project(
-    //"Tracker project mp num");
-    // stats_collector_project.AddSample(m_project_success_mappoint_num);
+    STATISTICS_UTILITY::StatsCollector stats_collector_project(
+        "Tracker project mp num");
+    stats_collector_project.AddSample(m_project_success_mappoint_num);
 
     if (m_project_success_mappoint_num <
         Parameters::GetInstance().kTrackerProjectSuccessNumTh) {
@@ -392,9 +393,10 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
     m_match_points_num =
         m_match_points_projection_num + m_match_points_opticalFlow_num;
 
-    // STSLAMCommon::StatsCollector stats_projection_match(
-    //"tracker projection match num");
-    // stats_projection_match.AddSample(m_projection_matches2dTo3d_cur.size());
+    STATISTICS_UTILITY::StatsCollector stats_projection_match(
+        "tracker projection match num");
+    stats_projection_match.AddSample(m_projection_matches2dTo3d_cur.size());
+
     VLOG(5) << "tracking matchPointsNum:" << m_match_points_num;
 
     matchset_3d = Generate3DMatch(
@@ -476,8 +478,9 @@ bool PointCloudObjTracker::PoseSolver(
     //<< trackingPoseSolverTime.Stop();
     VLOG(5) << "tracking opticalFlow inlier num: " << m_pnp_inliers_num;
 
-    // STSLAMCommon::StatsCollector stats_collector_pnp("tracker pnp inlier
-    // num"); stats_collector_pnp.AddSample(m_pnp_inliers_num);
+    STATISTICS_UTILITY::StatsCollector stats_collector_pnp(
+        "tracker pnp inlier num");
+    stats_collector_pnp.AddSample(m_pnp_inliers_num);
 
     return m_pnp_solver_result;
 }
@@ -538,9 +541,9 @@ void PointCloudObjTracker::PnPResultHandle() {
 void PointCloudObjTracker::ResultRecord() {
     if (m_tracker_state != TrackingBad) {
         if (m_tracker_state == TrackingGood) {
-            /*STSLAMCommon::StatsCollector pointCloudTrackingNum(
+            STATISTICS_UTILITY::StatsCollector pointCloudTrackingNum(
                 "pointCloud tracking good num");
-            pointCloudTrackingNum.IncrementOne();*/
+            pointCloudTrackingNum.IncrementOne();
         }
 
         /*GlobalSummary::AddPose(
@@ -601,12 +604,12 @@ void PointCloudObjTracker::ProcessPoseSolverInliers(
     VLOG(0) << "test: inlierNum:" << m_projection_matches2dTo3d_inlier.size()
             << " " << m_projection_matches2dTo3d_cur.size();
 
-    /*STSLAMCommon::StatsCollector stats_projInlier(
+    STATISTICS_UTILITY::StatsCollector stats_projInlier(
         "Trakcer projection inlier num");
     stats_projInlier.AddSample(m_projection_matches2dTo3d_inlier.size());
-    STSLAMCommon::StatsCollector stats_optInlier(
+    STATISTICS_UTILITY::StatsCollector stats_optInlier(
         "Tracker opticalflow inlier num");
-    stats_optInlier.AddSample(m_opticalFlow_matches2dTo3d_inlier.size());*/
+    stats_optInlier.AddSample(m_opticalFlow_matches2dTo3d_inlier.size());
 }
 
 void PointCloudObjTracker::DrawTextInfo(const cv::Mat &img, cv::Mat &img_txt) {

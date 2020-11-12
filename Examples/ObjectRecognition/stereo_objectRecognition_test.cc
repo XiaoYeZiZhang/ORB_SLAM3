@@ -11,6 +11,7 @@
 #include "ORBSLAM3/System.h"
 #include "Utility/FileIO.h"
 #include "Utility/Camera.h"
+#include "Utility/Statistics.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
 #include "ORBSLAM3/FrameObjectProcess.h"
 #include "mode.h"
@@ -68,7 +69,7 @@ private:
 
 bool TestViewer::SaveResultInit() {
     // STObjRecognition::GlobalSummary::SetDatasetPath(m_dataset_dir);
-    m_result_dir = m_result_dir + "/" + GetTimeStampString();
+    m_result_dir = slam_saved_path + "/" + GetTimeStampString();
     if (!CreateFolder(m_result_dir)) {
         LOG(INFO) << "can't create the result dir" << m_result_dir;
     }
@@ -352,6 +353,9 @@ bool TestViewer::RunObjectRecognition() {
     int proccIm = 0;
 
     for (int ni = 0; ni < nImages; ni++, proccIm++) {
+        if (SLAM->mpViewer->isFinished()) {
+            break;
+        }
         // Read image from file
         imLeft = cv::imread(vstrImageLeft[ni], cv::IMREAD_UNCHANGED);
         imRight = cv::imread(vstrImageRight[ni], cv::IMREAD_UNCHANGED);
@@ -423,15 +427,13 @@ bool TestViewer::RunObjectRecognition() {
         if (ttrack < T)
             usleep((T - ttrack) * 1e6); // 1e6
     }
+
 #ifdef OBJECTRECOGNITION
     ObjRecognition::GlobalSummary::SaveAllPoses(m_result_dir);
-
-    /*ObjRecognition::GlobalSummary::SaveTimer(
-        m_result_dir, STSLAMCommon::Timing::Print());
-
     ObjRecognition::GlobalSummary::SaveStatics(
-        m_result_dir, STSLAMCommon::Statistics::Print());*/
-
+        slam_saved_path, STATISTICS_UTILITY::Statistics::Print());
+    /*ObjRecognition::GlobalSummary::SaveTimer(
+        m_result_dir, STSLAMCommon::Timing::Print());*/
     ObjRecognitionExd::ObjRecongManager::Instance().Destroy();
 #endif
 
