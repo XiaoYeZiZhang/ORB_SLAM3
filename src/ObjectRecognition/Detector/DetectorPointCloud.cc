@@ -92,16 +92,13 @@ std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
             frm->m_kpts, kf_matches.at(index)->GetKeyPoints(), frmDesp, kfDesp,
             dmatches);
 #else
-        ObjDetectionCommon::FindMatchByKNN(frmDesp, kfDesp, dmatches);
+        const float ratio_threshold = 0.70;
+        ObjDetectionCommon::FindMatchByKNN_Homography(
+            frm->m_kpts, kf_matches.at(index)->GetKeyPoints(), frmDesp, kfDesp,
+            dmatches, ratio_threshold);
 #endif
 
-        VLOG(15) << "2DMatch frm kpts num: " << frm->m_kpts.size();
-        VLOG(15) << "2DMatch kf kpts num: "
-                 << kf_matches.at(index)->GetKeyPoints().size();
-        VLOG(10) << "2DMatch num: " << dmatches.size();
-
         frm->m_dmatches_2d.push_back(dmatches);
-
         matches2d_count = dmatches.size();
         for (const auto &it : dmatches) {
             PS::Point2D queryP2d =
@@ -123,10 +120,9 @@ std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
     }
 
     STATISTICS_UTILITY::StatsCollector detector_2d_matches(
-        "detector 2D matches num");
+        "detector 2D-2D matches num");
     detector_2d_matches.AddSample(matches2d_count);
-
-    MatchKeyFramesShow(frm, kf_matches);
+    // MatchKeyFramesShow(frm, kf_matches);
     return matchs_2ds;
 }
 
@@ -146,7 +142,6 @@ void PointCloudObjDetector::PreProcess(
 std::vector<PS::MatchSet2D>
 PointCloudObjDetector::Find2DMatches(const std::vector<KeyFrame::Ptr> &allKFs) {
     // STSLAMCommon::Timer timer_find_2dmatch("find 2d matches");
-
     // using dbow and current frame desp to find matches kfs
     std::vector<KeyFrame::Ptr> kf_mathceds = mObj->FrameQueryMap(m_frame_cur);
     std::vector<PS::MatchSet2D> matches_2ds;
@@ -162,9 +157,110 @@ PointCloudObjDetector::Find2DMatches(const std::vector<KeyFrame::Ptr> &allKFs) {
     }
     // GlobalKeyFrameMatchViewer::SetMatchedKeyFrames(kf_matches_id);
     matches_2ds = Generate2DMatchesFromKeyFrame(m_frame_cur, kf_mathceds);
-
     // timer_find_2dmatch.Stop();
     return matches_2ds;
+}
+
+PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection() {
+    std::vector<KeyFrame::Ptr> kf_mathceds = mObj->FrameQueryMap(m_frame_cur);
+    std::set<MapPoint::Ptr> associated_mappoints;
+    for (const KeyFrame::Ptr &kf : kf_mathceds) {
+        auto connect_kf_ids = kf->connect_kfs;
+        for (auto connect_kf_id : connect_kf_ids) {
+            auto keyframe = mObj->m_mp_keyframes[connect_kf_id];
+            auto connected_mappoints_id = keyframe->connect_mappoints;
+            for (auto mappoint_id : connected_mappoints_id) {
+                if (mObj->m_pointclouds_map.find(mappoint_id) ==
+                    mObj->m_pointclouds_map.end()) {
+                    continue;
+                }
+                if (associated_mappoints.count(
+                        mObj->m_pointclouds_map[mappoint_id])) {
+                    continue;
+                }
+                associated_mappoints.insert(
+                    mObj->m_pointclouds_map[mappoint_id]);
+            }
+        }
+    }
+
+    std::vector<MapPoint::Ptr> associated_mappoints_vector;
+    for (const auto &mappoint : associated_mappoints) {
+        associated_mappoints_vector.emplace_back(mappoint);
+    }
+
+    PS::MatchSet3D matches_3d;
+    cv::Mat pcDesp;
+
+    const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
+    auto fx = static_cast<float>(Kcv.at<double>(0, 0));
+    auto fy = static_cast<float>(Kcv.at<double>(1, 1));
+    auto cx = static_cast<float>(Kcv.at<double>(0, 2));
+    auto cy = static_cast<float>(Kcv.at<double>(1, 2));
+
+    pcDesp = ObjDetectionCommon::GetPointCloudDespByConnection(
+        associated_mappoints_vector);
+
+    cv::Mat frmDesp;
+    frmDesp = m_frame_cur->m_desp;
+
+    std::vector<cv::KeyPoint> keyPoints = m_frame_cur->m_kpts;
+    std::map<int, MapPointIndex> matches2dTo3d;
+    matches2dTo3d.clear();
+    knn_match_num_ = -1;
+
+    std::vector<cv::DMatch> goodMatches;
+#ifdef SUPERPOINT
+    // TODO(zhangye): use only norm2 distance for superpoint match?
+    ObjDetectionCommon::FindMatchByKNN_SuperPoint(frmDesp, pcDesp, goodMatches);
+#else
+    const float ratio_threshold = 0.70;
+    ObjDetectionCommon::FindMatchByKNN(
+        frmDesp, pcDesp, goodMatches, ratio_threshold);
+#endif
+
+    for (int i = 0; i < goodMatches.size(); i++) {
+        matches2dTo3d.insert(std::pair<int, MapPointIndex>(
+            goodMatches[i].queryIdx, goodMatches[i].trainIdx));
+    }
+
+    knn_match_num_ = goodMatches.size();
+    VLOG(5) << "detection 2D-3D match: " << goodMatches.size();
+
+    STATISTICS_UTILITY::StatsCollector stats_collector_knn(
+        "detector 2D-3D matches num:");
+    stats_collector_knn.AddSample(knn_match_num_);
+
+    // 8
+    const int kGoodMatchNumTh =
+        Parameters::GetInstance().kDetectorKNNMatchNumTh;
+    if (knn_match_num_ < kGoodMatchNumTh) {
+        VLOG(5) << "The number of KNN 2D-3D match is small";
+        return matches_3d;
+    }
+
+    std::vector<cv::Point3f> ptsObj;
+    std::vector<cv::Point2f> ptsImg;
+    for (auto iter = matches2dTo3d.begin(); iter != matches2dTo3d.end();
+         iter++) {
+        ptsImg.emplace_back(cv::Point2f(keyPoints[iter->first].pt));
+        cv::Point3f mapPoint = TypeConverter::Eigen2CVPoint(
+            associated_mappoints_vector[iter->second]->GetPose());
+        ptsObj.emplace_back(mapPoint);
+    }
+
+    for (int i = 0; i < ptsObj.size(); i++) {
+        PS::Point3D point_3d(
+            (double)ptsObj[i].x, (double)ptsObj[i].y, (double)ptsObj[i].z);
+        PS::Point2D point_2d =
+            NormalizePoint2D((cv::Point2d)ptsImg[i], fx, fy, cx, cy);
+        PS::Match3D match_3d(point_3d, point_2d);
+        matches_3d.push_back(match_3d);
+    }
+
+    m_frame_cur->m_matches_3d_byconnection.clear();
+    m_frame_cur->m_matches_3d_byconnection = matches2dTo3d;
+    return matches_3d;
 }
 
 PS::MatchSet3D PointCloudObjDetector::Find3DMatch() {
@@ -172,10 +268,10 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatch() {
     cv::Mat pcDesp;
 
     const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
-    float fx = static_cast<float>(Kcv.at<double>(0, 0));
-    float fy = static_cast<float>(Kcv.at<double>(1, 1));
-    float cx = static_cast<float>(Kcv.at<double>(0, 2));
-    float cy = static_cast<float>(Kcv.at<double>(1, 2));
+    auto fx = static_cast<float>(Kcv.at<double>(0, 0));
+    auto fy = static_cast<float>(Kcv.at<double>(1, 1));
+    auto cx = static_cast<float>(Kcv.at<double>(0, 2));
+    auto cy = static_cast<float>(Kcv.at<double>(1, 2));
 
     pcDesp = ObjDetectionCommon::GetPointCloudDesp(mObj);
 
@@ -193,7 +289,9 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatch() {
     // TODO(zhangye): use only norm2 distance for superpoint match?
     ObjDetectionCommon::FindMatchByKNN_SuperPoint(frmDesp, pcDesp, goodMatches);
 #else
-    ObjDetectionCommon::FindMatchByKNN(frmDesp, pcDesp, goodMatches);
+    const float ratio_threshold = 0.70;
+    ObjDetectionCommon::FindMatchByKNN(
+        frmDesp, pcDesp, goodMatches, ratio_threshold);
 #endif
 
     for (int i = 0; i < goodMatches.size(); i++) {
@@ -202,16 +300,17 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatch() {
     }
 
     knn_match_num_ = goodMatches.size();
-    VLOG(5) << "detection goodMatches num: " << goodMatches.size();
+    VLOG(5) << "detection 2D-3D match: " << goodMatches.size();
 
     STATISTICS_UTILITY::StatsCollector stats_collector_knn(
-        "detector knn matches num");
+        "detector 2D-3D matches num:");
     stats_collector_knn.AddSample(knn_match_num_);
 
+    // 8
     const int kGoodMatchNumTh =
         Parameters::GetInstance().kDetectorKNNMatchNumTh;
     if (knn_match_num_ < kGoodMatchNumTh) {
-        VLOG(5) << "The number of KNN match is small";
+        VLOG(5) << "The number of KNN 2D-3D match is small";
         return matches_3d;
     }
 
@@ -308,7 +407,7 @@ bool PointCloudObjDetector::PoseSolver(
     pnp_inliers_3d_num_ = 0;
     pnp_inliers_2d_num_ = 0;
 
-    const double kPnpReprojectionError = 6.5;
+    const float kPnpReprojectionError = 6.5;
     const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
     Eigen::Vector3d gravity = Eigen::Vector3d(0.0, 0.0, 1.0);
     Eigen::Vector3d gravityCamera = Rcw_cur_ * gravity;
@@ -331,6 +430,7 @@ bool PointCloudObjDetector::PoseSolver(
     const int kPnpMinMatchesNum = 0;
 
 #ifdef OBJ_WITH_KF
+    // 50
     const int kPnpMinInlierNum =
         Parameters::GetInstance().kDetectorPnPInliersGoodWithKFNumTh;
 #else
@@ -346,24 +446,21 @@ bool PointCloudObjDetector::PoseSolver(
     pnp_solver_result_ = PS::Ransac(
         options, matches_3d, matches_2d, &T, &inliers_3d, &inliers_2d);
 
-    VLOG(0) << "detectionPoseSolver result " << std::boolalpha
-            << pnp_solver_result_;
-    VLOG(0) << "detectionPoseSolver 3d matches size: " << matches_3d.size();
-    VLOG(0) << "detectionPoseSolver 3d inliers size: " << inliers_3d.size();
-    for (int i = 0; i < matches_2d.size(); i++) {
-        VLOG(0) << "detectionPoseSolver 2d matches size: "
-                << matches_2d.at(i).size();
-        VLOG(0) << "detectionPoseSolver 2d inliers size: "
-                << inliers_2d.at(i).size();
-    }
-    VLOG(20) << "detectionPoseSolver PoseSolve R: " << T.m_R;
-    VLOG(20) << "detectionPoseSolver PoseSolve t: " << T.m_t;
+    //    VLOG(0) << "detectionPoseSolver 3d matches size: " <<
+    //    matches_3d.size(); VLOG(0) << "detectionPoseSolver 3d inliers size: "
+    //    << inliers_3d.size(); for (int i = 0; i < matches_2d.size(); i++) {
+    //        VLOG(0) << "detectionPoseSolver 2d matches size: "
+    //                << matches_2d.at(i).size();
+    //        VLOG(0) << "detectionPoseSolver 2d inliers size: "
+    //                << inliers_2d.at(i).size();
+    //    }
+
     Eigen::Matrix3d Rco = T.m_R.cast<double>();
     Eigen::Vector3d tco = T.m_t.cast<double>();
     Rco_cur_ = Rco;
     tco_cur_ = tco;
 
-    PoseOptimize(inliers_3d);
+    // PoseOptimize(inliers_3d);
 
     Eigen::Matrix3d Row = Rco.transpose() * (Rcw_cur_);
     Eigen::Vector3d Tow = Rco.transpose() * (tcw_cur_ - tco);
@@ -379,12 +476,12 @@ bool PointCloudObjDetector::PoseSolver(
         pnp_inliers_2d_num_ += it.size();
     }
 
-    VLOG(5) << "detection inlier num: " << pnp_inliers_num_;
+    VLOG(5) << "detection inlier num 2d+3d: " << pnp_inliers_num_;
     STATISTICS_UTILITY::StatsCollector stats_collector_pnp_3d(
-        "detector pnp 3d inlier num");
+        "detector PnP 3d inlier num");
     stats_collector_pnp_3d.AddSample(pnp_inliers_3d_num_);
     STATISTICS_UTILITY::StatsCollector stats_collector_pnp_2d(
-        "detector pnp 2d inlier num");
+        "detector PnP 2d inlier num");
     stats_collector_pnp_2d.AddSample(pnp_inliers_2d_num_);
 
     // VLOG(10) << "detection poseSolver process time:"
@@ -393,12 +490,12 @@ bool PointCloudObjDetector::PoseSolver(
 }
 
 void PointCloudObjDetector::PnPResultHandle() {
-
+#ifdef USE_INLIER
 #ifdef OBJ_WITH_KF
+    // 50
     const int kDetectorPnPInliersThGood =
         Parameters::GetInstance().kDetectorPnPInliersGoodWithKFNumTh;
-    const int kDetectorPnP3DInliersThGood =
-        Parameters::GetInstance().kDetectorPnP3DInliersGoodWithKFNumTh;
+    // 20
     const int kDetectorPnPInliersThUnreliable =
         Parameters::GetInstance().kDetectorPnPInliersUnreliableWithKFNumTh;
 #else
@@ -407,18 +504,25 @@ void PointCloudObjDetector::PnPResultHandle() {
     const int kDetectorPnPInliersThUnreliable =
         Parameters::GetInstance().kDetectorPnPInliersUnreliableNumTh;
 #endif
+#ifdef SUPERPOINT
+    int proj_success_num = 80;
+#else
+    int proj_success_num = knn_match_num_ * 0.5;
+#endif
 
     if (pnp_solver_result_ && pnp_inliers_num_ >= kDetectorPnPInliersThGood &&
-        pnp_inliers_3d_num_ >= kDetectorPnP3DInliersThGood) {
-        VLOG(5) << "detector PnP inlier num success:" << pnp_inliers_num_;
+        pnp_inliers_3d_num_ >= proj_success_num) {
         detect_state_ = DetectionGood;
-        VLOG(5) << "detectionObjPosePoseR: " << Rco_cur_;
-        VLOG(5) << "detectionObjPosePoseT: " << tco_cur_;
-        VLOG(5) << "detectionWOPosePoseR: " << Rwo_cur_;
-        VLOG(5) << "detectionWOPosePoseT: " << two_cur_;
         mObj->SetPose(
             m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
             detect_state_, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
+
+        // evaluation method
+        if (reproj_error >= 0) {
+            STATISTICS_UTILITY::StatsCollector stats_collector_project(
+                "detector inlier reproj error");
+            stats_collector_project.AddSample(reproj_error);
+        }
     } else {
         if (pnp_inliers_num_ >= kDetectorPnPInliersThUnreliable) {
             VLOG(5) << "detector PnP fail but has enough inliers";
@@ -434,19 +538,49 @@ void PointCloudObjDetector::PnPResultHandle() {
                 detect_state_, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
         }
     }
+#endif
+
+#ifdef USE_REPROJ
+    if (pnp_solver_result_ && reproj_error <= 3.0) {
+        detect_state_ = DetectionGood;
+        mObj->SetPose(
+            m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
+            detect_state_, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
+    } else {
+        if (pnp_inliers_num_ <= 4.5) {
+            VLOG(5) << "detector PnP fail but has enough inliers";
+            detect_state_ = DetectionUnreliable;
+            mObj->SetPose(
+                m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
+                detect_state_, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
+        } else {
+            VLOG(5) << "detector PnP solve fail!";
+            detect_state_ = DetectionBad;
+            mObj->SetPose(
+                m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
+                detect_state_, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
+        }
+    }
+#endif
 }
 
 void PointCloudObjDetector::DrawTextInfo(const cv::Mat &img, cv::Mat &img_txt) {
     // 2d-3d暴力匹配上的关键点
-    std::string matchTxt =
+#ifdef USE_CONNECT_FOR_DETECTOR
+    std::string match_txt =
+        "3dmatch num:" +
+        std::to_string(m_frame_cur->m_matches_3d_byconnection.size()) + "| ";
+#else
+    std::string match_txt =
         "3dmatch num:" + std::to_string(m_frame_cur->m_matches_3d.size()) +
         "| ";
+#endif
 
     //经过2d-3d, 2d-2d联合求解pose过后inlier的三维点对应的keypoint
-    std::string inlierTxt =
-        "3d|2d inliers num: " +
-        std::to_string(m_frame_cur->m_matches2dto3d_inliers.size()) + "|" +
-        std::to_string(m_frame_cur->m_matches_3d.size()) + "| ";
+    std::string inlier_txt =
+        "3d|2d inliers num: " + std::to_string(pnp_inliers_3d_num_) + "|" +
+        std::to_string(pnp_inliers_2d_num_) + "| ";
+    std::string reproj_txt = "reproj error: " + std::to_string(reproj_error);
 
     std::string detectionStateString;
     if (detect_state_ == DetectionGood) {
@@ -459,8 +593,9 @@ void PointCloudObjDetector::DrawTextInfo(const cv::Mat &img, cv::Mat &img_txt) {
     }
 
     std::stringstream s;
-    s << matchTxt;
-    s << inlierTxt;
+    s << match_txt;
+    s << inlier_txt;
+    s << reproj_txt;
     s << detectionStateString;
 
     int baseline = 0;
@@ -484,7 +619,6 @@ void PointCloudObjDetector::ShowDetectResult() {
         LOG(ERROR) << "No pointclouds model here!";
     }
     const std::vector<cv::KeyPoint> keyPoints = m_frame_cur->m_kpts;
-
     const cv::Mat &cameraMatrix = CameraIntrinsic::GetInstance().GetCVK();
     std::vector<cv::Point3f> point3f;
     std::vector<cv::Point2f> point2f;
@@ -526,12 +660,12 @@ void PointCloudObjDetector::ShowDetectResult() {
     }
 
     std::vector<cv::KeyPoint> matcheskeyPointsShow;
-    std::vector<MapPointIndex> mapPointId;
+    // std::vector<MapPointIndex> mapPointId;
 
     for (auto iter = m_frame_cur->m_matches_3d.begin();
          iter != m_frame_cur->m_matches_3d.end(); iter++) {
         matcheskeyPointsShow.emplace_back(keyPoints[iter->first]);
-        mapPointId.emplace_back(iter->second);
+        // mapPointId.emplace_back(iter->second);
     }
 
     // red circle  2d-3d暴力匹配上的关键点
@@ -551,10 +685,47 @@ void PointCloudObjDetector::ShowDetectResult() {
         cv::Scalar(0, 255, 255));
 
     // 2d-3d暴力匹配上的地图点 white points
-    GlobalPointCloudMatchViewer::SetMatchedMapPoint(mapPointId);
+    // GlobalPointCloudMatchViewer::SetMatchedMapPoint(mapPointId);
     cv::Mat img_text;
     DrawTextInfo(showResult, img_text);
     GlobalOcvViewer::UpdateView("Detector Result", img_text);
+}
+
+float PointCloudObjDetector::ComputeAverageReProjError(
+    const std::vector<int> &inliers_3d) {
+    m_frame_cur->m_matches2dto3d_inliers.clear();
+#ifdef USE_CONNECT_FOR_DETECTOR
+    GetMatch2dTo3dInliers(
+        m_frame_cur->m_matches_3d_byconnection, inliers_3d,
+        m_frame_cur->m_matches2dto3d_inliers);
+#else
+    GetMatch2dTo3dInliers(
+        m_frame_cur->m_matches_3d, inliers_3d,
+        m_frame_cur->m_matches2dto3d_inliers);
+#endif
+
+    float average_error = -1;
+    if (!m_frame_cur->m_matches2dto3d_inliers.empty()) {
+        average_error = 0.0;
+        for (auto matches : m_frame_cur->m_matches2dto3d_inliers) {
+            auto mappoint = mObj->GetPointClouds()[matches.second];
+            auto keypoint = m_frame_cur->m_kpts[matches.first];
+
+            auto proj = CameraIntrinsic::GetInstance().GetEigenK() *
+                        (Rco_cur_ * mappoint->GetPose() + tco_cur_);
+
+            Eigen::Vector2d proj_2d =
+                Eigen::Vector2d(proj(0) / proj(2), proj(1) / proj(2));
+
+            float dis = sqrt(
+                (proj_2d(0) - keypoint.pt.x) * (proj_2d(0) - keypoint.pt.x) +
+                (proj_2d(1) - keypoint.pt.y) * (proj_2d(1) - keypoint.pt.y));
+
+            average_error += dis;
+        }
+        average_error /= (m_frame_cur->m_matches2dto3d_inliers.size());
+    }
+    return average_error;
 }
 
 // detect algorithm start
@@ -566,7 +737,6 @@ void PointCloudObjDetector::Process(
     }
 
     // STSLAMCommon::Timer timer("PointCloud detector process");
-
     PreProcess(frm);
 
     std::vector<PS::MatchSet2D> matchset_2d;
@@ -575,11 +745,17 @@ void PointCloudObjDetector::Process(
     matchset_2d = Find2DMatches(allKFs);
 #endif
 
+#ifdef USE_CONNECT_FOR_DETECTOR
+    PS::MatchSet3D matchset_3d = Find3DMatchByConnection();
+#else
     PS::MatchSet3D matchset_3d = Find3DMatch();
+#endif
 
     std::vector<int> inliers_3d;
     std::vector<std::vector<int>> inliers_2d;
     PoseSolver(matchset_3d, matchset_2d, inliers_3d, inliers_2d);
+
+    reproj_error = ComputeAverageReProjError(inliers_3d);
 
     PnPResultHandle();
 
@@ -589,7 +765,7 @@ void PointCloudObjDetector::Process(
 
     ResultRecord();
 
-    SetInfo();
+    // SetInfo();
 }
 
 void PointCloudObjDetector::Reset() {
@@ -615,27 +791,17 @@ bool PointCloudObjDetector::Save(long long &mem_size, char **mem) {
 }
 
 void PointCloudObjDetector::ResultRecord() {
-
     if (detect_state_ == DetectionGood) {
         Eigen::Matrix3d Rcw;
         Eigen::Vector3d tcw;
         m_frame_cur->GetCameraPose(Rcw, tcw);
         STATISTICS_UTILITY::StatsCollector pointCloudDetectionNum(
-            "pointCloud detection good num");
+            "detector good num");
         pointCloudDetectionNum.IncrementOne();
-        //        GlobalSummary::AddPose(
-        //            "detector_camera_pose",
-        //            {m_frame_cur->m_time_stamp, {Eigen::Quaterniond(Rcw),
-        //            tcw}});
-        //        GlobalSummary::AddPose(
-        //            "detector_obj_pose", {m_frame_cur->m_time_stamp,
-        //                                  {Eigen::Quaterniond(Rco_cur_),
-        //                                  tco_cur_}});
     }
 }
 
 void PointCloudObjDetector::SetInfo() {
-
     info_.clear();
     switch (detect_state_) {
     case DetectionGood:

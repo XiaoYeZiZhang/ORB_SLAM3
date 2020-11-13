@@ -236,6 +236,8 @@ private:
 
     void
     DrawBoundingbox(const float x = 0, const float y = 0, const float z = 0);
+    void
+    DrawBoundingboxForSfM(const std::vector<Eigen::Vector3d> &boundingbox_w);
     void DrawPlane(int ndivs, float ndivsize);
     void DrawPlane(Plane *pPlane, int ndivs, float ndivsize);
     void DrawTrackedPoints(

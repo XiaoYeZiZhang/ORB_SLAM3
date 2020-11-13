@@ -6,11 +6,12 @@
 #define ORB_SLAM3_MODE_H
 
 // mode
-#define SCANNER
-//#define OBJECTRECOGNITION
+//#define SCANNER
+#define OBJECTRECOGNITION
 
 // feature point mode
-#define SUPERPOINT
-//#define ORBPOINT
+//#define SUPERPOINT
+#define ORBPOINT
 
+#define USE_CONNECT_FOR_DETECTOR
 #endif // ORB_SLAM3_MODE_H

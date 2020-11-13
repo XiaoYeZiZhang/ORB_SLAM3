@@ -34,7 +34,8 @@ public:
     SaveTimer(const std::string &result_path, const std::string &timer_result);
 
     static void SaveStatics(
-        const std::string &result_path, const std::string &statics_result);
+        const std::string &result_path, const std::string &statics_result,
+        const std::string &file_name);
 
     static void SetDatasetPath(const std::string &dataset_path);
 

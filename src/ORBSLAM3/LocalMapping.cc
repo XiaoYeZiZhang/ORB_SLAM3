@@ -28,6 +28,7 @@
 #include "ORBSLAM3/FrameObjectProcess.h"
 #include "Visualizer/GlobalImageViewer.h"
 #include "mode.h"
+#include <glog/logging.h>
 #include <mutex>
 #include <chrono>
 
@@ -512,7 +513,7 @@ void LocalMapping::LocalBAForSuperPoint() {
 
 void LocalMapping::TriangulateForSuperPoint(
     const std::vector<ORB_SLAM3::KeyFrame *> &allkeyframes,
-    const int keyframe_num) {
+    const int keyframe_num, const unsigned int start_keyframe_id) {
     if (keyframe_num == allkeyframes.size() - 1) {
         return;
     }
@@ -538,6 +539,9 @@ void LocalMapping::TriangulateForSuperPoint(
         currentKeyFrame->GetBestCovisibilityKeyFrames(nn);
     for (size_t i = 0; i < vpNeighKFs.size(); i++) {
         ORB_SLAM3::KeyFrame *pKF2 = vpNeighKFs[i];
+        if (pKF2->mnId < start_keyframe_id) {
+            continue;
+        }
         if (pKF2->N_superpoint == -1) {
             continue;
         }
@@ -731,6 +735,9 @@ void LocalMapping::TriangulateForSuperPoint(
             currentKeyFrame->GetBestCovisibilityKeyFrames(nn);
         for (size_t i = 0; i < vpNeighKFs.size(); i++) {
             ORB_SLAM3::KeyFrame *neighbor_keyframe = vpNeighKFs[i];
+            if (neighbor_keyframe->mnId < start_keyframe_id) {
+                continue;
+            }
             if (neighbor_keyframe->mnId == currentKeyFrame->mnId ||
                 neighbor_keyframe->mnId == pKF2->mnId) {
                 continue;

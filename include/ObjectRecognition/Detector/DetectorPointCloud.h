@@ -35,6 +35,7 @@ private:
     std::vector<PS::MatchSet2D>
     Find2DMatches(const std::vector<KeyFrame::Ptr> &allKFs);
     PS::MatchSet3D Find3DMatch();
+    PS::MatchSet3D Find3DMatchByConnection();
 
     void PoseOptimize(const std::vector<int> &inliers_3d);
     bool PoseSolver(
@@ -42,14 +43,11 @@ private:
         const std::vector<PS::MatchSet2D> &matches_2d,
         std::vector<int> &inliers_3d,
         std::vector<std::vector<int>> &inliers_2d);
-
     void PnPResultHandle();
-
     void ResultRecord();
-
     void ShowDetectResult();
-
     void DrawTextInfo(const cv::Mat &img, cv::Mat &img_txt);
+    float ComputeAverageReProjError(const std::vector<int> &inliers_3d);
 
 private:
     std::shared_ptr<Object> mObj;
@@ -72,6 +70,8 @@ private:
     std::shared_ptr<DBoW3::Vocabulary> voc_;
 
     std::string info_;
+
+    float reproj_error;
 };
 
 } // namespace ObjRecognition

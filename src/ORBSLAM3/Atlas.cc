@@ -338,7 +338,7 @@ long long Atlas::GetMemSizeFor3DObject(
             }
         }
 
-        if (m_saved_mappoint_for_3dobject_.size() == 0) {
+        if (m_saved_mappoint_for_3dobject_.empty()) {
             LOG(ERROR) << "There is no mappoint in boundingbox, exit";
             return 0;
         }
@@ -347,6 +347,7 @@ long long Atlas::GetMemSizeFor3DObject(
         if (!is_superpoint) {
             for (Map *pMi : saved_map) {
                 for (KeyFrame *pKFi : pMi->GetAllKeyFrames()) {
+
                     m_saved_keyframe_for_3dobject_.emplace_back(pKFi);
                 }
             }

@@ -152,6 +152,10 @@ public:
         m_saved_keyframe_for_3dobject_ = keyframes_for_SfM;
     }
 
+    void SetStartSfMKeyFrameId(const unsigned int keyframe_id) {
+        start_sfm_keyframe_id = keyframe_id;
+    }
+
 protected:
     std::set<Map *> mspBadMaps;
     // Its necessary change the container from set to vector because
@@ -185,6 +189,8 @@ protected:
     double m_bbx_xmax;
     double m_bbx_ymax;
     double m_bbx_zmax;
+
+    unsigned int start_sfm_keyframe_id;
 
 }; // class Atlas
 

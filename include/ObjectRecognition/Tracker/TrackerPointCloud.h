@@ -50,6 +50,7 @@ private:
         const std::vector<cv::Point2d> &opticalFlowKeyPointsPre);
     void ShowTrackerResult();
     void DrawTextInfo(const cv::Mat &img, cv::Mat &img_txt);
+    float ComputeAverageReProjError(const std::vector<int> &inliers_3d);
 
 private:
     std::shared_ptr<Object> mObj;
@@ -79,6 +80,8 @@ private:
 
     std::string m_info;
     bool m_first_detection_good;
+
+    float reproj_error;
 };
 } // namespace ObjRecognition
 #endif // ORB_SLAM3_TRACKERPOINTCLOUD_H

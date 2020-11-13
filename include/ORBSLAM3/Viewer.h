@@ -84,6 +84,9 @@ public:
     void
     DrawPointCloudInImage(const std::vector<Eigen::Vector3d> &pointcloud_pos);
     void DrawMatchedMappoints();
+    bool GetIsStopFlag() {
+        return is_stop;
+    }
 
 private:
     bool ParseViewerParamFile(cv::FileStorage &fSettings);
@@ -121,6 +124,7 @@ private:
 
     // draw another window for objRecognition
     bool switch_window_flag;
+    bool is_stop;
     pangolin::OpenGlRenderState s_cam_slam;
     pangolin::View d_cam_slam;
     pangolin::OpenGlRenderState s_cam_objRecognition;

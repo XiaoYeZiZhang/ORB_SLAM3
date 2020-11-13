@@ -22,7 +22,7 @@ bool InBorder(
     const Eigen::Vector2d &pt, const int &xMin, const int &yMin,
     const int &xMax, const int &yMax);
 
-void Project(
+void ProjectSearch(
     const std::vector<Eigen::Vector3d> &pointCloudsWorld,
     const Eigen::Matrix3d &Rcw, const Eigen::Vector3d &Tcw,
     std::vector<bool> &projectFailState,

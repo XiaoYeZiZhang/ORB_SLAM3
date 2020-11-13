@@ -12,7 +12,7 @@ Parameters::Parameters() {
     // tracker need to be more strict
     kTrackerProjectSuccessNumTh = 50;
     kTrackerMatchPointsNumTh = 40;
-    kTrackerPnPInliersGoodNumTh = 50;
+    kTrackerPnPInliersGoodNumTh = 80;
     kTrackerPnP3DInliersGoodNumTh = 30;
     kTrackerPnPInliersUnreliableNumTh = 30;
 
@@ -20,7 +20,7 @@ Parameters::Parameters() {
     kDetectorPnPInliersGoodNumTh = 20;
     kDetectorPnPInliersUnreliableNumTh = 8;
 
-    kDetectorPnPInliersGoodWithKFNumTh = 30;
+    kDetectorPnPInliersGoodWithKFNumTh = 50;
     kDetectorPnP3DInliersGoodWithKFNumTh = 20;
     kDetectorPnPInliersUnreliableWithKFNumTh = 20;
 

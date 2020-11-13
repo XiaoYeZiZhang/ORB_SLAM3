@@ -661,6 +661,7 @@ void ViewerAR::Draw(int w, int h) {
             DrawSelected2DRegion();
             Pick3DPointCloud();
             DrawMapPoints_SuperPoint(m_boundingbox_corner, mappoints_picked);
+            DrawBoundingboxForSfM(m_boundingbox_w);
 
             // Pick3DPointCloud();
             if (m_is_SfMFinish) {
@@ -1138,6 +1139,59 @@ Eigen::Vector3d ViewerAR::Change2PlaneCoords(
         Pp << Pp_4[0], Pp_4[1], Pp_4[2];
     }
     return Pp;
+}
+
+void ViewerAR::DrawBoundingboxForSfM(
+    const std::vector<Eigen::Vector3d> &boundingbox_w) {
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glPointSize(4.0);
+    glBegin(GL_LINES);
+
+    Eigen::Vector3d point0 = boundingbox_w[0];
+    Eigen::Vector3d point1 = boundingbox_w[1];
+    Eigen::Vector3d point2 = boundingbox_w[2];
+    Eigen::Vector3d point3 = boundingbox_w[3];
+    Eigen::Vector3d point4 = boundingbox_w[4];
+    Eigen::Vector3d point5 = boundingbox_w[5];
+    Eigen::Vector3d point6 = boundingbox_w[6];
+    Eigen::Vector3d point7 = boundingbox_w[7];
+
+    glVertex3d(point0.x(), point0.y(), point0.z());
+    glVertex3d(point1.x(), point1.y(), point1.z());
+
+    glVertex3d(point5.x(), point5.y(), point5.z());
+    glVertex3d(point1.x(), point1.y(), point1.z());
+
+    glVertex3d(point5.x(), point5.y(), point5.z());
+    glVertex3d(point4.x(), point4.y(), point4.z());
+
+    glVertex3d(point0.x(), point0.y(), point0.z());
+    glVertex3d(point4.x(), point4.y(), point4.z());
+
+    glVertex3d(point2.x(), point2.y(), point2.z());
+    glVertex3d(point3.x(), point3.y(), point3.z());
+
+    glVertex3d(point3.x(), point3.y(), point3.z());
+    glVertex3d(point7.x(), point7.y(), point7.z());
+
+    glVertex3d(point7.x(), point7.y(), point7.z());
+    glVertex3d(point6.x(), point6.y(), point6.z());
+
+    glVertex3d(point6.x(), point6.y(), point6.z());
+    glVertex3d(point2.x(), point2.y(), point2.z());
+
+    glVertex3d(point6.x(), point6.y(), point6.z());
+    glVertex3d(point4.x(), point4.y(), point4.z());
+
+    glVertex3d(point7.x(), point7.y(), point7.z());
+    glVertex3d(point5.x(), point5.y(), point5.z());
+
+    glVertex3d(point3.x(), point3.y(), point3.z());
+    glVertex3d(point1.x(), point1.y(), point1.z());
+
+    glVertex3d(point0.x(), point0.y(), point0.z());
+    glVertex3d(point2.x(), point2.y(), point2.z());
+    glEnd();
 }
 
 void ViewerAR::DrawBoundingbox(const float x, const float y, const float z) {

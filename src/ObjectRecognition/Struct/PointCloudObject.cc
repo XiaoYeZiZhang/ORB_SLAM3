@@ -173,6 +173,28 @@ void UnPackCamCWFromMem(
 
 void KeyFrame::ReadFromMemory(long long &mem_pos, const char *mem) {
     PutDataToMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
+#ifdef USE_CONNECT_FOR_DETECTOR
+    PutDataToMem(
+        &connect_kfs_num, mem + mem_pos, sizeof(connect_kfs_num), mem_pos);
+    for (auto i = 0; i < connect_kfs_num; i++) {
+        long unsigned int connect_kf_id;
+        PutDataToMem(
+            &connect_kf_id, mem + mem_pos, sizeof(connect_kf_id), mem_pos);
+        connect_kfs.emplace_back(connect_kf_id);
+    }
+
+    PutDataToMem(
+        &connect_mappoints_num, mem + mem_pos, sizeof(connect_mappoints_num),
+        mem_pos);
+    for (auto i = 0; i < connect_mappoints_num; i++) {
+        long unsigned int connect_mappoint_id;
+        PutDataToMem(
+            &connect_mappoint_id, mem + mem_pos, sizeof(connect_mappoint_id),
+            mem_pos);
+        connect_mappoints.emplace_back(connect_mappoint_id);
+    }
+#endif
+
     VLOG(10) << "keyframe id: " << mnId;
     VLOG(5) << "keyframe read0:" << mem_pos;
     std::tie(mvKeypoints, mDescriptors) = UnpackORBFeatures(mem_pos, mem);
@@ -181,7 +203,6 @@ void KeyFrame::ReadFromMemory(long long &mem_pos, const char *mem) {
              << ObjRecognition::CameraIntrinsic::GetInstance().Width() << " "
              << ObjRecognition::CameraIntrinsic::GetInstance().Height();
     {
-        /// upload image ???
         int imgWidth = ObjRecognition::CameraIntrinsic::GetInstance().Width();
         int imgHeight = ObjRecognition::CameraIntrinsic::GetInstance().Height();
         cv::Mat tempImg(imgHeight, imgWidth, CV_8UC1, (void *)(mem + mem_pos));
@@ -288,6 +309,7 @@ bool Object::LoadPointCloud(const long long &mem_size, const char *mem) {
         std::shared_ptr<MapPoint> mapPoint = std::make_shared<MapPoint>();
         if (mapPoint->Load(mem_pos, mem)) {
             m_pointclouds.push_back(mapPoint);
+            m_pointclouds_map[mapPoint->GetID()] = mapPoint;
         } else {
             VLOG(5) << "PointCloudObject::Load fail!";
             return false;

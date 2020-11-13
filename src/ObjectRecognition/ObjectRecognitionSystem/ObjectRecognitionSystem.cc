@@ -124,7 +124,7 @@ void ObjRecogThread::SetInfo() {
     object_->GetPose(frmIndex, timeStamp, state, Rcw, Tcw, R_obj, T_obj);
     if (state == TrackingGood) {
         STATISTICS_UTILITY::StatsCollector pointCloudFinalStateNum(
-            "pointCloud finalState good num");
+            "finalState good num");
         pointCloudFinalStateNum.IncrementOne();
         obj_num = 1;
     }

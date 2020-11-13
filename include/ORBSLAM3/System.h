@@ -212,6 +212,10 @@ public:
     MapDrawer *mpMapDrawer;
     // superpoint
     Atlas *mpAtlas_superpoint;
+    // Tracker. It receives a frame and computes the associated camera pose.
+    // It also decides when to insert a new keyframe, create some new MapPoints
+    // and performs relocalization if tracking fails.
+    Tracking *mpTracker;
 
 private:
     // bool LoadAtlas(string filename, int type);
@@ -230,11 +234,6 @@ private:
 
     // Map structure that stores the pointers to all KeyFrames and MapPoints.
     // Map* mpMap;
-
-    // Tracker. It receives a frame and computes the associated camera pose.
-    // It also decides when to insert a new keyframe, create some new MapPoints
-    // and performs relocalization if tracking fails.
-    Tracking *mpTracker;
 
     // Loop Closer. It searches loops with every new keyframe. If there is a
     // loop it performs a pose graph optimization and full bundle adjustment (in

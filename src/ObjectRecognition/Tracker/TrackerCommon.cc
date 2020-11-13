@@ -50,7 +50,7 @@ void GetMapPointPositions(
         mapPointsWorld.emplace_back(mapPointPoseWorld);
     }
 }
-void Project(
+void ProjectSearch(
     const std::vector<Eigen::Vector3d> &pointCloudsWorld,
     const Eigen::Matrix3d &Rcw, const Eigen::Vector3d &Tcw,
     std::vector<bool> &projectFailState,
@@ -62,7 +62,6 @@ void Project(
 
     const int kBorderSize = 1;
     for (int i = 0; i < pointCloudsWorld.size(); i++) {
-        projectFailState[i] = false;
         // world coords
         Eigen::Vector3d point3d = pointCloudsWorld[i];
         // world coordinates -> camera coordinates
@@ -104,7 +103,6 @@ void GetFeaturesInArea(
     int nMaxY = static_cast<int>(point(1)) + kWindowSizeThreshold;
     nMaxY = height < nMaxY ? height : nMaxY;
     for (int k = 0; k < keyPoints.size(); k++) {
-
         if (InBorder(
                 Eigen::Vector2d(keyPoints[k].pt.x, keyPoints[k].pt.y), nMinX,
                 nMinY, nMaxX, nMaxY)) {
@@ -153,7 +151,6 @@ int SearchByProjection(
         matchKeyPointsState[j] = false;
         std::vector<int> vIndices;
         vIndices.reserve(keyPoints.size());
-        // is this method need??  if the object is moved by a long distance???
         GetFeaturesInArea(pointProject, width, height, keyPoints, vIndices);
         if (vIndices.empty()) {
             j++;
@@ -184,6 +181,7 @@ int SearchByProjection(
                 bestDist2 = dist;
             }
         }
+
         MapPointIndex mpIndex = i;
         // VLOG(5) << "Trackerbest: " << bestDist;
         if (bestDist < kDistThreshold) {

@@ -49,6 +49,7 @@ Viewer::Viewer(
 
     mbStopTrack = false;
     switch_window_flag = false;
+    is_stop = false;
     image_width = ObjRecognition::CameraIntrinsic::GetInstance().Width();
     image_height = ObjRecognition::CameraIntrinsic::GetInstance().Height();
     imageTexture = pangolin::GlTexture();
@@ -430,11 +431,13 @@ void Viewer::Draw() {
                 }
                 glEnd();
                 if (*menuShowMatched3DObject) {
-                    DrawMatchedMappoints();
+                    // DrawMatchedMappoints();
                 }
             }
 
             if (*menuStop) {
+                is_stop = true;
+                VLOG(0) << "stop";
                 SetFinish();
                 mpSystem->Shutdown();
                 break;

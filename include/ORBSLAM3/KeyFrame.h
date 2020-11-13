@@ -634,6 +634,9 @@ protected:
     // MapPoints associated to keypoints
     std::vector<MapPoint *> mvpMapPoints_superpoint;
 
+    vector<KeyFrame *> saved_connected_keyframes_for3DObject;
+    std::vector<MapPoint *> saved_connected_mappoints_for3DObject;
+
 public:
     GeometricCamera *mpCamera, *mpCamera2;
 

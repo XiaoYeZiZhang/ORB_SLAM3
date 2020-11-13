@@ -31,6 +31,22 @@ cv::Mat GetPointCloudDesp(const std::shared_ptr<Object> &pc) {
     return ptDesp.t();
 }
 
+cv::Mat GetPointCloudDespByConnection(
+    const std::vector<MapPoint::Ptr> &associated_mappoints) {
+    cv::Mat result;
+    if (associated_mappoints.empty()) {
+        LOG(ERROR) << "GetPointCloudDesp: object is null";
+        return result;
+    }
+
+    cv::Mat ptDesp = associated_mappoints[0]->GetDescriptor();
+    for (size_t i = 1; i < associated_mappoints.size(); i++) {
+        // combine the desp of mapPoint
+        cv::hconcat(ptDesp, associated_mappoints[i]->GetDescriptor(), ptDesp);
+    }
+    return ptDesp.t();
+}
+
 void GetBoxPoint(
     const std::shared_ptr<Object> &mObj,
     std::vector<Eigen::Vector3d> &pointBoxs) {
@@ -73,9 +89,11 @@ void GetBoxPoint(
     pointBoxs[7] = Eigen::Vector3d(xMax, yMax, zMax);
 }
 
-void FindMatchByKNN(
-    const cv::Mat &frmDesp, const cv::Mat &pcDesp,
-    std::vector<cv::DMatch> &goodMatches) {
+void FindMatchByKNN_Homography(
+    const std::vector<cv::KeyPoint> &keypoints1,
+    const std::vector<cv::KeyPoint> &keypoints2, const cv::Mat &frmDesp,
+    const cv::Mat &pcDesp, std::vector<cv::DMatch> &goodMatches,
+    const float ratio_threshold) {
     // STSLAMCommon::Timer detectionFindMatch("detection find match by KNN");
     std::vector<cv::DMatch> matches;
     std::vector<std::vector<cv::DMatch>> knnMatches;
@@ -90,8 +108,7 @@ void FindMatchByKNN(
         const float distanceRatio = bestMatch.distance / betterMatch.distance;
         VLOG(50) << "distanceRatio = " << distanceRatio;
         // the farest distance, the better result
-        const float kMinDistanceRatioThreshld = 0.70;
-        if (distanceRatio < kMinDistanceRatioThreshld) {
+        if (distanceRatio < ratio_threshold) {
             matches.push_back(bestMatch);
         }
     }
@@ -111,10 +128,73 @@ void FindMatchByKNN(
     for (size_t i = 0; i < matches.size(); i++) {
         if (matches[i].distance <= kgoodMatchesThreshold) {
             goodMatches.push_back(matches[i]);
+        } else {
+            VLOG(0) << "detector best dist bigger than 200";
         }
     }
     // VLOG(10) << "detection find match by KNN time: "
     //       << detectionFindMatch.Stop();
+
+    std::vector<cv::Point2f> srcPoints(goodMatches.size());
+    std::vector<cv::Point2f> dstPoints(goodMatches.size());
+
+    for (size_t i = 0; i < goodMatches.size(); i++) {
+        srcPoints[i] = keypoints2[goodMatches[i].trainIdx].pt;
+        dstPoints[i] = keypoints1[goodMatches[i].queryIdx].pt;
+    }
+
+    std::vector<uchar> inliersMask(srcPoints.size());
+    auto homography =
+        findHomography(srcPoints, dstPoints, CV_FM_RANSAC, 6.0, inliersMask);
+
+    std::vector<cv::DMatch> inliers;
+    for (size_t i = 0; i < inliersMask.size(); i++) {
+        if (inliersMask[i])
+            inliers.push_back(matches[i]);
+    }
+    goodMatches.swap(inliers);
+}
+
+void FindMatchByKNN(
+    const cv::Mat &frmDesp, const cv::Mat &pcDesp,
+    std::vector<cv::DMatch> &goodMatches, const float ratio_threshold) {
+    std::vector<cv::DMatch> matches;
+    std::vector<std::vector<cv::DMatch>> knnMatches;
+    cv::BFMatcher matcher(cv::NormTypes::NORM_HAMMING);
+    matcher.knnMatch(frmDesp, pcDesp, knnMatches, 2);
+
+    VLOG(5) << "KNN Matches size: " << knnMatches.size();
+
+    for (size_t i = 0; i < knnMatches.size(); i++) {
+        cv::DMatch &bestMatch = knnMatches[i][0];
+        cv::DMatch &betterMatch = knnMatches[i][1];
+        const float distanceRatio = bestMatch.distance / betterMatch.distance;
+        VLOG(50) << "distanceRatio = " << distanceRatio;
+        // the farest distance, the better result
+        if (distanceRatio < ratio_threshold) {
+            matches.push_back(bestMatch);
+        }
+    }
+
+    VLOG(15) << "after distance Ratio matches size: " << matches.size();
+
+    double minDisKnn = 9999.0;
+    for (size_t i = 0; i < matches.size(); i++) {
+        if (matches[i].distance < minDisKnn) {
+            minDisKnn = matches[i].distance;
+        }
+    }
+    VLOG(15) << "minDisKnn = " << minDisKnn;
+
+    // set good_matches_threshold
+    const int kgoodMatchesThreshold = 200;
+    for (size_t i = 0; i < matches.size(); i++) {
+        if (matches[i].distance <= kgoodMatchesThreshold) {
+            goodMatches.push_back(matches[i]);
+        } else {
+            VLOG(0) << "detector 2d-3d best match bigger than 200";
+        }
+    }
 }
 
 void FindMatchByKNN_SuperPoint(

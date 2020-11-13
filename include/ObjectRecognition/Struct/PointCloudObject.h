@@ -17,6 +17,8 @@
 typedef long unsigned int KeyFrameIndex;
 namespace ObjRecognition {
 #define OBJ_WITH_KF
+#define USE_INLIER
+//#define USE_REPROJ
 #define INVALID_FRAME_INDEX -1
 
 enum ObjModelVersion { NormalModel = 0, ModelWithImage = 1 };
@@ -41,6 +43,9 @@ public:
         return perSize;
     }
     const std::string GetInfo();
+    MapPointIndex GetID() {
+        return mnId;
+    }
 
 private:
     std::mutex mMutexPos;
@@ -72,6 +77,9 @@ public:
     DBoW3::FeatureVector &GetBowFeatVec();
     DBoW3::BowVector &GetBowVec();
 
+    std::vector<long unsigned int> connect_kfs;
+    std::vector<long unsigned int> connect_mappoints;
+
 private:
     int mnVersion = 0;
     KeyFrameIndex mnId = -1;
@@ -90,6 +98,9 @@ private:
 
     Eigen::Matrix3d mRcw = Eigen::Matrix3d::Identity();
     Eigen::Vector3d mtcw = Eigen::Vector3d::Zero();
+
+    long unsigned int connect_kfs_num;
+    long unsigned int connect_mappoints_num;
 
     int mImgWidth = 0;
     int mImgHeight = 0;
@@ -123,15 +134,18 @@ public:
     void AddKeyFrames2Database(
         const std::vector<ObjRecognition::KeyFrame::Ptr> &kfs);
     std::shared_ptr<DBoW3::Vocabulary> &GetVocabulary();
+    std::map<MapPointIndex, MapPoint::Ptr> m_pointclouds_map;
+    std::map<FrameIndex, std::shared_ptr<KeyFrame>> m_mp_keyframes;
 
 private:
     std::string m_version = "V0.0.0.0";
     double m_timestamp;
     std::vector<MapPoint::Ptr> m_pointclouds;
+
     std::vector<KeyFrame::Ptr> m_keyframes;
     std::shared_ptr<DBoW3::Vocabulary> m_voc;
     std::shared_ptr<DBoW3::Database> m_database;
-    std::map<FrameIndex, std::shared_ptr<KeyFrame>> m_mp_keyframes;
+
     std::vector<FrameIndex> m_entry_to_keyframe_index;
     std::unordered_map<FrameIndex, int> m_keyframe_index_to_entry;
 };

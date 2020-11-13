@@ -28,6 +28,7 @@
 #include <glog/logging.h>
 #include "include/Tools.h"
 #include "ObjectRecognition/Utility/Camera.h"
+#include "mode.h"
 
 namespace ORB_SLAM3 {
 
@@ -983,6 +984,39 @@ long long KeyFrame::GetMemSizeFor3DObject(const bool is_superpoint) {
     long long totalSize = 0;
     totalSize += sizeof(mnId);
     VLOG(5) << "getmem key 1: " << totalSize;
+
+#ifdef USE_CONNECT_FOR_DETECTOR
+    // connect keyframe num
+    saved_connected_keyframes_for3DObject = GetBestCovisibilityKeyFrames(20);
+    long unsigned int connect_kfs_size =
+        saved_connected_keyframes_for3DObject.size();
+    totalSize += sizeof(connect_kfs_size);
+    totalSize += ((sizeof(mnId)) * connect_kfs_size);
+
+    if (!is_superpoint) {
+        for (auto mappoint : mvpMapPoints) {
+            if (mappoint) {
+                saved_connected_mappoints_for3DObject.emplace_back(mappoint);
+            }
+        }
+
+        long unsigned int connect_mappoint_size =
+            saved_connected_mappoints_for3DObject.size();
+        totalSize += sizeof(connect_mappoint_size);
+        totalSize += sizeof(long unsigned int) * connect_mappoint_size;
+    } else {
+        for (auto mappoint : mvpMapPoints_superpoint) {
+            if (mappoint) {
+                saved_connected_mappoints_for3DObject.emplace_back(mappoint);
+            }
+        }
+        long unsigned int connect_mappoint_size =
+            saved_connected_mappoints_for3DObject.size();
+        totalSize += sizeof(connect_mappoint_size);
+        totalSize += sizeof(long unsigned int) * connect_mappoint_size;
+    }
+#endif
+
     unsigned int nKpts = mvKeys.size();
     if (is_superpoint) {
         nKpts = mvKeys_superpoint.size();
@@ -1020,6 +1054,44 @@ void KeyFrame::WriteToMemoryFor3DObject(
     const bool is_superpoint) {
     VLOG(10) << "keyframe id: " << mnId;
     Tools::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
+
+#ifdef USE_CONNECT_FOR_DETECTOR
+    // connect keyframe id
+    long unsigned int connect_kfs_size =
+        saved_connected_keyframes_for3DObject.size();
+    Tools::PutDataToMem(
+        mem + mem_pos, &connect_kfs_size, sizeof(connect_kfs_size), mem_pos);
+    for (auto keyframe : saved_connected_keyframes_for3DObject) {
+        Tools::PutDataToMem(
+            mem + mem_pos, &(keyframe->mnId), sizeof(keyframe->mnId), mem_pos);
+    }
+
+    // associated mappoint id:
+    if (!is_superpoint) {
+        long unsigned int connect_mappoints_num =
+            saved_connected_mappoints_for3DObject.size();
+        Tools::PutDataToMem(
+            mem + mem_pos, &connect_mappoints_num,
+            sizeof(connect_mappoints_num), mem_pos);
+        for (auto mappoint : saved_connected_mappoints_for3DObject) {
+            Tools::PutDataToMem(
+                mem + mem_pos, &(mappoint->mnId), sizeof(mappoint->mnId),
+                mem_pos);
+        }
+    } else {
+        long unsigned int connect_mappoints_num =
+            saved_connected_mappoints_for3DObject.size();
+        Tools::PutDataToMem(
+            mem + mem_pos, &connect_mappoints_num,
+            sizeof(connect_mappoints_num), mem_pos);
+        for (auto mappoint : saved_connected_mappoints_for3DObject) {
+            Tools::PutDataToMem(
+                mem + mem_pos, &(mappoint->mnId), sizeof(mappoint->mnId),
+                mem_pos);
+        }
+    }
+
+#endif
 
     VLOG(0) << "write mem key 1:" << sizeof(mnId);
     if (is_superpoint) {

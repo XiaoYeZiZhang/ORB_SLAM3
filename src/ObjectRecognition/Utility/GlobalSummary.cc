@@ -31,11 +31,6 @@ void GlobalSummary::AddPose(
 } // GlobalSummary::AddPose
 
 void GlobalSummary::SaveAllPoses(const std::string &result_path) {
-
-#ifdef MOBILE_PLATFORM
-    return;
-#endif
-
     pose_mutex_.lock();
 
     // std::cout << all_poses_.size() << std::endl;
@@ -77,9 +72,11 @@ void GlobalSummary::SaveTimer(
 }
 
 void GlobalSummary::SaveStatics(
-    const std::string &result_path, const std::string &statics_result) {
+    const std::string &result_path, const std::string &statics_result,
+    const std::string &file_name) {
     std::ofstream f_stream;
-    std::string result_file = result_path + "/" + "statics_result.txt";
+    std::string result_file =
+        result_path + "/" + file_name; // "statics_result.txt";
     VLOG(10) << "Global summary statics result: " << result_file;
     f_stream.open(result_file);
 

@@ -188,6 +188,9 @@ bool TestViewer::InitObjectRecognition() {
         model_id, cloud_point_model_buffer, cloud_point_model_buf_size,
         m_pointCloud);
 
+    STATISTICS_UTILITY::StatsCollector pointCloudNum("Mappoint num");
+    pointCloudNum.AddSample(m_pointCloud->GetPointCloudsNum());
+
     delete[] cloud_point_model_buffer;
     SLAM->SetPointCloudModel(m_pointCloud);
     SLAM->mpViewer->SetPointCloudModel(m_pointCloud);
@@ -418,7 +421,7 @@ bool TestViewer::RunObjectRecognition() {
     cv::Mat imLeft, imRight, imLeftRect, imRightRect;
     int proccIm = 0;
     for (int ni = 0; ni < nImages; ni++, proccIm++) {
-        if (SLAM->mpViewer->isFinished()) {
+        if (SLAM->mpViewer->GetIsStopFlag()) {
             break;
         }
         imLeft = cv::imread(vstrImageLeft[ni], cv::IMREAD_UNCHANGED);
@@ -508,22 +511,29 @@ bool TestViewer::RunObjectRecognition() {
             usleep((T - ttrack) * 1e6); // 1e6
     }
 #ifdef OBJECTRECOGNITION
-    ObjRecognition::GlobalSummary::SaveAllPoses(m_result_dir);
+    //    ObjRecognition::GlobalSummary::SaveAllPoses(m_result_dir);
+
+    std::string statics_result_filename;
+#ifdef SUPERPOINT
+    statics_result_filename = "statics_result_SUPERPOINT.txt";
+#else
+    statics_result_filename = "statics_result_ORB.txt";
+#endif
     ObjRecognition::GlobalSummary::SaveStatics(
-        slam_saved_path, STATISTICS_UTILITY::Statistics::Print());
+        slam_saved_path, STATISTICS_UTILITY::Statistics::Print(),
+        statics_result_filename);
+
     /*ObjRecognition::GlobalSummary::SaveTimer(
         m_result_dir, STSLAMCommon::Timing::Print());*/
+
     ObjRecognitionExd::ObjRecongManager::Instance().Destroy();
 #endif
 
-    // Stop all threads
     SLAM->Shutdown();
 
-    const string kf_file = slam_saved_path + "/kf_" + dataset_name + ".txt";
-    const string f_file = slam_saved_path + "/f_" + dataset_name + ".txt";
-    SLAM->SaveTrajectoryEuRoC(f_file);
-    SLAM->SaveKeyFrameTrajectoryEuRoC(kf_file);
-
+    //    const string kf_file = slam_saved_path + "/kf_" + dataset_name +
+    //    ".txt"; const string f_file = slam_saved_path + "/f_" + dataset_name +
+    //    ".txt"; SLAM->SaveTrajectoryEuRoC(f_file);
     return true;
 }
 
