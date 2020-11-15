@@ -10,6 +10,7 @@
 #include "Utility/Statistics.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionSystem.h"
 #include "Utility/FeatureExtractor/ORBExtractor.h"
+#include "Utility/Timer.h"
 #include "mode.h"
 
 namespace ObjRecognition {
@@ -212,22 +213,28 @@ int ObjRecogThread::Process() {
         platformFrame->img.data);
 
 #ifdef ORBPOINT
+    TIMER_UTILITY::Timer timer_orb;
     // STSLAMCommon::Timer ORBExtractorTimer("ORBExtractor process");
     SLAMCommon::ORBExtractor orb_extractor(
         Parameters::GetInstance().KObjRecognitionORB_nFeatures, 1.2f, 8, 20, 7);
     orb_extractor.DetectKeyPoints(cur_frame->img, cur_frame->mKpts);
     orb_extractor.ComputeDescriptors(
         cur_frame->img, cur_frame->mKpts, cur_frame->mDesp);
+    STATISTICS_UTILITY::StatsCollector ORB_objRecognition(
+        "Time: ORB extractor for objRecognition");
+    ORB_objRecognition.AddSample(timer_orb.Stop());
 #endif
 
 #ifdef SUPERPOINT
-
+    TIMER_UTILITY::Timer timer_superpoint;
     (*SPextractor)(
         cur_frame->img, cv::Mat(), cur_frame->mKpts, cur_frame->mDesp);
     VLOG(0) << "Superpoint per frame: " << cur_frame->mKpts.size();
+    STATISTICS_UTILITY::StatsCollector SUPERPOINT_objRecognition(
+        "Time: SUPERPOINT extractor for objRecognition");
+    SUPERPOINT_objRecognition.AddSample(timer_superpoint.Stop());
 #endif
 
-    // VLOG(10) << "ORBExtractor process time: " << ORBExtractorTimer.Stop();
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             cur_frame->mRcw(i, j) = platformFrame->R[i][j];
@@ -235,8 +242,6 @@ int ObjRecogThread::Process() {
         cur_frame->mTcw(i) = platformFrame->t[i];
     }
 
-    //    GlobalOcvViewer::UpdateView(
-    //        "Frame for Detector and Tracker", cur_frame->img);
     detector_thread_.PushData(cur_frame);
     tracker_thread_.PushData(cur_frame);
     ret = 0;

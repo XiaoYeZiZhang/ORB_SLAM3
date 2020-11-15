@@ -137,6 +137,12 @@ public:
     std::map<MapPointIndex, MapPoint::Ptr> m_pointclouds_map;
     std::map<FrameIndex, std::shared_ptr<KeyFrame>> m_mp_keyframes;
 
+    void SetAssociatedMapPointsByConnection(
+        const std::set<long unsigned int> &associated_mappoints_id);
+    void SetAssociatedKeyFrames(const std::set<int> &associated_keyframes_id);
+    std::set<long unsigned int> m_associated_mappoints_id;
+    std::set<int> m_associated_keyframes_id;
+
 private:
     std::string m_version = "V0.0.0.0";
     double m_timestamp;

@@ -10,6 +10,7 @@
 #include "Utility/Parameters.h"
 #include "Utility/Camera.h"
 #include "Utility/Statistics.h"
+#include "Utility/Timer.h"
 #include "Tracker/TrackerCommon.h"
 #include "mode.h"
 
@@ -235,13 +236,13 @@ PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
         return matchset_3d;
     }
 
+    TIMER_UTILITY::Timer timer;
     const std::vector<MapPoint::Ptr> pointClouds = mObj->GetPointClouds();
     if (pointClouds.empty()) {
         LOG(ERROR) << "No mapPoints here!!!";
         return matchset_3d;
     }
 
-    // STSLAMCommon::Timer timer("PointCloud tracker find opticalFlow match");
     m_frame_cur->m_opticalflow_matches2dto3d.clear();
     m_frame_cur->m_opticalflow_point2ds.clear();
 
@@ -291,8 +292,9 @@ PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
     // get currentframe 2d<->3d correspondance
     matchset_3d = OpticalFlowGenerate3DMatch(m_frame_cur, mapPointsObj);
 
-    // VLOG(20) << "PointCloud tracker opticalFlowMatch process time: "
-    //<< timer.Stop();
+    STATISTICS_UTILITY::StatsCollector tracker_find_opticalflow_match(
+        "Time: tracker find opticalflow match");
+    tracker_find_opticalflow_match.AddSample(timer.Stop());
     return matchset_3d;
 }
 
@@ -321,6 +323,7 @@ void RemoveOpticalFlowAndProjectionCommonMatch(
 }
 
 PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
+    TIMER_UTILITY::Timer timer;
     PS::MatchSet3D matchset_3d;
     const std::vector<MapPoint::Ptr> pointClouds = mObj->GetPointClouds();
     if (pointClouds.empty()) {
@@ -362,10 +365,10 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
     stats_collector_project.AddSample(m_project_success_mappoint_num);
 
     // 50
-    if (m_project_success_mappoint_num <
+    /*if (m_project_success_mappoint_num <
         Parameters::GetInstance().kTrackerProjectSuccessNumTh) {
         return matchset_3d;
-    }
+    }*/
 
     std::vector<bool> matchKeyPointsState;
     m_projection_matches2dTo3d_cur.clear();
@@ -398,6 +401,10 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
 
     // ShowProjectedPointsAndMatchingKeyPoints(projectPoints,
     // matchKeyPointsState);
+
+    STATISTICS_UTILITY::StatsCollector tracker_projection_match(
+        "Time: tracker find projection match");
+    tracker_projection_match.AddSample(timer.Stop());
     return matchset_3d;
 }
 
@@ -832,8 +839,7 @@ void PointCloudObjTracker::Process(
         }
     }
 
-    // STSLAMCommon::Timer timer("PointCloud tracker process");
-
+    TIMER_UTILITY::Timer timer;
     PreProcess(frm);
 
     PS::MatchSet3D totalMatchSet_3d = FindOpticalFlow3DMatch();
@@ -843,15 +849,20 @@ void PointCloudObjTracker::Process(
         totalMatchSet_3d.end(), matchset_3d.begin(), matchset_3d.end());
 
     std::vector<int> totalInliers_3d;
+    TIMER_UTILITY::Timer timer_poseSolver;
     PoseSolver(totalMatchSet_3d, {}, totalInliers_3d);
-
     ProcessPoseSolverInliers(totalInliers_3d);
+    STATISTICS_UTILITY::StatsCollector tracker_pose_solver(
+        "Time: tracker pose solver");
+    tracker_pose_solver.AddSample(timer_poseSolver.Stop());
 
     reproj_error = ComputeAverageReProjError(totalInliers_3d);
 
     PnPResultHandle();
 
-    // VLOG(20) << "PointCloud tracker process time: " << timer.Stop();
+    STATISTICS_UTILITY::StatsCollector tracker_process_time(
+        "Time: tracker process single image");
+    tracker_process_time.AddSample(timer.Stop());
 
     ShowTrackerResult();
 

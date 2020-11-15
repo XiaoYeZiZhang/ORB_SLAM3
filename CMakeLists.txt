@@ -156,6 +156,8 @@ set(ORBSLAM3_CAMERAMODEL_FILES
 set(OBJECTRECOGNITION_FILES
         include/ObjectRecognition/Utility/Statistics.h
         src/ObjectRecognition/Utility/Statistics.cc
+        include/ObjectRecognition/Utility/Timer.h
+        src/ObjectRecognition/Utility/Timer.cc
         include/ObjectRecognition/Utility/Accumulator.h
         include/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionManager.h
         include/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionSystem.h

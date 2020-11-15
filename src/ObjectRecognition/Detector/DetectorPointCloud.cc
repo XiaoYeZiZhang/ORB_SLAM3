@@ -9,6 +9,7 @@
 #include "Utility/Camera.h"
 #include "Utility/Statistics.h"
 #include "Utility/Parameters.h"
+#include "Utility/Timer.h"
 #include "Detector/DetectorPointCloud.h"
 #include "Optimizer/LBAOptimizer.h"
 #include "mode.h"
@@ -141,32 +142,55 @@ void PointCloudObjDetector::PreProcess(
 
 std::vector<PS::MatchSet2D>
 PointCloudObjDetector::Find2DMatches(const std::vector<KeyFrame::Ptr> &allKFs) {
-    // STSLAMCommon::Timer timer_find_2dmatch("find 2d matches");
-    // using dbow and current frame desp to find matches kfs
+
+    TIMER_UTILITY::Timer timer;
     std::vector<KeyFrame::Ptr> kf_mathceds = mObj->FrameQueryMap(m_frame_cur);
+    STATISTICS_UTILITY::StatsCollector detector_find_2d_match_time(
+        "Time: detector query from map");
+    detector_find_2d_match_time.AddSample(timer.Stop());
+
     std::vector<PS::MatchSet2D> matches_2ds;
 
-    if (kf_mathceds.size() == 0) {
+    if (kf_mathceds.empty()) {
         LOG(ERROR) << "2DMatch Frames QuryMap is empty";
         return matches_2ds;
     }
 
+    TIMER_UTILITY::Timer timer_getmatch;
     std::set<int> kf_matches_id;
-    for (KeyFrame::Ptr kf : kf_mathceds) {
+    for (const KeyFrame::Ptr &kf : kf_mathceds) {
         kf_matches_id.insert(kf->GetID());
     }
     // GlobalKeyFrameMatchViewer::SetMatchedKeyFrames(kf_matches_id);
     matches_2ds = Generate2DMatchesFromKeyFrame(m_frame_cur, kf_mathceds);
-    // timer_find_2dmatch.Stop();
+    STATISTICS_UTILITY::StatsCollector detector_2d_match(
+        "Time: detector find 2d match");
+    detector_2d_match.AddSample(timer_getmatch.Stop());
     return matches_2ds;
 }
 
 PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection() {
+    PS::MatchSet3D matches_3d;
     std::vector<KeyFrame::Ptr> kf_mathceds = mObj->FrameQueryMap(m_frame_cur);
+    if (kf_mathceds.empty()) {
+        return matches_3d;
+    }
+
+    TIMER_UTILITY::Timer timer;
+    std::set<int> associated_keyframe_id;
     std::set<MapPoint::Ptr> associated_mappoints;
+    std::set<MapPointIndex> associated_mappoints_id;
     for (const KeyFrame::Ptr &kf : kf_mathceds) {
+#ifdef SUPERPOINT
+#else
+        associated_keyframe_id.insert(kf->GetID());
+#endif
         auto connect_kf_ids = kf->connect_kfs;
         for (auto connect_kf_id : connect_kf_ids) {
+#ifdef SUPERPOINT
+#else
+            associated_keyframe_id.insert(connect_kf_id);
+#endif
             auto keyframe = mObj->m_mp_keyframes[connect_kf_id];
             auto connected_mappoints_id = keyframe->connect_mappoints;
             for (auto mappoint_id : connected_mappoints_id) {
@@ -180,6 +204,10 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection() {
                 }
                 associated_mappoints.insert(
                     mObj->m_pointclouds_map[mappoint_id]);
+#ifdef SUPERPOINT
+#else
+                associated_mappoints_id.insert(mappoint_id);
+#endif
             }
         }
     }
@@ -189,7 +217,13 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection() {
         associated_mappoints_vector.emplace_back(mappoint);
     }
 
-    PS::MatchSet3D matches_3d;
+#ifdef SUPERPOINT
+#else
+    // associated_mappoints
+    mObj->SetAssociatedMapPointsByConnection(associated_mappoints_id);
+    mObj->SetAssociatedKeyFrames(associated_keyframe_id);
+#endif
+
     cv::Mat pcDesp;
 
     const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
@@ -231,6 +265,10 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection() {
         "detector 2D-3D matches num:");
     stats_collector_knn.AddSample(knn_match_num_);
 
+    STATISTICS_UTILITY::StatsCollector detector_find_3d_by_connection_time(
+        "Time: detector find 3d match by connection");
+    detector_find_3d_by_connection_time.AddSample(timer.Stop());
+
     // 8
     const int kGoodMatchNumTh =
         Parameters::GetInstance().kDetectorKNNMatchNumTh;
@@ -264,6 +302,7 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection() {
 }
 
 PS::MatchSet3D PointCloudObjDetector::Find3DMatch() {
+    TIMER_UTILITY::Timer timer;
     PS::MatchSet3D matches_3d;
     cv::Mat pcDesp;
 
@@ -305,6 +344,10 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatch() {
     STATISTICS_UTILITY::StatsCollector stats_collector_knn(
         "detector 2D-3D matches num:");
     stats_collector_knn.AddSample(knn_match_num_);
+
+    STATISTICS_UTILITY::StatsCollector detector_find_3d_time(
+        "Time: detector find 3d match");
+    detector_find_3d_time.AddSample(timer.Stop());
 
     // 8
     const int kGoodMatchNumTh =
@@ -736,7 +779,7 @@ void PointCloudObjDetector::Process(
         return;
     }
 
-    // STSLAMCommon::Timer timer("PointCloud detector process");
+    TIMER_UTILITY::Timer timer;
     PreProcess(frm);
 
     std::vector<PS::MatchSet2D> matchset_2d;
@@ -753,13 +796,19 @@ void PointCloudObjDetector::Process(
 
     std::vector<int> inliers_3d;
     std::vector<std::vector<int>> inliers_2d;
+    TIMER_UTILITY::Timer timer_poseSolver;
     PoseSolver(matchset_3d, matchset_2d, inliers_3d, inliers_2d);
+    STATISTICS_UTILITY::StatsCollector detector_pose_solver(
+        "Time: detector pose solver");
+    detector_pose_solver.AddSample(timer_poseSolver.Stop());
 
     reproj_error = ComputeAverageReProjError(inliers_3d);
 
     PnPResultHandle();
 
-    // VLOG(10) << "PointCloud detector process time: " << timer.Stop();
+    STATISTICS_UTILITY::StatsCollector detector_process_time(
+        "Time: detector process single image");
+    detector_process_time.AddSample(timer.Stop());
 
     ShowDetectResult();
 

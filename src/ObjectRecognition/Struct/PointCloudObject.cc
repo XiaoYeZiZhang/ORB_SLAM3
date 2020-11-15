@@ -447,6 +447,16 @@ std::shared_ptr<DBoW3::Database> &Object::GetDatabase() {
     return m_database;
 }
 
+void Object::SetAssociatedMapPointsByConnection(
+    const std::set<long unsigned int> &associated_mappoints_id) {
+    m_associated_mappoints_id = associated_mappoints_id;
+}
+
+void Object::SetAssociatedKeyFrames(
+    const std::set<int> &associated_keyframes_id) {
+    m_associated_keyframes_id = associated_keyframes_id;
+}
+
 size_t Object::GetPointCloudsNum() {
     return m_pointclouds.size();
 }

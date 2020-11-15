@@ -21,6 +21,7 @@
 
 #include <pangolin/pangolin.h>
 #include <mutex>
+#include <glog/logging.h>
 #include "Visualizer/GlobalImageViewer.h"
 #include "ORBSLAM3/Viewer.h"
 #include "ORBSLAM3/ViewerCommon.h"
@@ -48,7 +49,7 @@ Viewer::Viewer(
     }
 
     mbStopTrack = false;
-    switch_window_flag = false;
+    switch_window_flag = 0;
     is_stop = false;
     image_width = ObjRecognition::CameraIntrinsic::GetInstance().Width();
     image_height = ObjRecognition::CameraIntrinsic::GetInstance().Height();
@@ -137,6 +138,16 @@ void Viewer::DrawObjRecognitionInit() {
     s_cam_objRecognition = pangolin::OpenGlRenderState();
     imageTexture = pangolin::GlTexture(
         image_width, image_height, GL_RGB, false, 0, GL_RGB, GL_UNSIGNED_BYTE);
+}
+
+void Viewer::DrawDetectorInit() {
+    // define projection and initial movelview matrix: default
+    // Define Camera Render Object (for view / scene browsing)
+    s_cam_detector = pangolin::OpenGlRenderState(
+        pangolin::ProjectionMatrix(
+            1024, 768, mViewpointF, mViewpointF, 512, 389, 0.1, 1000),
+        pangolin::ModelViewLookAt(
+            mViewpointX, -3.5, mViewpointZ, 0, 0, 0, 0.0, -1.0, 0.0));
 }
 
 void Viewer::DrawSLAMInit() {
@@ -271,6 +282,85 @@ void Viewer::DrawMatchedMappoints() {
     glEnd();
 }
 
+void Viewer::ShowConnectedMapPoints() {
+    if (m_pointCloud_model) {
+
+        glPointSize(2.0);
+        Eigen::Isometry3f T = Eigen::Isometry3f::Identity();
+        glBegin(GL_POINTS);
+        for (const auto &mappoint : m_pointCloud_model->GetPointClouds()) {
+            if (m_pointCloud_model->m_associated_mappoints_id.count(
+                    mappoint->GetID())) {
+                glColor3f(0.0f, 1.0f, 0.0f);
+            } else {
+                glColor3f(1.0f, 0.0f, 0.0f);
+            }
+            Eigen::Vector3f p = mappoint->GetPose().cast<float>();
+            p = T.inverse() * p;
+            glVertex3f(p.x(), p.y(), p.z());
+        }
+        glEnd();
+    }
+}
+
+void Viewer::ShowConnectedKeyframes() {
+    if (m_pointCloud_model) {
+        float cam_size = 0.1f;
+        for (const auto &keyframe : m_pointCloud_model->GetKeyFrames()) {
+            Eigen::Vector4f color_keyframe;
+            if (m_pointCloud_model->m_associated_keyframes_id.count(
+                    keyframe->GetID())) {
+                color_keyframe = Eigen::Vector4f(0.0f, 1.0f, 1.0f, 0.2f);
+            } else {
+                color_keyframe = Eigen::Vector4f(1.0f, 0.0f, 1.0f, 0.2f);
+            }
+            Eigen::Matrix3d Rcw;
+            Eigen::Vector3d tcw;
+            keyframe->GetPose(Rcw, tcw);
+
+            Eigen::Matrix3d Rwc = Rcw.transpose();
+            Eigen::Vector3d twc = -Rwc * tcw;
+
+            Eigen::Vector3f p = tcw.cast<float>();
+            Eigen::Quaterniond Qwc(Rwc);
+
+            const Eigen::Vector3f &center = p;
+            Eigen::Quaternionf q = Qwc.cast<float>();
+            const float length = cam_size;
+            Eigen::Vector3f m_cam[5] = {
+                Eigen::Vector3f(0.0f, 0.0f, 0.0f),
+                Eigen::Vector3f(-length, -length, length),
+                Eigen::Vector3f(-length, length, length),
+                Eigen::Vector3f(length, length, length),
+                Eigen::Vector3f(length, -length, length)};
+
+            for (int i = 0; i < 5; ++i)
+                m_cam[i] = q * m_cam[i] + center;
+            // [0;0;0], [X;Y;Z], [X;-Y;Z], [-X;Y;Z], [-X;-Y;Z]
+            glColor4fv(&color_keyframe(0));
+            glBegin(GL_LINE_LOOP);
+            glVertex3fv(m_cam[0].data());
+            glVertex3fv(m_cam[1].data());
+            glVertex3fv(m_cam[4].data());
+            glVertex3fv(m_cam[3].data());
+            glVertex3fv(m_cam[2].data());
+            glEnd();
+            glBegin(GL_LINES);
+            glVertex3fv(m_cam[0].data());
+            glVertex3fv(m_cam[3].data());
+            glEnd();
+            glBegin(GL_LINES);
+            glVertex3fv(m_cam[0].data());
+            glVertex3fv(m_cam[4].data());
+            glEnd();
+            glBegin(GL_LINES);
+            glVertex3fv(m_cam[1].data());
+            glVertex3fv(m_cam[2].data());
+            glEnd();
+        }
+    }
+}
+
 void Viewer::Draw() {
     mbFinished = false;
     mbStopped = false;
@@ -330,7 +420,7 @@ void Viewer::Draw() {
 
         GetSLAMInfo(im, slam_status, image_num);
 
-        if (!switch_window_flag) {
+        if (switch_window_flag == 0) {
             d_cam_slam.show = true;
             mpMapDrawer->GetCurrentOpenGLCameraMatrix(Twc, Ow, Twwp);
             if (mbStopTrack) {
@@ -458,10 +548,9 @@ void Viewer::Draw() {
                 *menuReset = false;
                 *menuStop = false;
             }
-        } else {
-
+        } else if (switch_window_flag == 1) {
 #ifdef OBJECTRECOGNITION
-
+            d_cam_objRecognition.show = true;
             glColor3f(1.0, 1.0, 1.0);
             cv::Mat Tcw;
 
@@ -519,6 +608,13 @@ void Viewer::Draw() {
                 }
             }
 #endif
+        } else if (switch_window_flag == 2) {
+#ifdef SUPERPOINT
+#else
+            d_cam_detector.Activate(s_cam_detector);
+            ShowConnectedKeyframes();
+            ShowConnectedMapPoints();
+#endif
         }
 
         mpFrameDrawer->DrawFrame(true);
@@ -556,16 +652,18 @@ void Viewer::GetSLAMInfo(cv::Mat &img, int &state, int &image_num) {
 }
 
 void Viewer::SwitchWindow() {
-    if (switch_window_flag) {
+    if (switch_window_flag == 1) {
         d_cam_objRecognition.show = false;
+        d_cam_detector.show = false;
         d_cam_slam = pangolin::CreateDisplay()
                          .SetBounds(
                              0.0, 1.0, pangolin::Attach::Pix(200), 1.0,
                              -1024.0f / 768.0f)
                          .SetHandler(new pangolin::Handler3D(s_cam_slam));
         d_cam_slam.show = true;
-    } else {
+    } else if (switch_window_flag == 0) {
         d_cam_slam.show = false;
+        d_cam_detector.show = false;
         d_cam_objRecognition =
             pangolin::CreateDisplay()
                 .SetBounds(
@@ -574,8 +672,20 @@ void Viewer::SwitchWindow() {
                 .SetLock(pangolin::LockLeft, pangolin::LockTop)
                 .SetHandler(new pangolin::Handler3D(s_cam_objRecognition));
         d_cam_objRecognition.show = true;
+    } else if (switch_window_flag == 2) {
+        d_cam_slam.show = false;
+        d_cam_objRecognition.show = false;
+        d_cam_detector =
+            pangolin::CreateDisplay()
+                .SetBounds(
+                    0, 1.0f, pangolin::Attach::Pix(200), 1.0f,
+                    -1024.0f / 768.0f)
+                .SetLock(pangolin::LockLeft, pangolin::LockTop)
+                .SetHandler(new pangolin::Handler3D(s_cam_detector));
+        d_cam_detector.show = true;
     }
-    switch_window_flag = !switch_window_flag;
+
+    switch_window_flag = (switch_window_flag + 1) % 3;
 }
 
 void Viewer::Run() {
@@ -595,6 +705,10 @@ void Viewer::Run() {
     DrawSLAMInit();
 #ifdef OBJECTRECOGNITION
     DrawObjRecognitionInit();
+#ifdef SUPERPOINT
+#else
+    DrawDetectorInit();
+#endif
 #endif
     Draw();
 }

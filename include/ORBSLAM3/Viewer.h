@@ -79,11 +79,15 @@ public:
 
     void DrawSLAMInit();
     void DrawObjRecognitionInit();
+    void DrawDetectorInit();
     static void
     DrawBoundingboxInImage(const vector<Eigen::Vector3d> &boundingbox);
     void
     DrawPointCloudInImage(const std::vector<Eigen::Vector3d> &pointcloud_pos);
     void DrawMatchedMappoints();
+    void ShowConnectedKeyframes();
+    void ShowConnectedMapPoints();
+
     bool GetIsStopFlag() {
         return is_stop;
     }
@@ -123,12 +127,14 @@ private:
     std::vector<cv::Mat> m_trajectory;
 
     // draw another window for objRecognition
-    bool switch_window_flag;
+    int switch_window_flag;
     bool is_stop;
     pangolin::OpenGlRenderState s_cam_slam;
     pangolin::View d_cam_slam;
     pangolin::OpenGlRenderState s_cam_objRecognition;
     pangolin::View d_cam_objRecognition;
+    pangolin::OpenGlRenderState s_cam_detector;
+    pangolin::View d_cam_detector;
 
     Camera m_camera;
     cv::Mat img_from_objRecognition;
