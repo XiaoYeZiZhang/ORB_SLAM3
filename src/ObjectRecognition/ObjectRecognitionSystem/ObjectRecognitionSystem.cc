@@ -8,6 +8,7 @@
 #include "Utility/Parameters.h"
 #include "Visualizer/GlobalImageViewer.h"
 #include "Utility/Statistics.h"
+#include "Utility/Timer.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionSystem.h"
 #include "Utility/FeatureExtractor/ORBExtractor.h"
 #include "Utility/Timer.h"
@@ -63,7 +64,12 @@ int ObjRecogThread::SetModel(const std::shared_ptr<Object> &object) {
     object_->GetDatabase()->size();
 
     auto allKFs = object_->GetKeyFrames();
+
+    TIMER_UTILITY::Timer timer;
     object_->AddKeyFrames2Database(allKFs);
+    STATISTICS_UTILITY::StatsCollector createDatabase(
+        "Time: create keyframes database");
+    createDatabase.AddSample(timer.Stop());
 
     pointcloudobj_detector_->SetPointCloudObj(object_);
     pointcloudobj_tracker_->SetPointCloudObj(object_);

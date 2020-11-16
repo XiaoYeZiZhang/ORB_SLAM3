@@ -5,6 +5,7 @@
 #include <Eigen/Dense>
 #include <cxcore.hpp>
 #include <cv.hpp>
+#include "Utility/Timer.h"
 #include "Utility/Camera.h"
 #include "Detector/DetectorCommon.h"
 
@@ -244,45 +245,11 @@ void FindMatchByKNN_SuperPoint_Homography(
     const std::vector<cv::KeyPoint> &keypoints1,
     const std::vector<cv::KeyPoint> &keypoints2, const cv::Mat &frmDesp,
     const cv::Mat &pcDesp, std::vector<cv::DMatch> &goodMatches) {
-    // STSLAMCommon::Timer detectionFindMatch("detection find match by KNN");
-    std::vector<cv::DMatch> matches;
+    TIMER_UTILITY::Timer timer;
     std::vector<std::vector<cv::DMatch>> knnMatches;
-    // use L2 norm instead of Hamming distance
     cv::BFMatcher matcher(cv::NormTypes::NORM_L2);
     // matcher.knnMatch(frmDesp, pcDesp, knnMatches, 2);
-    matcher.match(frmDesp, pcDesp, matches);
-    //    VLOG(5) << "KNN Matches size: " << knnMatches.size();
-    //
-    //    for (size_t i = 0; i < knnMatches.size(); i++) {
-    //        cv::DMatch &bestMatch = knnMatches[i][0];
-    //        cv::DMatch &betterMatch = knnMatches[i][1];
-    //        const float distanceRatio = bestMatch.distance /
-    //        betterMatch.distance; VLOG(50) << "distanceRatio = " <<
-    //        distanceRatio;
-    //        // the farest distance, the better result
-    //        const float kMinDistanceRatioThreshld = 0.95;
-    //        if (distanceRatio < kMinDistanceRatioThreshld) {
-    //            matches.push_back(bestMatch);
-    //        }
-    //    }
-
-    VLOG(15) << "after distance Ratio matches size: " << matches.size();
-    //
-    //    double minDisKnn = 9999.0;
-    //    for (size_t i = 0; i < matches.size(); i++) {
-    //        if (matches[i].distance < minDisKnn) {
-    //            minDisKnn = matches[i].distance;
-    //        }
-    //    }
-    //    VLOG(15) << "minDisKnn = " << minDisKnn;
-
-    const int kgoodMatchesThreshold = 200;
-    for (size_t i = 0; i < matches.size(); i++) {
-        //        if (matches[i].distance <= (2*minDisKnn > 30 ? 2*minDisKnn :
-        //        30)) {
-        goodMatches.push_back(matches[i]);
-        //        }
-    }
+    matcher.match(frmDesp, pcDesp, goodMatches);
 
     // Prepare data for findHomography
     std::vector<cv::Point2f> srcPoints(goodMatches.size());
@@ -292,7 +259,7 @@ void FindMatchByKNN_SuperPoint_Homography(
         srcPoints[i] = keypoints2[goodMatches[i].trainIdx].pt;
         dstPoints[i] = keypoints1[goodMatches[i].queryIdx].pt;
     }
-
+    TIMER_UTILITY::Timer timer1;
     std::vector<uchar> inliersMask(srcPoints.size());
     auto homography =
         findHomography(srcPoints, dstPoints, CV_FM_RANSAC, 6.0, inliersMask);
@@ -300,7 +267,7 @@ void FindMatchByKNN_SuperPoint_Homography(
     std::vector<cv::DMatch> inliers;
     for (size_t i = 0; i < inliersMask.size(); i++) {
         if (inliersMask[i])
-            inliers.push_back(matches[i]);
+            inliers.push_back(goodMatches[i]);
     }
     goodMatches.swap(inliers);
 }

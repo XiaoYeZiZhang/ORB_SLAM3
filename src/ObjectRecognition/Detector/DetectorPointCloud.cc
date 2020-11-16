@@ -67,10 +67,10 @@ std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
     const std::shared_ptr<DetectorFrame> &frm,
     const std::vector<KeyFrame::Ptr> &kf_matches) {
 
-    float fx = CameraIntrinsic::GetInstance().GetEigenK()(0, 0);
-    float fy = CameraIntrinsic::GetInstance().GetEigenK()(1, 1);
-    float cx = CameraIntrinsic::GetInstance().GetEigenK()(0, 2);
-    float cy = CameraIntrinsic::GetInstance().GetEigenK()(1, 2);
+    auto fx = CameraIntrinsic::GetInstance().GetEigenK()(0, 0);
+    auto fy = CameraIntrinsic::GetInstance().GetEigenK()(1, 1);
+    auto cx = CameraIntrinsic::GetInstance().GetEigenK()(0, 2);
+    auto cy = CameraIntrinsic::GetInstance().GetEigenK()(1, 2);
 
     int matches2d_count = 0;
     cv::Mat frmDesp = frm->m_desp;
@@ -84,6 +84,7 @@ std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
         CHECK_NOTNULL(kf_matches.at(index).get());
         VLOG(10) << "2DMatch Frame QuryMap id: "
                  << kf_matches.at(index)->GetID();
+
         PS::MatchSet2D matches;
         std::vector<cv::DMatch> dmatches;
         cv::Mat kfDesp = kf_matches.at(index)->GetDesciriptor();
@@ -262,7 +263,7 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection() {
     VLOG(5) << "detection 2D-3D match: " << goodMatches.size();
 
     STATISTICS_UTILITY::StatsCollector stats_collector_knn(
-        "detector 2D-3D matches num:");
+        "detector 2D-3D matches num");
     stats_collector_knn.AddSample(knn_match_num_);
 
     STATISTICS_UTILITY::StatsCollector detector_find_3d_by_connection_time(
@@ -342,7 +343,7 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatch() {
     VLOG(5) << "detection 2D-3D match: " << goodMatches.size();
 
     STATISTICS_UTILITY::StatsCollector stats_collector_knn(
-        "detector 2D-3D matches num:");
+        "detector 2D-3D matches num");
     stats_collector_knn.AddSample(knn_match_num_);
 
     STATISTICS_UTILITY::StatsCollector detector_find_3d_time(
@@ -387,7 +388,7 @@ void GetMatch2dTo3dInliers(
     std::map<int, MapPointIndex> &matches2dTo3dInliers) {
 
     matches2dTo3dInliers.clear();
-    if (inliers_3d.size() == 0) {
+    if (inliers_3d.empty()) {
         return;
     }
     int index_ = 0;
@@ -442,8 +443,6 @@ bool PointCloudObjDetector::PoseSolver(
     const PS::MatchSet3D &matches_3d,
     const std::vector<PS::MatchSet2D> &matches_2d, std::vector<int> &inliers_3d,
     std::vector<std::vector<int>> &inliers_2d) {
-    // STSLAMCommon::Timer detectionPoseSolverTime("detection poseSolver
-    // process");
     PS::Options options;
     PS::Pose T;
     pnp_inliers_num_ = 0;
@@ -527,8 +526,6 @@ bool PointCloudObjDetector::PoseSolver(
         "detector PnP 2d inlier num");
     stats_collector_pnp_2d.AddSample(pnp_inliers_2d_num_);
 
-    // VLOG(10) << "detection poseSolver process time:"
-    //<< detectionPoseSolverTime.Stop();
     return pnp_solver_result_;
 }
 

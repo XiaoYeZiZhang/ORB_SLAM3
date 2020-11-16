@@ -33,6 +33,7 @@ namespace ORB_SLAM3 {
 
 Atlas::Atlas() {
     mpCurrentMap = static_cast<Map *>(NULL);
+    m_Twp = Eigen::Matrix4d::Identity();
 }
 
 Atlas::Atlas(int initKFid) : mnLastInitKFidMap(initKFid), mHasViewer(false) {
@@ -246,48 +247,62 @@ bool Atlas::isImuInitialized() {
 }
 
 void Atlas::GetBoundingBoxCoordsRange() {
-    m_bbx_xmin = 10000;
-    m_bbx_ymin = 10000;
-    m_bbx_zmin = 10000;
-    m_bbx_xmax = -10000;
-    m_bbx_ymax = -10000;
-    m_bbx_zmax = -10000;
+    m_bbx_xmin_p = 10000;
+    m_bbx_ymin_p = 10000;
+    m_bbx_zmin_p = 10000;
+    m_bbx_xmax_p = -10000;
+    m_bbx_ymax_p = -10000;
+    m_bbx_zmax_p = -10000;
 
-    for (int i = 0; i < m_boundingbox_w_.size(); i++) {
-        if (m_boundingbox_w_[i](0) < m_bbx_xmin) {
-            m_bbx_xmin = m_boundingbox_w_[i](0);
+    for (int i = 0; i < m_boundingbox_p_.size(); i++) {
+        if (m_boundingbox_p_[i](0) < m_bbx_xmin_p) {
+            m_bbx_xmin_p = m_boundingbox_p_[i](0);
         }
-        if (m_boundingbox_w_[i](0) > m_bbx_xmax) {
-            m_bbx_xmax = m_boundingbox_w_[i](0);
-        }
-
-        if (m_boundingbox_w_[i](1) < m_bbx_ymin) {
-            m_bbx_ymin = m_boundingbox_w_[i](1);
-        }
-        if (m_boundingbox_w_[i](1) > m_bbx_ymax) {
-            m_bbx_ymax = m_boundingbox_w_[i](1);
+        if (m_boundingbox_p_[i](0) > m_bbx_xmax_p) {
+            m_bbx_xmax_p = m_boundingbox_p_[i](0);
         }
 
-        if (m_boundingbox_w_[i](2) < m_bbx_zmin) {
-            m_bbx_zmin = m_boundingbox_w_[i](2);
+        if (m_boundingbox_p_[i](1) < m_bbx_ymin_p) {
+            m_bbx_ymin_p = m_boundingbox_p_[i](1);
         }
-        if (m_boundingbox_w_[i](2) > m_bbx_zmax) {
-            m_bbx_zmax = m_boundingbox_w_[i](2);
+        if (m_boundingbox_p_[i](1) > m_bbx_ymax_p) {
+            m_bbx_ymax_p = m_boundingbox_p_[i](1);
+        }
+
+        if (m_boundingbox_p_[i](2) < m_bbx_zmin_p) {
+            m_bbx_zmin_p = m_boundingbox_p_[i](2);
+        }
+        if (m_boundingbox_p_[i](2) > m_bbx_zmax_p) {
+            m_bbx_zmax_p = m_boundingbox_p_[i](2);
         }
     }
 }
 
-bool Atlas::MappointInBoundingbox(const cv::Mat &mappoint_pos) {
-    if (mappoint_pos.at<float>(0) >= m_bbx_xmin &&
-        mappoint_pos.at<float>(0) <= m_bbx_xmax &&
-        mappoint_pos.at<float>(1) >= m_bbx_ymin &&
-        mappoint_pos.at<float>(1) <= m_bbx_ymax &&
-        mappoint_pos.at<float>(2) >= m_bbx_zmin &&
-        mappoint_pos.at<float>(2) <= m_bbx_zmax) {
+void Atlas::SetTwp(const Eigen::Matrix4d &Twp) {
+    m_Twp = Twp;
+}
+
+bool Atlas::MappointInBoundingbox(const Eigen::Vector3d &mappoint_pos_p) {
+    if (mappoint_pos_p(0) > m_bbx_xmin_p && mappoint_pos_p(0) < m_bbx_xmax_p &&
+        mappoint_pos_p(1) > m_bbx_ymin_p && mappoint_pos_p(1) < m_bbx_ymax_p &&
+        mappoint_pos_p(2) > m_bbx_zmin_p && mappoint_pos_p(2) < m_bbx_zmax_p) {
         return true;
     } else {
         return false;
     }
+}
+
+Eigen::Vector3d Atlas::FromWorld2Plane(
+    const Eigen::Vector3d &mappoint_w, const Eigen::Matrix4d &Twp) {
+    Eigen::Matrix4d Tpw = Twp.inverse();
+    Eigen::Vector4d mappoint_w_4_4 =
+        Eigen::Vector4d(mappoint_w(0), mappoint_w(1), mappoint_w(2), 1.0);
+
+    Eigen::Vector4d mappoint_p_4_4 = Tpw * mappoint_w_4_4;
+    return Eigen::Vector3d(
+        mappoint_p_4_4(0) / mappoint_p_4_4(3),
+        mappoint_p_4_4(1) / mappoint_p_4_4(3),
+        mappoint_p_4_4(2) / mappoint_p_4_4(3));
 }
 
 long long Atlas::GetMemSizeFor3DObject(
@@ -330,8 +345,13 @@ long long Atlas::GetMemSizeFor3DObject(
         for (Map *pMi : saved_map) {
             for (MapPoint *pMPi :
                  pMi->GetAllMapPoints(covisualize_keyframe_num)) {
-                cv::Mat tmpPos = pMPi->GetWorldPos();
-                if (MappointInBoundingbox(tmpPos)) {
+                cv::Mat tmpPos_w = pMPi->GetWorldPos();
+                Eigen::Vector3d mappoint_w = Eigen::Vector3d::Zero();
+                cv::cv2eigen(tmpPos_w, mappoint_w);
+
+                Eigen::Vector3d mappoint_p = FromWorld2Plane(mappoint_w, m_Twp);
+
+                if (MappointInBoundingbox(mappoint_p)) {
                     m_saved_mappoint_for_3dobject_.emplace_back(pMPi);
                     nTotalSize += pMPi->GetMemSizeFor3DObject(is_superpoint);
                 }
@@ -444,6 +464,11 @@ void Atlas::SetScanBoundingbox_W(
     const std::vector<Eigen::Vector3d> &boundingbox) {
     m_boundingbox_w_.clear();
     m_boundingbox_w_ = boundingbox;
+
+    for (auto boundingbox_corner : m_boundingbox_w_) {
+        m_boundingbox_p_.emplace_back(
+            FromWorld2Plane(boundingbox_corner, m_Twp));
+    }
 }
 
 void Atlas::PreSave() {

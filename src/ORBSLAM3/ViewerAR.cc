@@ -100,6 +100,19 @@ void ViewerAR::back_move() {
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
+Eigen::Vector3d ViewerAR::FromWorld2Plane(
+    const Eigen::Vector3d &mappoint_w,
+    const pangolin::OpenGlMatrix &Twp_opengl) {
+    Eigen::Matrix4d Twp = ChangeOpenglMatrix2EigenMatrix(Twp_opengl);
+    Eigen::Matrix4d Tpw = Twp.inverse();
+    Eigen::Vector4d mappoint_p_4_4 =
+        Tpw * Eigen::Vector4d(mappoint_w(0), mappoint_w(1), mappoint_w(2), 1.0);
+    return Eigen::Vector3d(
+        mappoint_p_4_4(0) / mappoint_p_4_4(3),
+        mappoint_p_4_4(1) / mappoint_p_4_4(3),
+        mappoint_p_4_4(2) / mappoint_p_4_4(3));
+}
+
 std::vector<Eigen::Vector3d>
 ViewerAR::ComputeBoundingbox_W(const pangolin::OpenGlMatrix &Twp_opengl) {
     std::vector<Eigen::Vector3d> boundingbox_w;
@@ -127,10 +140,15 @@ void ViewerAR::SetCameraCalibration(
 }
 
 void ViewerAR::DrawMapPoints_SuperPoint(
-    const std::vector<double> &boundingbox_w_corner,
-    const std::set<MapPoint *> mappoint_picked) {
-    mpMapDrawer->DrawMapPoints_SuperPoint(
-        boundingbox_w_corner, mappoint_picked);
+    const std::vector<double> &boundingbox_p_corner,
+    const std::set<MapPoint *> &mappoint_picked,
+    const vector<Plane *> &vpPlane) {
+    if (!vpPlane.empty()) {
+        Plane *pPlane = vpPlane[0];
+        Eigen::Matrix4d Twp = ChangeOpenglMatrix2EigenMatrix(pPlane->glTpw);
+        mpMapDrawer->DrawMapPoints_SuperPoint(
+            boundingbox_p_corner, mappoint_picked, Twp);
+    }
 }
 
 std::vector<Map *> ViewerAR::GetAllMapPoints() {
@@ -152,58 +170,36 @@ void ViewerAR::GetCurrentMapPointInBBX(
     int &mappoint_num_inbbx) {
     mappoint_num_inbbx = -1;
     if (!is_insert_cube) {
-        m_boundingbox_corner = std::vector<double>();
+        m_boundingbox_corner_p = std::vector<double>();
     }
 
     if (!vpPlane.empty()) {
         mappoint_num_inbbx = 0;
         Plane *pPlane = vpPlane[0];
+        m_boundingbox_corner_p = {m_boundingbox_p.minCornerPoint(0),
+                                  m_boundingbox_p.minCornerPoint(1),
+                                  m_boundingbox_p.minCornerPoint(2),
+                                  m_boundingbox_p.maxCornerPoint(0),
+                                  m_boundingbox_p.maxCornerPoint(1),
+                                  m_boundingbox_p.maxCornerPoint(2)};
 
-        vector<Eigen::Vector3d> boundingbox_w =
-            ComputeBoundingbox_W(pPlane->glTpw);
-        double bbx_xmin = 10000;
-        double bbx_ymin = 10000;
-        double bbx_zmin = 10000;
-        double bbx_xmax = -10000;
-        double bbx_ymax = -10000;
-        double bbx_zmax = -10000;
-
-        for (int i = 0; i < boundingbox_w.size(); i++) {
-            if (boundingbox_w[i](0) < bbx_xmin) {
-                bbx_xmin = boundingbox_w[i](0);
-            }
-            if (boundingbox_w[i](0) > bbx_xmax) {
-                bbx_xmax = boundingbox_w[i](0);
-            }
-
-            if (boundingbox_w[i](1) < bbx_ymin) {
-                bbx_ymin = boundingbox_w[i](1);
-            }
-            if (boundingbox_w[i](1) > bbx_ymax) {
-                bbx_ymax = boundingbox_w[i](1);
-            }
-
-            if (boundingbox_w[i](2) < bbx_zmin) {
-                bbx_zmin = boundingbox_w[i](2);
-            }
-            if (boundingbox_w[i](2) > bbx_zmax) {
-                bbx_zmax = boundingbox_w[i](2);
-            }
-        }
-
-        m_boundingbox_corner = {bbx_xmin, bbx_ymin, bbx_zmin,
-                                bbx_xmax, bbx_ymax, bbx_zmax};
         std::vector<Map *> saved_map = GetAllMapPoints();
         for (Map *pMi : saved_map) {
             for (MapPoint *pMPi : pMi->GetAllMapPoints()) {
                 cv::Mat tmpPos = pMPi->GetWorldPos();
-                // condition???
-                if (tmpPos.at<float>(0) >= bbx_xmin &&
-                    tmpPos.at<float>(0) <= bbx_xmax &&
-                    tmpPos.at<float>(1) >= bbx_ymin &&
-                    tmpPos.at<float>(1) <= bbx_ymax &&
-                    tmpPos.at<float>(2) >= bbx_zmin &&
-                    tmpPos.at<float>(2) <= bbx_zmax) {
+
+                Eigen::Vector3d mappoint_w = Eigen::Vector3d::Zero();
+                cv::cv2eigen(tmpPos, mappoint_w);
+                // change to plane coords
+
+                Eigen::Vector3d mappoint_p =
+                    FromWorld2Plane(mappoint_w, pPlane->glTpw);
+                if (mappoint_p(0) >= m_boundingbox_corner_p[0] &&
+                    mappoint_p(0) <= m_boundingbox_corner_p[3] &&
+                    mappoint_p(1) >= m_boundingbox_corner_p[1] &&
+                    mappoint_p(1) <= m_boundingbox_corner_p[4] &&
+                    mappoint_p(2) >= m_boundingbox_corner_p[2] &&
+                    mappoint_p(2) <= m_boundingbox_corner_p[5]) {
                     mappoint_num_inbbx++;
                 }
             }
@@ -212,7 +208,8 @@ void ViewerAR::GetCurrentMapPointInBBX(
 }
 
 void ViewerAR::ProjectMapPointInImage(
-    const cv::Mat &Tcw, const std::vector<double> &bbx,
+    const vector<Plane *> &vpPlane, const cv::Mat &Tcw,
+    const std::vector<double> &bbx_p,
     std::vector<cv::KeyPoint> &keypoints_outbbx,
     std::vector<cv::KeyPoint> &keypoints_inbbx) {
 
@@ -223,37 +220,45 @@ void ViewerAR::ProjectMapPointInImage(
         return;
     }
 
-    std::vector<Map *> saved_map = GetAllMapPoints();
-    for (Map *pMi : saved_map) {
-        for (MapPoint *pMPi : pMi->GetAllMapPoints()) {
-            cv::Mat tmpPos = pMPi->GetWorldPos();
-            Eigen::Vector3d pos_w;
-            Eigen::Matrix4d Tcw_eigen;
-            cv2eigen(tmpPos, pos_w);
-            cv2eigen(Tcw, Tcw_eigen);
-            Eigen::Vector4d pos_w_4 =
-                Eigen::Vector4d(pos_w(0), pos_w(1), pos_w(2), 1.0);
-            Eigen::Vector4d pos_c = Tcw_eigen * pos_w_4;
-            Eigen::Vector3d pos_c_3 = Eigen::Vector3d(
-                pos_c(0) / pos_c(3), pos_c(1) / pos_c(3), pos_c(2) / pos_c(3));
-            // TODO(zhangye): distort???
-            Eigen::Vector3d pos_i =
-                ObjRecognition::CameraIntrinsic::GetInstance().GetEigenK() *
-                pos_c_3;
-            Eigen::Vector2d pos_i_2 =
-                Eigen::Vector2d(pos_i(0) / pos_i(2), pos_i(1) / pos_i(2));
-            // change cv::point2f to cv::keypoint
-            cv::KeyPoint kp(cv::Point2f(pos_i_2(0), pos_i_2(1)), 8);
+    if (!vpPlane.empty()) {
+        Plane *pPlane = vpPlane[0];
+        std::vector<Map *> saved_map = GetAllMapPoints();
+        for (Map *pMi : saved_map) {
+            for (MapPoint *pMPi : pMi->GetAllMapPoints()) {
+                cv::Mat tmpPos_w = pMPi->GetWorldPos();
+                Eigen::Vector3d mappoint_w = Eigen::Vector3d::Zero();
+                cv::cv2eigen(tmpPos_w, mappoint_w);
 
-            if (!bbx.empty() && tmpPos.at<float>(0) >= bbx[0] &&
-                tmpPos.at<float>(0) <= bbx[3] &&
-                tmpPos.at<float>(1) >= bbx[1] &&
-                tmpPos.at<float>(1) <= bbx[4] &&
-                tmpPos.at<float>(2) >= bbx[2] &&
-                tmpPos.at<float>(2) <= bbx[5]) {
-                keypoints_inbbx.emplace_back(kp);
-            } else {
-                keypoints_outbbx.emplace_back(kp);
+                Eigen::Vector3d mappoint_p =
+                    FromWorld2Plane(mappoint_w, pPlane->glTpw);
+
+                Eigen::Vector3d pos_w;
+                Eigen::Matrix4d Tcw_eigen;
+                cv2eigen(tmpPos_w, pos_w);
+                cv2eigen(Tcw, Tcw_eigen);
+                Eigen::Vector4d pos_w_4 =
+                    Eigen::Vector4d(pos_w(0), pos_w(1), pos_w(2), 1.0);
+                Eigen::Vector4d pos_c = Tcw_eigen * pos_w_4;
+                Eigen::Vector3d pos_c_3 = Eigen::Vector3d(
+                    pos_c(0) / pos_c(3), pos_c(1) / pos_c(3),
+                    pos_c(2) / pos_c(3));
+                // TODO(zhangye): distort???
+                Eigen::Vector3d pos_i =
+                    ObjRecognition::CameraIntrinsic::GetInstance().GetEigenK() *
+                    pos_c_3;
+                Eigen::Vector2d pos_i_2 =
+                    Eigen::Vector2d(pos_i(0) / pos_i(2), pos_i(1) / pos_i(2));
+                // change cv::point2f to cv::keypoint
+                cv::KeyPoint kp(cv::Point2f(pos_i_2(0), pos_i_2(1)), 8);
+
+                if (!bbx_p.empty() && mappoint_p(0) > bbx_p[0] &&
+                    mappoint_p(0) < bbx_p[3] && mappoint_p(1) > bbx_p[1] &&
+                    mappoint_p(1) < bbx_p[4] && mappoint_p(2) > bbx_p[2] &&
+                    mappoint_p(2) < bbx_p[5]) {
+                    keypoints_inbbx.emplace_back(kp);
+                } else {
+                    keypoints_outbbx.emplace_back(kp);
+                }
             }
         }
     }
@@ -531,7 +536,7 @@ void ViewerAR::Draw(int w, int h) {
                 std::vector<cv::KeyPoint> keypoints_outbbx;
                 std::vector<cv::KeyPoint> keypoints_inbbx;
                 ProjectMapPointInImage(
-                    Tcw_scan, m_boundingbox_corner, keypoints_outbbx,
+                    vpPlane, Tcw_scan, m_boundingbox_corner_p, keypoints_outbbx,
                     keypoints_inbbx);
                 cv::drawKeypoints(
                     im_scan, keypoints_outbbx, im_scan,
@@ -602,6 +607,13 @@ void ViewerAR::Draw(int w, int h) {
                     if (*menu_fixBBX) {
                         // get m_boundingbox_w
                         m_boundingbox_w = ComputeBoundingbox_W(pPlane->glTpw);
+                        Eigen::Matrix4d Twp =
+                            ChangeOpenglMatrix2EigenMatrix(pPlane->glTpw);
+                        mpSystem->mpAtlas->SetTwp(Twp);
+#ifdef SUPERPOINT
+                        mpSystem->mpAtlas_superpoint->SetTwp(Twp);
+#endif
+
                         m_is_fix = true;
                         *menu_fixBBX = false;
                     }
@@ -655,12 +667,10 @@ void ViewerAR::Draw(int w, int h) {
             d_cam_SfM.Activate(s_cam_SfM);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             pangolin::glDrawAxis(0.6f);
-            //            glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
-            //            pangolin::glDraw_z0(0.5f, 100);
-
             DrawSelected2DRegion();
             Pick3DPointCloud();
-            DrawMapPoints_SuperPoint(m_boundingbox_corner, mappoints_picked);
+            DrawMapPoints_SuperPoint(
+                m_boundingbox_corner_p, mappoints_picked, vpPlane);
             DrawBoundingboxForSfM(m_boundingbox_w);
 
             // Pick3DPointCloud();

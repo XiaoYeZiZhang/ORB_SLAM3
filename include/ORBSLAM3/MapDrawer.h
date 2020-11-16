@@ -39,8 +39,9 @@ public:
     Atlas *mpAtlas;
     Atlas *mpAtlas_superpoint;
     void DrawMapPoints_SuperPoint(
-        const std::vector<double> &boundingbox_w_corner,
-        const std::set<MapPoint *> mappoint_picked);
+        const std::vector<double> &boundingbox_p_corner,
+        const std::set<MapPoint *> &mappoint_picked,
+        const Eigen::Matrix4d &Twp);
     void DrawMapPoints();
     void DrawKeyFrames(
         const bool bDrawKF, const bool bDrawGraph,

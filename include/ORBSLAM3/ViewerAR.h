@@ -195,6 +195,9 @@ public:
 
     std::vector<Eigen::Vector3d>
     ComputeBoundingbox_W(const pangolin::OpenGlMatrix &Twp_opengl);
+    static Eigen::Vector3d FromWorld2Plane(
+        const Eigen::Vector3d &mappoint_w,
+        const pangolin::OpenGlMatrix &Twp_opengl);
 
     std::vector<Eigen::Vector3d> GetScanBoundingbox_W() {
         return m_boundingbox_w;
@@ -209,7 +212,8 @@ public:
     void Run();
     std::vector<Map *> GetAllMapPoints();
     void ProjectMapPointInImage(
-        const cv::Mat &Tcw, const std::vector<double> &bbx,
+        const vector<Plane *> &vpPlane, const cv::Mat &Tcw,
+        const std::vector<double> &bbx_p,
         std::vector<cv::KeyPoint> &keypoints_outbbx,
         std::vector<cv::KeyPoint> &keypoints_inbbx);
     void GetCurrentMapPointInBBX(
@@ -318,8 +322,9 @@ private:
     vector<MapPoint *> vMPs_scan;
 
     void DrawMapPoints_SuperPoint(
-        const std::vector<double> &boundingbox_w_corner,
-        const std::set<MapPoint *> mappoint_picked);
+        const std::vector<double> &boundingbox_p_corner,
+        const std::set<MapPoint *> &mappoint_picked,
+        const vector<Plane *> &vpPlane);
     void Pick3DPointCloud();
     // scan
     Object m_boundingbox_p;
@@ -340,7 +345,7 @@ private:
     pangolin::OpenGlRenderState s_cam_SfM;
     pangolin::View d_cam_SfM;
     std::vector<Eigen::Vector3d> m_boundingbox_w;
-    std::vector<double> m_boundingbox_corner;
+    std::vector<double> m_boundingbox_corner_p;
 
     // sfm visualization
     bool m_select_area_flag = false;

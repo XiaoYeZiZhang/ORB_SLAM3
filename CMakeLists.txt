@@ -345,13 +345,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 add_executable(superpoint_test
         Examples/Superpoint/Superpoint_test.cc)
 target_link_libraries(superpoint_test ${PROJECT_NAME})
-add_executable(objectRecognition_test
-        Examples/ObjectRecognition/mono_inertial_objectRecognition_test.cc)
-target_link_libraries(objectRecognition_test ${PROJECT_NAME})
-
-add_executable(scanner_test
-        Examples/ObjectRecognition/mono_inertial_scanner_test.cc)
-target_link_libraries(scanner_test ${PROJECT_NAME})
+#add_executable(objectRecognition_test
+#        Examples/ObjectRecognition/mono_inertial_objectRecognition_test.cc)
+#target_link_libraries(objectRecognition_test ${PROJECT_NAME})
+#
+#add_executable(scanner_test
+#        Examples/ObjectRecognition/mono_inertial_scanner_test.cc)
+#target_link_libraries(scanner_test ${PROJECT_NAME})
 
 add_executable(stereo_objectRecognition_test
         Examples/ObjectRecognition/stereo_objectRecognition_test.cc)

@@ -144,7 +144,7 @@ bool TestViewer::InitObjectRecognition() {
     delete[] cloud_point_model_buffer;
     SLAM->SetPointCloudModel(m_pointCloud);
     SLAM->mpViewer->SetPointCloudModel(m_pointCloud);
-    SaveResultInit();
+    //    SaveResultInit();
     return true;
 }
 

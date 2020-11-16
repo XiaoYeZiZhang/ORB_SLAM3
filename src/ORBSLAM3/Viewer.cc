@@ -527,7 +527,6 @@ void Viewer::Draw() {
 
             if (*menuStop) {
                 is_stop = true;
-                VLOG(0) << "stop";
                 SetFinish();
                 mpSystem->Shutdown();
                 break;

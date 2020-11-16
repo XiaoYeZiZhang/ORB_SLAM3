@@ -255,7 +255,7 @@ DBoW3::BowVector &KeyFrame::GetBowVec() {
     return mBowVec;
 }
 
-int KeyFrame::GetID() {
+int KeyFrame::GetID() const {
     return mnId;
 }
 
@@ -291,9 +291,9 @@ bool Object::LoadPointCloud(const long long &mem_size, const char *mem) {
     double bounding_box[24];
     GetDataFromMem(bounding_box, mem + mem_pos, 24 * sizeof(double), mem_pos);
     for (size_t index = 0; index < 8; index++) {
-        mvBoundingBox.push_back(Eigen::Vector3d(
+        mvBoundingBox.emplace_back(
             bounding_box[index * 3], bounding_box[index * 3 + 1],
-            bounding_box[index * 3 + 2]));
+            bounding_box[index * 3 + 2]);
     }
 
     GetDataFromMem(
@@ -350,14 +350,12 @@ void Object::AddKeyFrames2Database(
 }
 
 int Object::GetKeyFrameIndexByEntryId(int entry_id) {
-    //    unique_lock<std::recursive_mutex> lck(mMutexMap);
     if (entry_id >= m_entry_to_keyframe_index.size())
         return INVALID_FRAME_INDEX;
     return m_entry_to_keyframe_index[entry_id];
 }
 
 std::shared_ptr<KeyFrame> Object::GetKeyFrameByIndex(const int &nKFID) {
-    //    lock_guard<std::recursive_mutex> lck(mMutexMap);
     if (m_mp_keyframes.count(nKFID) > 0) {
         return m_mp_keyframes[nKFID];
     }
@@ -388,7 +386,6 @@ std::shared_ptr<KeyFrame> Object::GetMatchFrameFromMap(
 std::vector<KeyFrame::Ptr> Object::FrameQueryMap(
     const std::shared_ptr<ObjRecognition::DetectorFrame> &frm) {
 
-    // STSLAMCommon::Timer timer("Frame query Map");
     std::vector<cv::Mat> desp;
     DBoW3::BowVector bow_vec;
     DBoW3::FeatureVector feat_vec;
@@ -409,11 +406,10 @@ std::vector<KeyFrame::Ptr> Object::FrameQueryMap(
     for (int index = 0; index < 2; index++) {
         std::shared_ptr<KeyFrame> kf_matched =
             GetMatchFrameFromMap(dbow_ret, index);
-        if (kf_matched && kf_matched->GetKeyPoints().size() > 0) {
+        if (kf_matched && !kf_matched->GetKeyPoints().empty()) {
             kf_matcheds.push_back(kf_matched);
         }
     }
-    // timer.Stop();
     return kf_matcheds;
 }
 

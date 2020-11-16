@@ -64,7 +64,7 @@ class KeyFrame {
 public:
     typedef std::shared_ptr<KeyFrame> Ptr;
 
-    int GetID();
+    int GetID() const;
     void ReadFromMemory(long long &mem_pos, const char *mem);
     void SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);
     void GetPose(Eigen::Matrix3d &Rcw, Eigen::Vector3d &tcw);

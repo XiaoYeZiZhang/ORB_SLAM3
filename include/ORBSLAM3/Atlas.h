@@ -138,7 +138,7 @@ public:
 
     long unsigned int GetNumLivedMP();
 
-    bool MappointInBoundingbox(const cv::Mat &pos_mat);
+    bool MappointInBoundingbox(const Eigen::Vector3d &mappoint_pos_p);
     void GetBoundingBoxCoordsRange();
     bool WriteToMemoryFor3DObject(
         const long long &mem_size, char *mem, const bool is_superpoint);
@@ -155,6 +155,10 @@ public:
     void SetStartSfMKeyFrameId(const unsigned int keyframe_id) {
         start_sfm_keyframe_id = keyframe_id;
     }
+    Eigen::Vector3d FromWorld2Plane(
+        const Eigen::Vector3d &mappoint_w, const Eigen::Matrix4d &Twp);
+    void SetTwp(const Eigen::Matrix4d &Twp);
+    Eigen::Matrix4d m_Twp;
 
 protected:
     std::set<Map *> mspBadMaps;
@@ -183,12 +187,13 @@ protected:
     std::vector<MapPoint *> m_saved_mappoint_for_3dobject_;
     std::vector<KeyFrame *> m_saved_keyframe_for_3dobject_;
     std::vector<Eigen::Vector3d> m_boundingbox_w_;
-    double m_bbx_xmin;
-    double m_bbx_ymin;
-    double m_bbx_zmin;
-    double m_bbx_xmax;
-    double m_bbx_ymax;
-    double m_bbx_zmax;
+    std::vector<Eigen::Vector3d> m_boundingbox_p_;
+    double m_bbx_xmin_p;
+    double m_bbx_ymin_p;
+    double m_bbx_zmin_p;
+    double m_bbx_xmax_p;
+    double m_bbx_ymax_p;
+    double m_bbx_zmax_p;
 
     unsigned int start_sfm_keyframe_id;
 

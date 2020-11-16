@@ -293,6 +293,9 @@ void PointCloudModelViewer::Draw(const int w, const int h) {
         DrawSelected2DRegion(w, h);
         Pick3DPointCloud();
         DrawMapPoints_SuperPoint(m_pointClouds_picked);
+
+        DrawBoundingBox();
+
         pangolin::FinishFrame();
         usleep(1000);
     }
@@ -407,43 +410,57 @@ void PointCloudModelViewer::DrawAxis() {
 }
 
 void PointCloudModelViewer::DrawBoundingBox() {
-
-    std::vector<Eigen::Vector3d> boundingbox =
+    std::vector<Eigen::Vector3d> boundingbox_w =
         point_cloud_object_->GetBoundingBox();
 
     glColor3f(1.0f, 1.0f, 0.0f);
     glPointSize(4.0);
-    glBegin(GL_LINE_STRIP);
+    glBegin(GL_LINES);
 
-    glVertex3d(boundingbox[0].x(), boundingbox[0].y(), boundingbox[0].z());
-    glVertex3d(boundingbox[1].x(), boundingbox[1].y(), boundingbox[1].z());
+    Eigen::Vector3d point0 = boundingbox_w[0];
+    Eigen::Vector3d point1 = boundingbox_w[1];
+    Eigen::Vector3d point2 = boundingbox_w[2];
+    Eigen::Vector3d point3 = boundingbox_w[3];
+    Eigen::Vector3d point4 = boundingbox_w[4];
+    Eigen::Vector3d point5 = boundingbox_w[5];
+    Eigen::Vector3d point6 = boundingbox_w[6];
+    Eigen::Vector3d point7 = boundingbox_w[7];
 
-    glVertex3d(boundingbox[1].x(), boundingbox[1].y(), boundingbox[1].z());
-    glVertex3d(boundingbox[2].x(), boundingbox[2].y(), boundingbox[2].z());
+    glVertex3d(point0.x(), point0.y(), point0.z());
+    glVertex3d(point1.x(), point1.y(), point1.z());
 
-    glVertex3d(boundingbox[2].x(), boundingbox[2].y(), boundingbox[2].z());
-    glVertex3d(boundingbox[3].x(), boundingbox[3].y(), boundingbox[3].z());
+    glVertex3d(point5.x(), point5.y(), point5.z());
+    glVertex3d(point1.x(), point1.y(), point1.z());
 
-    glVertex3d(boundingbox[3].x(), boundingbox[3].y(), boundingbox[3].z());
-    glVertex3d(boundingbox[0].x(), boundingbox[0].y(), boundingbox[0].z());
+    glVertex3d(point5.x(), point5.y(), point5.z());
+    glVertex3d(point4.x(), point4.y(), point4.z());
 
-    glVertex3d(boundingbox[0].x(), boundingbox[0].y(), boundingbox[0].z());
-    glVertex3d(boundingbox[4].x(), boundingbox[4].y(), boundingbox[4].z());
+    glVertex3d(point0.x(), point0.y(), point0.z());
+    glVertex3d(point4.x(), point4.y(), point4.z());
 
-    glVertex3d(boundingbox[4].x(), boundingbox[4].y(), boundingbox[4].z());
-    glVertex3d(boundingbox[7].x(), boundingbox[7].y(), boundingbox[7].z());
-    glVertex3d(boundingbox[3].x(), boundingbox[3].y(), boundingbox[3].z());
+    glVertex3d(point2.x(), point2.y(), point2.z());
+    glVertex3d(point3.x(), point3.y(), point3.z());
 
-    glVertex3d(boundingbox[7].x(), boundingbox[7].y(), boundingbox[7].z());
-    glVertex3d(boundingbox[6].x(), boundingbox[6].y(), boundingbox[6].z());
-    glVertex3d(boundingbox[2].x(), boundingbox[2].y(), boundingbox[2].z());
+    glVertex3d(point3.x(), point3.y(), point3.z());
+    glVertex3d(point7.x(), point7.y(), point7.z());
 
-    glVertex3d(boundingbox[6].x(), boundingbox[6].y(), boundingbox[6].z());
-    glVertex3d(boundingbox[5].x(), boundingbox[5].y(), boundingbox[5].z());
-    glVertex3d(boundingbox[1].x(), boundingbox[1].y(), boundingbox[1].z());
+    glVertex3d(point7.x(), point7.y(), point7.z());
+    glVertex3d(point6.x(), point6.y(), point6.z());
 
-    glVertex3d(boundingbox[5].x(), boundingbox[5].y(), boundingbox[5].z());
-    glVertex3d(boundingbox[4].x(), boundingbox[4].y(), boundingbox[4].z());
+    glVertex3d(point6.x(), point6.y(), point6.z());
+    glVertex3d(point2.x(), point2.y(), point2.z());
+
+    glVertex3d(point6.x(), point6.y(), point6.z());
+    glVertex3d(point4.x(), point4.y(), point4.z());
+
+    glVertex3d(point7.x(), point7.y(), point7.z());
+    glVertex3d(point5.x(), point5.y(), point5.z());
+
+    glVertex3d(point3.x(), point3.y(), point3.z());
+    glVertex3d(point1.x(), point1.y(), point1.z());
+
+    glVertex3d(point0.x(), point0.y(), point0.z());
+    glVertex3d(point2.x(), point2.y(), point2.z());
 
     glEnd();
 }
