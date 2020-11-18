@@ -307,12 +307,12 @@ void Viewer::ShowConnectedKeyframes() {
     if (m_pointCloud_model) {
         float cam_size = 0.1f;
         for (const auto &keyframe : m_pointCloud_model->GetKeyFrames()) {
-            Eigen::Vector4f color_keyframe;
+            Eigen::Vector3f color_keyframe;
             if (m_pointCloud_model->m_associated_keyframes_id.count(
                     keyframe->GetID())) {
-                color_keyframe = Eigen::Vector4f(0.0f, 1.0f, 1.0f, 0.2f);
+                color_keyframe = Eigen::Vector3f(0.0f, 1.0f, 1.0f);
             } else {
-                color_keyframe = Eigen::Vector4f(1.0f, 0.0f, 1.0f, 0.2f);
+                color_keyframe = Eigen::Vector3f(1.0f, 0.0f, 1.0f);
             }
             Eigen::Matrix3d Rcw;
             Eigen::Vector3d tcw;
@@ -336,7 +336,6 @@ void Viewer::ShowConnectedKeyframes() {
 
             for (int i = 0; i < 5; ++i)
                 m_cam[i] = q * m_cam[i] + center;
-            // [0;0;0], [X;Y;Z], [X;-Y;Z], [-X;Y;Z], [-X;-Y;Z]
             glColor4fv(&color_keyframe(0));
             glBegin(GL_LINE_LOOP);
             glVertex3fv(m_cam[0].data());
@@ -610,6 +609,7 @@ void Viewer::Draw() {
         } else if (switch_window_flag == 2) {
 #ifdef SUPERPOINT
 #else
+            //            d_cam_detector.show = true;
             d_cam_detector.Activate(s_cam_detector);
             ShowConnectedKeyframes();
             ShowConnectedMapPoints();
@@ -651,7 +651,8 @@ void Viewer::GetSLAMInfo(cv::Mat &img, int &state, int &image_num) {
 }
 
 void Viewer::SwitchWindow() {
-    if (switch_window_flag == 1) {
+    switch_window_flag = (switch_window_flag + 1) % 3;
+    if (switch_window_flag == 0) {
         d_cam_objRecognition.show = false;
         d_cam_detector.show = false;
         d_cam_slam = pangolin::CreateDisplay()
@@ -660,7 +661,7 @@ void Viewer::SwitchWindow() {
                              -1024.0f / 768.0f)
                          .SetHandler(new pangolin::Handler3D(s_cam_slam));
         d_cam_slam.show = true;
-    } else if (switch_window_flag == 0) {
+    } else if (switch_window_flag == 1) {
         d_cam_slam.show = false;
         d_cam_detector.show = false;
         d_cam_objRecognition =
@@ -668,8 +669,8 @@ void Viewer::SwitchWindow() {
                 .SetBounds(
                     0, 1.0f, pangolin::Attach::Pix(200), 1.0f,
                     (float)image_width / image_height)
-                .SetLock(pangolin::LockLeft, pangolin::LockTop)
-                .SetHandler(new pangolin::Handler3D(s_cam_objRecognition));
+                .SetLock(pangolin::LockLeft, pangolin::LockTop);
+        //.SetHandler(new pangolin::Handler3D(s_cam_objRecognition));
         d_cam_objRecognition.show = true;
     } else if (switch_window_flag == 2) {
         d_cam_slam.show = false;
@@ -679,12 +680,10 @@ void Viewer::SwitchWindow() {
                 .SetBounds(
                     0, 1.0f, pangolin::Attach::Pix(200), 1.0f,
                     -1024.0f / 768.0f)
-                .SetLock(pangolin::LockLeft, pangolin::LockTop)
+                //.SetLock(pangolin::LockLeft, pangolin::LockTop)
                 .SetHandler(new pangolin::Handler3D(s_cam_detector));
         d_cam_detector.show = true;
     }
-
-    switch_window_flag = (switch_window_flag + 1) % 3;
 }
 
 void Viewer::Run() {

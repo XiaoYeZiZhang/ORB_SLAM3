@@ -72,6 +72,8 @@ private:
     std::string info_;
 
     float reproj_error;
+
+    bool has_good_result;
 };
 
 } // namespace ObjRecognition

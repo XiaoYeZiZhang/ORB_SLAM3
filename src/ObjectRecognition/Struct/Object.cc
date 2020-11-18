@@ -125,6 +125,24 @@ void ObjectBase::DetectionStateSetPose(
     }
 }
 
+void ObjectBase::SetPoseForFindSimilarKeyframe(
+    const Eigen::Matrix3d &Rcw, const Eigen::Vector3d &tcw,
+    const Eigen::Matrix3d &Rwo, const Eigen::Vector3d &two) {
+    Rcw_for_similar_keyframe = Rcw;
+    tcw_for_similar_keyframe = tcw;
+    Rwo_for_similar_keyframe = Rwo;
+    two_for_similar_keyframe = two;
+}
+
+void ObjectBase::GetPoseForFindSimilarKeyframe(
+    Eigen::Matrix3d &Rcw, Eigen::Vector3d &tcw, Eigen::Matrix3d &Rwo,
+    Eigen::Vector3d &two) {
+    Rcw = Rcw_for_similar_keyframe;
+    tcw = tcw_for_similar_keyframe;
+    Rwo = Rwo_for_similar_keyframe;
+    two = two_for_similar_keyframe;
+}
+
 void ObjectBase::SetPose(
     const FrameIndex &frmIndex, const double &timeStamp,
     const ObjRecogState &state, const Eigen::Matrix3d &Rcw,

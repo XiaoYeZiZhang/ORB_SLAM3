@@ -338,6 +338,10 @@ bool Object::LoadPointCloud(const long long &mem_size, const char *mem) {
 void Object::AddKeyFrames2Database(
     const std::vector<ObjRecognition::KeyFrame::Ptr> &kfs) {
     for (const auto &itKF : kfs) {
+#ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
+        ObjRecognition::FrameIndex kf_id = itKF->GetID();
+        m_mp_keyframes.emplace(std::make_pair(kf_id, itKF));
+#else
         itKF->SetVocabulary(m_voc);
         itKF->ComputeBowFeatures();
         m_database->add(itKF->GetBowVec(), itKF->GetBowFeatVec());
@@ -346,6 +350,7 @@ void Object::AddKeyFrames2Database(
         m_keyframe_index_to_entry.insert(
             std::make_pair(kf_id, m_entry_to_keyframe_index.size()));
         m_entry_to_keyframe_index.emplace_back(kf_id);
+#endif
     }
 }
 
@@ -428,6 +433,7 @@ bool Object::Save(long long &mem_size, char **mem) {
 }
 
 std::vector<MapPoint::Ptr> &Object::GetPointClouds() {
+    // VLOG(0) << "mappoint size: " << m_pointclouds.size();
     return m_pointclouds;
 }
 

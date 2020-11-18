@@ -134,6 +134,14 @@ public:
         const Eigen::Vector3d &tcw, const Eigen::Matrix3d &Rwo,
         const Eigen::Vector3d &two);
 
+    void SetPoseForFindSimilarKeyframe(
+        const Eigen::Matrix3d &Rcw, const Eigen::Vector3d &tcw,
+        const Eigen::Matrix3d &Rwo, const Eigen::Vector3d &two);
+
+    void GetPoseForFindSimilarKeyframe(
+        Eigen::Matrix3d &Rcw, Eigen::Vector3d &tcw, Eigen::Matrix3d &Rwo,
+        Eigen::Vector3d &two);
+
     void GetPose(
         FrameIndex &frmIndex, double &timeStamp, ObjRecogState &state,
         Eigen::Matrix3d &Rcw, Eigen::Vector3d &tcw, Eigen::Matrix3d &Rwo,
@@ -154,6 +162,11 @@ protected:
 
     std::mutex mPoseMutex;
     std::mutex mBoundingBoxMutex;
+
+    Eigen::Matrix3d Rcw_for_similar_keyframe;
+    Eigen::Vector3d tcw_for_similar_keyframe;
+    Eigen::Matrix3d Rwo_for_similar_keyframe;
+    Eigen::Vector3d two_for_similar_keyframe;
 };
 } // namespace ObjRecognition
 #endif // ORB_SLAM3_OBJECT_H

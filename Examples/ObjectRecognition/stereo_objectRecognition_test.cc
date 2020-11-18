@@ -116,17 +116,23 @@ bool TestViewer::InitObjectRecognition() {
 
     VLOG(0) << "Load Vocabulary Start";
 #ifdef SUPERPOINT
+#ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
+#else
     bool voc_load_res = ObjRecognitionExd::ObjRecongManager::Instance().LoadVoc(
         voc_path_superpoint);
+#endif
 #else
     bool voc_load_res =
         ObjRecognitionExd::ObjRecongManager::Instance().LoadVoc(voc_path);
 #endif
     VLOG(0) << "Load Vocabulary Done!";
 
+#ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
+#else
     if (!voc_load_res) {
         LOG(ERROR) << "vocabulary load fail!";
     }
+#endif
 
     int model_id = 0;
     char *cloud_point_model_buffer = nullptr;

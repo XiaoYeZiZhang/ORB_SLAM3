@@ -116,7 +116,6 @@ public:
         return true;
     };
     bool LoadPointCloud(const long long &mem_size, const char *mem);
-    bool LoadMesh(const int &mem_size, const char *mem);
     void SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);
     bool Save(long long &mem_size, char **mem);
     std::vector<MapPoint::Ptr> &GetPointClouds();

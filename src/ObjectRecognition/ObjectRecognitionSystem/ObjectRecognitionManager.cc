@@ -7,6 +7,7 @@
 #include "Utility/Camera.h"
 #include "Utility/Statistics.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
+#include "mode.h"
 namespace ObjRecognitionExd {
 
 ObjRecongManager &ObjRecongManager::Instance() {
@@ -190,7 +191,10 @@ int ObjRecongManager::LoadModel(
     }
     object = object_;
 
+#ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
+#else
     object_->SetVocabulary(voc_);
+#endif
     objrecog_thread_.SetModel(object_);
 
     return 0;

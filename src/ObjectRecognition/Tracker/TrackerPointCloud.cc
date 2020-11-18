@@ -231,6 +231,9 @@ void PointCloudObjTracker::RemoveOpticalFlow3dMatchOutliers(
 
 PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
     PS::MatchSet3D matchset_3d;
+#ifdef USE_NO_OPTICALFLOW_FOR_TRACKER
+    return matchset_3d;
+#else
     if (m_frame_Pre->m_opticalflow_matches2dto3d.empty() ||
         m_frame_Pre->m_opticalflow_point2ds.empty()) {
         return matchset_3d;
@@ -296,6 +299,7 @@ PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
         "Time: tracker find opticalflow match");
     tracker_find_opticalflow_match.AddSample(timer.Stop());
     return matchset_3d;
+#endif
 }
 
 void RemoveOpticalFlowAndProjectionCommonMatch(
@@ -518,6 +522,8 @@ void PointCloudObjTracker::PnPResultHandle() {
             mObj->SetPose(
                 m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
                 m_tracker_state, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
+            mObj->SetPoseForFindSimilarKeyframe(
+                Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
 
             if (reproj_error >= 0) {
                 // VLOG(0) << "tracker reproj error: " << reproj_error;

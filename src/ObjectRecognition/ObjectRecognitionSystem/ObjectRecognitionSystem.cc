@@ -56,12 +56,15 @@ int ObjRecogThread::SetVocabulary(
 int ObjRecogThread::SetModel(const std::shared_ptr<Object> &object) {
     object_ = object;
 
+#ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
+#else
     std::shared_ptr<DBoW3::Database> database =
         std::make_shared<DBoW3::Database>(voc_, true, 4);
     object_->SetDatabase(database);
 
     VLOG(0) << "PointCloud detector database create success ";
     object_->GetDatabase()->size();
+#endif
 
     auto allKFs = object_->GetKeyFrames();
 

@@ -1,9 +1,8 @@
 //
 // Created by root on 2020/11/9.
 //
-
+#include "glog/logging.h"
 #include <iostream>
-#include <glog/logging.h>
 #include <pangolin/gl/gldraw.h>
 #include <GL/glu.h>
 #include "Struct/PointCloudObject.h"
@@ -557,14 +556,13 @@ int main(int argc, char **argv) {
     ObjRecognition::CameraIntrinsic::GetInstance().SetParameters(
         384.35386606462447, 384.9560729180638, 319.28590839603237,
         239.87334366520707, w, h);
-    PointCloudModelViewer *viewer = new PointCloudModelViewer();
+    auto *viewer = new PointCloudModelViewer();
     viewer->Init();
 
     LoadPointCloudModel(model_path, viewer->point_cloud_object_);
 
     std::vector<ObjRecognition::MapPoint::Ptr> pointcloud =
         viewer->point_cloud_object_->GetPointClouds();
-    LOG(INFO) << "point cloud size: " << pointcloud.size();
     pangolin::CreateWindowAndBind(
         "MappointViewer", w + viewer->GetSideBarWidth(), h);
     glEnable(GL_DEPTH_TEST);

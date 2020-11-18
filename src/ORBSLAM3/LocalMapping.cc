@@ -424,7 +424,10 @@ void LocalMapping::ProcessNewKeyFrame() {
     }
 
 #ifdef SCANNER
+#ifdef USE_NO_EXTRA_ORB_EXTRACT
+#else
     FrameObjectProcess::GetInstance()->ProcessFrame(mpCurrentKeyFrame);
+#endif
 #endif
 
     // Compute Bags of Words structures

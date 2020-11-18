@@ -987,7 +987,7 @@ long long KeyFrame::GetMemSizeFor3DObject(const bool is_superpoint) {
 
 #ifdef USE_CONNECT_FOR_DETECTOR
     // connect keyframe num
-    saved_connected_keyframes_for3DObject = GetBestCovisibilityKeyFrames(20);
+    saved_connected_keyframes_for3DObject = GetVectorCovisibleKeyFrames();
     long unsigned int connect_kfs_size =
         saved_connected_keyframes_for3DObject.size();
     totalSize += sizeof(connect_kfs_size);

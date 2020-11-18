@@ -124,7 +124,7 @@ std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
     STATISTICS_UTILITY::StatsCollector detector_2d_matches(
         "detector 2D-2D matches num");
     detector_2d_matches.AddSample(matches2d_count);
-    // MatchKeyFramesShow(frm, kf_matches);
+    //    MatchKeyFramesShow(frm, kf_matches);
     return matchs_2ds;
 }
 
@@ -144,12 +144,72 @@ void PointCloudObjDetector::PreProcess(
 std::vector<PS::MatchSet2D>
 PointCloudObjDetector::Find2DMatches(const std::vector<KeyFrame::Ptr> &allKFs) {
 
+#ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
+    // set same keyframe use pose_pre
+    Eigen::Matrix3d Rcw_for_similar_keyframe;
+    Eigen::Vector3d tcw_for_similar_keyframe;
+    Eigen::Matrix3d Rwo_for_similar_keyframe;
+    Eigen::Vector3d two_for_similar_keyframe;
+    mObj->GetPoseForFindSimilarKeyframe(
+        Rcw_for_similar_keyframe, tcw_for_similar_keyframe,
+        Rwo_for_similar_keyframe, two_for_similar_keyframe);
+
+    Eigen::Matrix4d Tcw;
+    Tcw << Rcw_for_similar_keyframe(0, 0), Rcw_for_similar_keyframe(0, 1),
+        Rcw_for_similar_keyframe(0, 2), tcw_for_similar_keyframe(0),
+        Rcw_for_similar_keyframe(1, 0), Rcw_for_similar_keyframe(1, 1),
+        Rcw_for_similar_keyframe(1, 2), tcw_for_similar_keyframe(1),
+        Rcw_for_similar_keyframe(2, 0), Rcw_for_similar_keyframe(2, 1),
+        Rcw_for_similar_keyframe(2, 2), tcw_for_similar_keyframe(2), 0, 0, 0, 1;
+
+    Eigen::Matrix4d Two;
+    Two << Rwo_for_similar_keyframe(0, 0), Rwo_for_similar_keyframe(0, 1),
+        Rwo_for_similar_keyframe(0, 2), two_for_similar_keyframe(0),
+        Rwo_for_similar_keyframe(1, 0), Rwo_for_similar_keyframe(1, 1),
+        Rwo_for_similar_keyframe(1, 2), two_for_similar_keyframe(1),
+        Rwo_for_similar_keyframe(2, 0), Rwo_for_similar_keyframe(2, 1),
+        Rwo_for_similar_keyframe(2, 2), two_for_similar_keyframe(2), 0, 0, 0, 1;
+
+    Eigen::Matrix4d Tco = Tcw * Two;
+    Eigen::Matrix3d Rco = Tco.block<3, 3>(0, 0);
+    Eigen::Vector3d tco = Tco.block<3, 1>(0, 3);
+
+    std::vector<KeyFrame::Ptr> kf_mathceds;
+    if (Rcw_for_similar_keyframe == Eigen::Matrix3d::Identity() &&
+        Rwo_for_similar_keyframe == Eigen::Matrix3d::Identity()) {
+    } else {
+        for (const auto &keyframe : mObj->GetKeyFrames()) {
+            if (kf_mathceds.size() == 2) {
+                break;
+            }
+
+            Eigen::Vector3d tcw_keyframe;
+            Eigen::Matrix3d Rcw_keyframe;
+            keyframe->GetPose(Rcw_keyframe, tcw_keyframe);
+
+            Eigen::Matrix3d delta_R = Rcw_keyframe.inverse() * Rco;
+            float angle =
+                acos((delta_R.diagonal().sum() - 1) / 2.0) * (180 / 3.14);
+
+            Eigen::Vector3d delta_t = tco - tcw_keyframe;
+            float distance = sqrt(
+                delta_t(0) * delta_t(0) + delta_t(1) * delta_t(1) +
+                delta_t(2) * delta_t(2));
+
+            if (angle < 35 && distance < 0.38) {
+                kf_mathceds.emplace_back(keyframe);
+            }
+        }
+    }
+
+#else
     TIMER_UTILITY::Timer timer;
     std::vector<KeyFrame::Ptr> kf_mathceds = mObj->FrameQueryMap(m_frame_cur);
     STATISTICS_UTILITY::StatsCollector detector_find_2d_match_time(
         "Time: detector query from map");
     detector_find_2d_match_time.AddSample(timer.Stop());
 
+#endif
     std::vector<PS::MatchSet2D> matches_2ds;
 
     if (kf_mathceds.empty()) {
@@ -172,12 +232,75 @@ PointCloudObjDetector::Find2DMatches(const std::vector<KeyFrame::Ptr> &allKFs) {
 
 PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection() {
     PS::MatchSet3D matches_3d;
+    TIMER_UTILITY::Timer timer;
+#ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
+    // set same keyframe use pose_pre
+    Eigen::Matrix3d Rcw_for_similar_keyframe;
+    Eigen::Vector3d tcw_for_similar_keyframe;
+    Eigen::Matrix3d Rwo_for_similar_keyframe;
+    Eigen::Vector3d two_for_similar_keyframe;
+    mObj->GetPoseForFindSimilarKeyframe(
+        Rcw_for_similar_keyframe, tcw_for_similar_keyframe,
+        Rwo_for_similar_keyframe, two_for_similar_keyframe);
+
+    Eigen::Matrix4d Tcw;
+    Tcw << Rcw_for_similar_keyframe(0, 0), Rcw_for_similar_keyframe(0, 1),
+        Rcw_for_similar_keyframe(0, 2), tcw_for_similar_keyframe(0),
+        Rcw_for_similar_keyframe(1, 0), Rcw_for_similar_keyframe(1, 1),
+        Rcw_for_similar_keyframe(1, 2), tcw_for_similar_keyframe(1),
+        Rcw_for_similar_keyframe(2, 0), Rcw_for_similar_keyframe(2, 1),
+        Rcw_for_similar_keyframe(2, 2), tcw_for_similar_keyframe(2), 0, 0, 0, 1;
+
+    Eigen::Matrix4d Two;
+    Two << Rwo_for_similar_keyframe(0, 0), Rwo_for_similar_keyframe(0, 1),
+        Rwo_for_similar_keyframe(0, 2), two_for_similar_keyframe(0),
+        Rwo_for_similar_keyframe(1, 0), Rwo_for_similar_keyframe(1, 1),
+        Rwo_for_similar_keyframe(1, 2), two_for_similar_keyframe(1),
+        Rwo_for_similar_keyframe(2, 0), Rwo_for_similar_keyframe(2, 1),
+        Rwo_for_similar_keyframe(2, 2), two_for_similar_keyframe(2), 0, 0, 0, 1;
+
+    Eigen::Matrix4d Tco = Tcw * Two;
+    Eigen::Matrix3d Rco = Tco.block<3, 3>(0, 0);
+    Eigen::Vector3d tco = Tco.block<3, 1>(0, 3);
+
+    std::vector<KeyFrame::Ptr> kf_mathceds;
+    if (Rcw_for_similar_keyframe == Eigen::Matrix3d::Identity() &&
+        Rwo_for_similar_keyframe == Eigen::Matrix3d::Identity()) {
+        return matches_3d;
+    } else {
+        for (const auto &keyframe : mObj->GetKeyFrames()) {
+            if (kf_mathceds.size() == 2) {
+                break;
+            }
+
+            Eigen::Vector3d tcw_keyframe;
+            Eigen::Matrix3d Rcw_keyframe;
+            keyframe->GetPose(Rcw_keyframe, tcw_keyframe);
+
+            Eigen::Matrix3d delta_R = Rcw_keyframe.inverse() * Rco;
+            auto a = delta_R.diagonal().sum();
+
+            float angle =
+                acos((delta_R.diagonal().sum() - 1) / 2.0) * (180 / 3.14);
+
+            Eigen::Vector3d delta_t = tco - tcw_keyframe;
+            float distance = sqrt(
+                delta_t(0) * delta_t(0) + delta_t(1) * delta_t(1) +
+                delta_t(2) * delta_t(2));
+
+            if (angle < 35 && distance < 0.38) {
+                kf_mathceds.emplace_back(keyframe);
+            }
+        }
+    }
+#else
     std::vector<KeyFrame::Ptr> kf_mathceds = mObj->FrameQueryMap(m_frame_cur);
+#endif
+
     if (kf_mathceds.empty()) {
         return matches_3d;
     }
 
-    TIMER_UTILITY::Timer timer;
     std::set<int> associated_keyframe_id;
     std::set<MapPoint::Ptr> associated_mappoints;
     std::set<MapPointIndex> associated_mappoints_id;
@@ -553,6 +676,8 @@ void PointCloudObjDetector::PnPResultHandle() {
     if (pnp_solver_result_ && pnp_inliers_num_ >= kDetectorPnPInliersThGood &&
         pnp_inliers_3d_num_ >= proj_success_num) {
         detect_state_ = DetectionGood;
+        mObj->SetPoseForFindSimilarKeyframe(
+            Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
         mObj->SetPose(
             m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
             detect_state_, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
@@ -567,12 +692,20 @@ void PointCloudObjDetector::PnPResultHandle() {
         if (pnp_inliers_num_ >= kDetectorPnPInliersThUnreliable) {
             VLOG(5) << "detector PnP fail but has enough inliers";
             detect_state_ = DetectionUnreliable;
+            if (!has_good_result) {
+                mObj->SetPoseForFindSimilarKeyframe(
+                    Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
+            }
             mObj->SetPose(
                 m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
                 detect_state_, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
         } else {
             VLOG(5) << "detector PnP solve fail!";
             detect_state_ = DetectionBad;
+            if (!has_good_result) {
+                mObj->SetPoseForFindSimilarKeyframe(
+                    Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
+            }
             mObj->SetPose(
                 m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
                 detect_state_, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
@@ -780,13 +913,19 @@ void PointCloudObjDetector::Process(
     PreProcess(frm);
 
     std::vector<PS::MatchSet2D> matchset_2d;
+#ifdef USE_OLNY_SCAN_MAPPOINT
+#else
 #ifdef OBJ_WITH_KF
     auto allKFs = mObj->GetKeyFrames();
     matchset_2d = Find2DMatches(allKFs);
 #endif
+#endif
 
 #ifdef USE_CONNECT_FOR_DETECTOR
     PS::MatchSet3D matchset_3d = Find3DMatchByConnection();
+    if (matchset_3d.empty()) {
+        matchset_3d = Find3DMatch();
+    }
 #else
     PS::MatchSet3D matchset_3d = Find3DMatch();
 #endif
@@ -823,6 +962,7 @@ void PointCloudObjDetector::Clear() {
     knn_match_num_ = 0;
     pnp_inliers_num_ = 0;
     detect_state_ = DetectionBad;
+    has_good_result = false;
     VLOG(10) << "PointCloudObjDetector::Clear";
 }
 
