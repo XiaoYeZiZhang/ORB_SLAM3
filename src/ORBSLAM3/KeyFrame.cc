@@ -980,14 +980,22 @@ void KeyFrame::SetDesps(const cv::Mat &desps) {
     mDescriptors = desps;
 }
 
-long long KeyFrame::GetMemSizeFor3DObject(const bool is_superpoint) {
+long long KeyFrame::GetMemSizeFor3DObject(
+    const unsigned int start_sfm_keyframe_id, const int &descriptor_len,
+    const bool is_superpoint) {
     long long totalSize = 0;
     totalSize += sizeof(mnId);
     VLOG(5) << "getmem key 1: " << totalSize;
 
 #ifdef USE_CONNECT_FOR_DETECTOR
     // connect keyframe num
-    saved_connected_keyframes_for3DObject = GetVectorCovisibleKeyFrames();
+    saved_connected_keyframes_for3DObject.clear();
+    vector<KeyFrame *> covis_keyframes = GetVectorCovisibleKeyFrames();
+    for (auto keyframe : covis_keyframes) {
+        if (keyframe->mnId > start_sfm_keyframe_id) {
+            saved_connected_keyframes_for3DObject.emplace_back(keyframe);
+        }
+    }
     long unsigned int connect_kfs_size =
         saved_connected_keyframes_for3DObject.size();
     totalSize += sizeof(connect_kfs_size);
@@ -1031,7 +1039,7 @@ long long KeyFrame::GetMemSizeFor3DObject(const bool is_superpoint) {
         totalSize += nKpts * PerKeyPointSize;
         VLOG(5) << "getmem key 3: " << totalSize;
         if (is_superpoint) {
-            totalSize += nKpts * 256 * sizeof(float);
+            totalSize += nKpts * descriptor_len * sizeof(float);
         } else {
             totalSize += nKpts * 32 * sizeof(uchar);
         }
@@ -1067,33 +1075,19 @@ void KeyFrame::WriteToMemoryFor3DObject(
     }
 
     // associated mappoint id:
-    if (!is_superpoint) {
-        long unsigned int connect_mappoints_num =
-            saved_connected_mappoints_for3DObject.size();
+    long unsigned int connect_mappoints_num =
+        saved_connected_mappoints_for3DObject.size();
+    Tools::PutDataToMem(
+        mem + mem_pos, &connect_mappoints_num, sizeof(connect_mappoints_num),
+        mem_pos);
+    for (auto mappoint : saved_connected_mappoints_for3DObject) {
         Tools::PutDataToMem(
-            mem + mem_pos, &connect_mappoints_num,
-            sizeof(connect_mappoints_num), mem_pos);
-        for (auto mappoint : saved_connected_mappoints_for3DObject) {
-            Tools::PutDataToMem(
-                mem + mem_pos, &(mappoint->mnId), sizeof(mappoint->mnId),
-                mem_pos);
-        }
-    } else {
-        long unsigned int connect_mappoints_num =
-            saved_connected_mappoints_for3DObject.size();
-        Tools::PutDataToMem(
-            mem + mem_pos, &connect_mappoints_num,
-            sizeof(connect_mappoints_num), mem_pos);
-        for (auto mappoint : saved_connected_mappoints_for3DObject) {
-            Tools::PutDataToMem(
-                mem + mem_pos, &(mappoint->mnId), sizeof(mappoint->mnId),
-                mem_pos);
-        }
+            mem + mem_pos, &(mappoint->mnId), sizeof(mappoint->mnId), mem_pos);
     }
 
 #endif
 
-    VLOG(0) << "write mem key 1:" << sizeof(mnId);
+    VLOG(5) << "write mem key 1:" << sizeof(mnId);
     if (is_superpoint) {
         Tools::PackSUPERPOINTFeatures(
             mvKeys_superpoint, mDescriptors_superpoint, mem_pos, mem);
@@ -1115,7 +1109,7 @@ void KeyFrame::WriteToMemoryFor3DObject(
     Eigen::Vector3d tco = Rcw * Two.block<3, 1>(0, 3) + Tcw;
     auto init = mem_pos;
     Tools::PackCamCWToMem(tco, Rco, mem_pos, mem);
-    VLOG(0) << "write mem key 5:" << mem_pos - init;
+    VLOG(5) << "write mem key 5:" << mem_pos - init;
 
     VLOG(10) << "size: "
              << ObjRecognition::CameraIntrinsic::GetInstance().Width() << " "
@@ -1125,7 +1119,7 @@ void KeyFrame::WriteToMemoryFor3DObject(
         sizeof(char) * ObjRecognition::CameraIntrinsic::GetInstance().Width() *
             ObjRecognition::CameraIntrinsic::GetInstance().Height(),
         mem_pos);
-    VLOG(0) << "write mem key 6:"
+    VLOG(5) << "write mem key 6:"
             << sizeof(char) *
                    ObjRecognition::CameraIntrinsic::GetInstance().Width() *
                    ObjRecognition::CameraIntrinsic::GetInstance().Height();

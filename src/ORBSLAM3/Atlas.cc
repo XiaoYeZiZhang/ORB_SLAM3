@@ -306,25 +306,23 @@ Eigen::Vector3d Atlas::FromWorld2Plane(
 }
 
 long long Atlas::GetMemSizeFor3DObject(
-    const std::string &version, const bool is_superpoint) {
+    const unsigned int start_sfm_keyframe_id, const int &descriptor_len,
+    const bool is_superpoint) {
     // already set boundingbox
     GetBoundingBoxCoordsRange();
-    m_3dobject_version_ = version;
+    m_descriptor_size = descriptor_len;
 
+    VLOG(0) << "descriptor len: " << m_descriptor_size;
     long long nTotalSize = 0;
     if (!mspMaps.empty()) {
-        // version
-        nTotalSize += m_3dobject_version_.size();
-        // timestamp
-        nTotalSize += sizeof(double);
+        // descriptor size
+        nTotalSize += sizeof(m_descriptor_size);
         // width + height
         nTotalSize += sizeof(int) * 2;
         // fx, fy, cx, cy
         nTotalSize += sizeof(double) * 4;
-
         // bounding box + scale
         nTotalSize += 27 * sizeof(double);
-
         VLOG(0) << "getmemsize1" << nTotalSize;
         nTotalSize += sizeof(unsigned int);
         std::vector<Map *> saved_map;
@@ -338,9 +336,9 @@ long long Atlas::GetMemSizeFor3DObject(
         sort(saved_map.begin(), saved_map.end(), compFunctor());
 
 #ifdef SUPERPOINT
-        int covisualize_keyframe_num = 8;
+        int covisualize_keyframe_num = 7;
 #else
-        int covisualize_keyframe_num = 5;
+        int covisualize_keyframe_num = 4;
 #endif
         for (Map *pMi : saved_map) {
             for (MapPoint *pMPi :
@@ -353,7 +351,9 @@ long long Atlas::GetMemSizeFor3DObject(
 
                 if (MappointInBoundingbox(mappoint_p)) {
                     m_saved_mappoint_for_3dobject_.emplace_back(pMPi);
-                    nTotalSize += pMPi->GetMemSizeFor3DObject(is_superpoint);
+                    nTotalSize += pMPi->GetMemSizeFor3DObject(
+                        start_sfm_keyframe_id, m_descriptor_size,
+                        is_superpoint);
                 }
             }
         }
@@ -367,7 +367,6 @@ long long Atlas::GetMemSizeFor3DObject(
         if (!is_superpoint) {
             for (Map *pMi : saved_map) {
                 for (KeyFrame *pKFi : pMi->GetAllKeyFrames()) {
-
                     m_saved_keyframe_for_3dobject_.emplace_back(pKFi);
                 }
             }
@@ -375,7 +374,8 @@ long long Atlas::GetMemSizeFor3DObject(
 
         nTotalSize += sizeof(unsigned int);
         for (auto &item : m_saved_keyframe_for_3dobject_) {
-            nTotalSize += item->GetMemSizeFor3DObject(is_superpoint);
+            nTotalSize += item->GetMemSizeFor3DObject(
+                start_sfm_keyframe_id, m_descriptor_size, is_superpoint);
             VLOG(5) << "get mem id: " << item->mnId << " " << nTotalSize;
         }
         VLOG(0) << "getmemsize3" << nTotalSize;
@@ -389,12 +389,9 @@ bool Atlas::WriteToMemoryFor3DObject(
     long long mem_pos = 0;
     const auto &camera_intrinsic =
         ObjRecognition::CameraIntrinsic::GetInstance();
-    char version_str[sizeof(m_3dobject_version_)];
     Tools::PutDataToMem(
-        mem + mem_pos, version_str, m_3dobject_version_.size(), mem_pos);
-    double m_timestamp = 0.0;
-    Tools::PutDataToMem(
-        mem + mem_pos, &m_timestamp, sizeof(m_timestamp), mem_pos);
+        mem + mem_pos, &m_descriptor_size, sizeof(m_descriptor_size), mem_pos);
+
     Tools::PutDataToMem(
         mem + mem_pos, &camera_intrinsic.Width(), sizeof(int), mem_pos);
     Tools::PutDataToMem(
@@ -440,7 +437,7 @@ bool Atlas::WriteToMemoryFor3DObject(
     Eigen::Matrix4d m_object_Two = Eigen::Matrix4d::Identity();
     for (MapPoint *pMPi : m_saved_mappoint_for_3dobject_) {
         pMPi->WriteToMemoryFor3DObject(
-            mem_pos, mem, m_object_Two, is_superpoint);
+            mem_pos, mem, m_descriptor_size, is_superpoint);
     }
     VLOG(0) << "saved mappoint num: " << nMPs;
     VLOG(5) << "writememsize2" << mem_pos;

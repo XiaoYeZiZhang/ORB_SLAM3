@@ -414,9 +414,9 @@ void ViewerAR::Pick3DPointCloud() {
     pangolin::OpenGlMatrix projection_matrix = s_cam_SfM.GetProjectionMatrix();
 
 #ifdef SUPERPOINT
-    int covisualize_keyframe_num = 8;
+    int covisualize_keyframe_num = 7;
 #else
-    int covisualize_keyframe_num = 5;
+    int covisualize_keyframe_num = 4;
 #endif
     auto all_mappoints = mpMapDrawer->mpAtlas_superpoint->GetAllMapPoints(
         covisualize_keyframe_num);
@@ -662,7 +662,7 @@ void ViewerAR::Draw(int w, int h) {
 
         } else {
 #ifdef SUPERPOINT
-            mpSystem->Shutdown();
+            // mpSystem->Shutdown();
             d_cam_SfM.show = true;
             d_cam_SfM.Activate(s_cam_SfM);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);

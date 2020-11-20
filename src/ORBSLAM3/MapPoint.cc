@@ -609,7 +609,10 @@ void MapPoint::UpdateMap(Map *pMap) {
     mpMap = pMap;
 }
 
-long long MapPoint::GetMemSizeFor3DObject(bool is_superpoint) {
+long long MapPoint::GetMemSizeFor3DObject(
+    const unsigned int start_sfm_keyframe_id, const int &descriptor_len,
+    bool is_superpoint) {
+    m_start_sfm_keyframe_id = start_sfm_keyframe_id;
     long long total_size = 0;
     total_size += sizeof(mnId);
     // position
@@ -619,20 +622,24 @@ long long MapPoint::GetMemSizeFor3DObject(bool is_superpoint) {
     total_size += sizeof(mpRefKF->mnId);
     VLOG(5) << "mappoint 0: " << total_size;
     if (is_superpoint) {
-        total_size += 256 * sizeof(float);
+        total_size += descriptor_len * sizeof(float);
     } else {
-        total_size += 32 * sizeof(uchar);
+        total_size += descriptor_len * sizeof(uchar);
     }
 
     VLOG(5) << "mappoint 1: " << total_size;
     // ref_kf
     auto obs = std::move(GetObservations());
-    unsigned int obsSize = obs.size();
-    total_size += sizeof(obsSize);
+    total_size += sizeof(unsigned int);
+    m_obs_for_sfm = 0;
     for (auto &curOb : obs) {
-        total_size += sizeof(curOb.first);
-        total_size += sizeof(get<0>(curOb.second));
+        if (curOb.first->mnId > start_sfm_keyframe_id) {
+            total_size += sizeof(curOb.first);
+            total_size += sizeof(get<0>(curOb.second));
+            m_obs_for_sfm++;
+        }
     }
+
     total_size += sizeof(mnVisible);
     total_size += sizeof(mnFound);
     VLOG(5) << "mappoint 2: " << total_size;
@@ -640,7 +647,7 @@ long long MapPoint::GetMemSizeFor3DObject(bool is_superpoint) {
 }
 
 void MapPoint::WriteToMemoryFor3DObject(
-    long long &mem_pos, char *mem, const Eigen::Matrix4d &Two,
+    long long &mem_pos, char *mem, const int &descriptor_len,
     bool is_superpoint) {
     Tools::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
     Eigen::Vector3d pos = Eigen::Vector3d(
@@ -657,24 +664,26 @@ void MapPoint::WriteToMemoryFor3DObject(
     cv::Mat desp = GetDescriptor();
     if (is_superpoint) {
         Tools::PutDataToMem(
-            mem + mem_pos, desp.data, 256 * sizeof(float), mem_pos);
+            mem + mem_pos, desp.data, descriptor_len * sizeof(float), mem_pos);
     } else {
         Tools::PutDataToMem(
-            mem + mem_pos, desp.data, 32 * sizeof(uchar), mem_pos);
+            mem + mem_pos, desp.data, descriptor_len * sizeof(uchar), mem_pos);
     }
 
-    unsigned int obSize = obs.size();
-
+    unsigned int obSize = m_obs_for_sfm;
     Tools::PutDataToMem(mem + mem_pos, &obSize, sizeof(obSize), mem_pos);
 
     for (auto &curOb : obs) {
-        Tools::PutDataToMem(
-            mem + mem_pos, &(curOb.first->mnId), sizeof(curOb.first->mnId),
-            mem_pos);
-        Tools::PutDataToMem(
-            mem + mem_pos, &get<0>(curOb.second), sizeof(get<0>(curOb.second)),
-            mem_pos);
+        if (curOb.first->mnId > m_start_sfm_keyframe_id) {
+            Tools::PutDataToMem(
+                mem + mem_pos, &(curOb.first->mnId), sizeof(curOb.first->mnId),
+                mem_pos);
+            Tools::PutDataToMem(
+                mem + mem_pos, &get<0>(curOb.second),
+                sizeof(get<0>(curOb.second)), mem_pos);
+        }
     }
+
     Tools::PutDataToMem(mem + mem_pos, &mnVisible, sizeof(mnVisible), mem_pos);
     Tools::PutDataToMem(mem + mem_pos, &mnFound, sizeof(mnFound), mem_pos);
 }

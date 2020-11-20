@@ -510,7 +510,7 @@ void PointCloudObjTracker::PnPResultHandle() {
     } else {
         // 80
 #ifdef SUPERPOINT
-        int proj_success_num = 120;
+        int proj_success_num = 60;
 #else
         int proj_success_num = m_projection_matches2dTo3d_cur.size() * 0.13;
 #endif

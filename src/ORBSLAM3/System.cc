@@ -948,11 +948,13 @@ void System::SetScanBoundingbox_W_Superpoint(
 
 bool System::PackAtlasToMemoryFor3DObject_SuperPoint(
     char **buffer_out, long long &buffer_out_len,
+    const unsigned int start_sfm_keyframe_id,
     const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM) {
-    std::string version = "V1.0.0.0";
+    int descriptor_len = 64;
     mpAtlas_superpoint->SetSavedKeyFramesFor3DObjet_Superpoint(
         keyframes_for_SfM);
-    buffer_out_len = mpAtlas_superpoint->GetMemSizeFor3DObject(version, true);
+    buffer_out_len = mpAtlas_superpoint->GetMemSizeFor3DObject(
+        start_sfm_keyframe_id, descriptor_len, true);
     VLOG(0) << "GetMemSize Done";
     bool ret = false;
     VLOG(0) << "buffer_out_len" << buffer_out_len;
@@ -970,8 +972,8 @@ bool System::PackAtlasToMemoryFor3DObject_SuperPoint(
 
 bool System::PackAtlasToMemoryFor3DObject(
     char **buffer_out, int &buffer_out_len) {
-    std::string version = "V1.0.0.0";
-    buffer_out_len = mpAtlas->GetMemSizeFor3DObject(version, false);
+    const int descriptor_len = 32;
+    buffer_out_len = mpAtlas->GetMemSizeFor3DObject(-1, descriptor_len, false);
     bool ret = false;
     if (buffer_out_len > 0) {
         *buffer_out = new char[buffer_out_len];

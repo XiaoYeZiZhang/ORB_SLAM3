@@ -37,8 +37,8 @@ public:
     enum { HARRIS_SCORE = 0, FAST_SCORE = 1 };
 
     SPextractor(
-        int nfeatures, float scaleFactor, int nlevels, float iniThFAST,
-        float minThFAST, bool is_use_cuda);
+        int descriptor_len, int nfeatures, float scaleFactor, int nlevels,
+        float iniThFAST, float minThFAST, bool is_use_cuda);
 
     ~SPextractor() {
     }
@@ -96,6 +96,7 @@ protected:
     int nlevels;
     float iniThFAST;
     float minThFAST;
+    int m_descriptor_len;
 
     std::vector<int> mnFeaturesPerLevel;
 

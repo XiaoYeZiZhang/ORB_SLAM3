@@ -25,7 +25,7 @@ public:
     bool RunScanner();
     bool SaveMappointFor3DObject(const std::string save_path);
     bool SaveMappointFor3DObject_SuperPoint(
-        const std::string save_path,
+        const std::string save_path, const unsigned int start_sfm_keyframe_id,
         const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM);
     cv::Mat M2l;
     cv::Mat M1r;
@@ -75,7 +75,7 @@ private:
 };
 
 bool TestViewer::SaveMappointFor3DObject_SuperPoint(
-    const std::string save_path,
+    const std::string save_path, const unsigned int start_sfm_keyframe_id,
     const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM) {
     char *buffer = NULL;
     long long buffer_size = 0;
@@ -83,7 +83,7 @@ bool TestViewer::SaveMappointFor3DObject_SuperPoint(
 
     VLOG(0) << "Start Saving Mappoints";
     bool save_result = SLAM->PackAtlasToMemoryFor3DObject_SuperPoint(
-        &buffer, buffer_size, keyframes_for_SfM);
+        &buffer, buffer_size, start_sfm_keyframe_id, keyframes_for_SfM);
     VLOG(0) << "Save Done";
     if (save_result) {
         std::ofstream out(save_path, std::ios::out | std::ios::binary);
@@ -243,7 +243,7 @@ bool TestViewer::InitSLAM() {
 #ifdef SUPERPOINT
     SPextractor =
         std::make_shared<ORB_SLAM3::SPextractor>(ORB_SLAM3::SPextractor(
-            Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
+            64, Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
             Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007,
             true));
     start_sfm_keyframe_id = -1;
@@ -277,7 +277,9 @@ void TestViewer::ScanDebugMode() {
         usleep(1 * 1e5);
         if (viewerAR.GetStopFlag()) {
 #ifdef SUPERPOINT
+            SLAM->Shutdown();
             SfMProcess();
+            viewerAR.SetSfMFinishFlag();
 #endif
             return;
         }
@@ -349,9 +351,12 @@ void TestViewer::SfMProcess() {
     // TODO(zhangye): DO SFM USING SUPERPOINT
     VLOG(0) << "DOING SFM USING SUPERPOINT, PLEASE WAIT...";
     keyframes_slam = SLAM->mpAtlas->GetAllKeyFrames();
+#ifdef USE_NO_VOC_FOR_SCAN_SFM
+#else
     ORB_SLAM3::SUPERPOINTVocabulary *mpSuperpointvocabulary;
     mpSuperpointvocabulary = new ORB_SLAM3::SUPERPOINTVocabulary();
     mpSuperpointvocabulary->load(voc_path_superpoint);
+#endif
 
     std::vector<ORB_SLAM3::KeyFrame *> keyframes_for_SfM;
     for (auto keyframe : keyframes_slam) {
@@ -403,37 +408,22 @@ void TestViewer::SfMProcess() {
         keyframe->mvInvLevelSigma2_suerpoint =
             SPextractor->GetInverseScaleSigmaSquares();
         keyframe->SetKeyPoints_Superpoints();
+#ifdef USE_NO_VOC_FOR_SCAN_SFM
+#else
         // compute dbow
         keyframe->ComputeBoW_SuperPoint(mpSuperpointvocabulary);
+#endif
+
         keyframe->SetMap_SuperPoint(SLAM->mpAtlas_superpoint->GetCurrentMap());
     }
     VLOG(0) << "All keyframe exract superpoint done !";
 
     for (auto key_num = 0; key_num < keyframes_for_SfM.size(); key_num++) {
-        //        if (viewerAR.GetSfMContinueFlag()) {
-        //        } else {
-        //            SfMDebugMode();
-        //        }
         SLAM->mpLocalMapper->TriangulateForSuperPoint(
             keyframes_for_SfM, key_num, start_sfm_keyframe_id);
     }
     VLOG(0) << "SfM done!";
-    //    while (true) {
-    //        if (viewerAR.GetSfMContinueLBAFlag()) {
-    //            break;
-    //        } else {
-    //            usleep(3000);
-    //        }
-    //    }
     SLAM->mpLocalMapper->LocalBAForSuperPoint();
-
-    //    while (true) {
-    //        if (viewerAR.GetSaveMapPointAfterLBAFlag()) {
-    //            break;
-    //        } else {
-    //            usleep(3000);
-    //        }
-    //    }
 #endif
 }
 
@@ -488,6 +478,7 @@ bool TestViewer::RunScanner() {
 
         if (viewerAR.GetStopFlag()) {
 #ifdef SUPERPOINT
+            SLAM->Shutdown();
             SfMProcess();
             viewerAR.SetSfMFinishFlag();
 #endif
@@ -594,7 +585,7 @@ bool TestViewer::RunScanner() {
     }
 
     if (SaveMappointFor3DObject_SuperPoint(
-            mappoint_save_path, keyframes_for_SfM)) {
+            mappoint_save_path, start_sfm_keyframe_id, keyframes_for_SfM)) {
         VLOG(0) << "save mappoint_superpoint for 3dobject success!";
     }
 #else

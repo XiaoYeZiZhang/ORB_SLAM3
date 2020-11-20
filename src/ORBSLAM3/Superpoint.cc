@@ -12,10 +12,6 @@ namespace ORB_SLAM3 {
 SuperPoint::SuperPoint() {
 }
 
-void NMS(
-    cv::Mat det, cv::Mat conf, cv::Mat desc, std::vector<cv::KeyPoint> &pts,
-    cv::Mat &descriptors, int border, int dist_thresh, int img_width,
-    int img_height);
 void NMS2(
     std::vector<cv::KeyPoint> det, cv::Mat conf, std::vector<cv::KeyPoint> &pts,
     int border, int dist_thresh, int img_width, int img_height);
@@ -262,94 +258,6 @@ void NMS2(
                 select_indice.push_back(select_ind);
                 valid_cnt++;
             }
-        }
-    }
-}
-
-void NMS(
-    cv::Mat det, cv::Mat conf, cv::Mat desc, std::vector<cv::KeyPoint> &pts,
-    cv::Mat &descriptors, int border, int dist_thresh, int img_width,
-    int img_height) {
-
-    std::vector<cv::Point2f> pts_raw;
-
-    for (int i = 0; i < det.rows; i++) {
-
-        int u = (int)det.at<float>(i, 0);
-        int v = (int)det.at<float>(i, 1);
-        // float conf = det.at<float>(i, 2);
-
-        pts_raw.push_back(cv::Point2f(u, v));
-    }
-
-    cv::Mat grid = cv::Mat(cv::Size(img_width, img_height), CV_8UC1);
-    cv::Mat inds = cv::Mat(cv::Size(img_width, img_height), CV_16UC1);
-
-    cv::Mat confidence = cv::Mat(cv::Size(img_width, img_height), CV_32FC1);
-
-    grid.setTo(0);
-    inds.setTo(0);
-    confidence.setTo(0);
-
-    for (int i = 0; i < pts_raw.size(); i++) {
-        int uu = (int)pts_raw[i].x;
-        int vv = (int)pts_raw[i].y;
-
-        grid.at<char>(vv, uu) = 1;
-        inds.at<unsigned short>(vv, uu) = i;
-
-        confidence.at<float>(vv, uu) = conf.at<float>(i, 0);
-    }
-
-    cv::copyMakeBorder(
-        grid, grid, dist_thresh, dist_thresh, dist_thresh, dist_thresh,
-        cv::BORDER_CONSTANT, 0);
-
-    for (int i = 0; i < pts_raw.size(); i++) {
-        int uu = (int)pts_raw[i].x + dist_thresh;
-        int vv = (int)pts_raw[i].y + dist_thresh;
-
-        if (grid.at<char>(vv, uu) != 1)
-            continue;
-
-        for (int k = -dist_thresh; k < (dist_thresh + 1); k++)
-            for (int j = -dist_thresh; j < (dist_thresh + 1); j++) {
-                if (j == 0 && k == 0)
-                    continue;
-
-                if (conf.at<float>(vv + k, uu + j) < conf.at<float>(vv, uu))
-                    grid.at<char>(vv + k, uu + j) = 0;
-            }
-        grid.at<char>(vv, uu) = 2;
-    }
-
-    size_t valid_cnt = 0;
-    std::vector<int> select_indice;
-
-    for (int v = 0; v < (img_height + dist_thresh); v++) {
-        for (int u = 0; u < (img_width + dist_thresh); u++) {
-            if (u - dist_thresh >= (img_width - border) ||
-                u - dist_thresh < border ||
-                v - dist_thresh >= (img_height - border) ||
-                v - dist_thresh < border)
-                continue;
-
-            if (grid.at<char>(v, u) == 2) {
-                int select_ind = (int)inds.at<unsigned short>(
-                    v - dist_thresh, u - dist_thresh);
-                pts.push_back(cv::KeyPoint(pts_raw[select_ind], 1.0f));
-
-                select_indice.push_back(select_ind);
-                valid_cnt++;
-            }
-        }
-    }
-
-    descriptors.create(select_indice.size(), 256, CV_32F);
-
-    for (int i = 0; i < select_indice.size(); i++) {
-        for (int j = 0; j < 256; j++) {
-            descriptors.at<float>(i, j) = desc.at<float>(select_indice[i], j);
         }
     }
 }

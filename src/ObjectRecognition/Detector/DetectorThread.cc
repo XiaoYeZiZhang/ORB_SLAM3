@@ -36,7 +36,7 @@ void DetectorThread::Reset() {
 void DetectorThread::GetCurInputData() {
     std::lock_guard<std::mutex> lck(mInputMutex);
     if (!mInputQueue.empty()) {
-        VLOG(5) << "detector: queue size: " << mInputQueue.size();
+        VLOG(0) << "detector: queue size: " << mInputQueue.size();
         mCurData = mInputQueue.back();
         std::queue<std::shared_ptr<FrameData>> emptyQueue;
         std::swap(emptyQueue, mInputQueue);

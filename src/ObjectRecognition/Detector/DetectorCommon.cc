@@ -5,6 +5,7 @@
 #include <Eigen/Dense>
 #include <cxcore.hpp>
 #include <cv.hpp>
+#include <include/ObjectRecognition/Utility/Statistics.h>
 #include "Utility/Timer.h"
 #include "Utility/Camera.h"
 #include "Detector/DetectorCommon.h"
@@ -222,21 +223,9 @@ void FindMatchByKNN_SuperPoint(
     //    }
 
     VLOG(15) << "after distance Ratio matches size: " << matches.size();
-    //
-    //    double minDisKnn = 9999.0;
-    //    for (size_t i = 0; i < matches.size(); i++) {
-    //        if (matches[i].distance < minDisKnn) {
-    //            minDisKnn = matches[i].distance;
-    //        }
-    //    }
-    //    VLOG(15) << "minDisKnn = " << minDisKnn;
 
-    const int kgoodMatchesThreshold = 200;
     for (size_t i = 0; i < matches.size(); i++) {
-        //        if (matches[i].distance <= (2*minDisKnn > 30 ? 2*minDisKnn :
-        //        30)) {
         goodMatches.push_back(matches[i]);
-        //        }
     }
     return;
 }
@@ -247,7 +236,7 @@ void FindMatchByKNN_SuperPoint_Homography(
     const cv::Mat &pcDesp, std::vector<cv::DMatch> &goodMatches) {
     TIMER_UTILITY::Timer timer;
     std::vector<std::vector<cv::DMatch>> knnMatches;
-    cv::BFMatcher matcher(cv::NormTypes::NORM_L2);
+    cv::BFMatcher matcher(cv::NormTypes::NORM_L2, true);
     // matcher.knnMatch(frmDesp, pcDesp, knnMatches, 2);
     matcher.match(frmDesp, pcDesp, goodMatches);
 
@@ -261,9 +250,12 @@ void FindMatchByKNN_SuperPoint_Homography(
     }
     TIMER_UTILITY::Timer timer1;
     std::vector<uchar> inliersMask(srcPoints.size());
+    TIMER_UTILITY::Timer timer_getmatch;
     auto homography =
         findHomography(srcPoints, dstPoints, CV_FM_RANSAC, 6.0, inliersMask);
-
+    STATISTICS_UTILITY::StatsCollector detector_2d_match(
+        "Time: detector find 2d match by homography");
+    detector_2d_match.AddSample(timer_getmatch.Stop());
     std::vector<cv::DMatch> inliers;
     for (size_t i = 0; i < inliersMask.size(); i++) {
         if (inliersMask[i])

@@ -27,7 +27,7 @@ typedef long unsigned int MapPointIndex;
 class MapPoint {
 public:
     typedef std::shared_ptr<MapPoint> Ptr;
-    bool Load(long long &mem_pos, const char *mem);
+    bool Load(const int &descriptor_len, long long &mem_pos, const char *mem);
     bool Save(int &mem_size, char **mem);
     bool IsBad();
 
@@ -65,7 +65,8 @@ public:
     typedef std::shared_ptr<KeyFrame> Ptr;
 
     int GetID() const;
-    void ReadFromMemory(long long &mem_pos, const char *mem);
+    void ReadFromMemory(
+        const int descriptor_len, long long &mem_pos, const char *mem);
     void SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);
     void GetPose(Eigen::Matrix3d &Rcw, Eigen::Vector3d &tcw);
     cv::Mat &GetRawImage();
@@ -153,6 +154,7 @@ private:
 
     std::vector<FrameIndex> m_entry_to_keyframe_index;
     std::unordered_map<FrameIndex, int> m_keyframe_index_to_entry;
+    int descriptor_len;
 };
 } // namespace ObjRecognition
 #endif // ORB_SLAM3_POINTCLOUDOBJECT_H

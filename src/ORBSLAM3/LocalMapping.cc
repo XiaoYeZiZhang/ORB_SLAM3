@@ -555,13 +555,6 @@ void LocalMapping::TriangulateForSuperPoint(
         const float baseline = cv::norm(vBaseline);
         if (baseline * 3 < pKF2->mb)
             continue;
-        //            const float medianDepthKF2 =
-        //            pKF2->ComputeSceneMedianDepth(2); const float
-        //            ratioBaselineDepth = baseline / medianDepthKF2;
-        //
-        //            if (ratioBaselineDepth < 0.01)
-        //                continue;
-        //
         cv::Mat F12 = ComputeF12(currentKeyFrame, pKF2);
         vector<pair<size_t, size_t>> vMatchedIndices;
 

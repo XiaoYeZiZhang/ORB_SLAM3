@@ -16,7 +16,8 @@ void GetDataFromMem(
     pos += mem_size;
 }
 
-bool MapPoint::Load(long long &mem_pos, const char *mem) {
+bool MapPoint::Load(
+    const int &descriptor_len, long long &mem_pos, const char *mem) {
     GetDataFromMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
     Eigen::Vector3d posTmp;
     VLOG(5) << "mappoint 0: " << mem_pos;
@@ -37,13 +38,15 @@ bool MapPoint::Load(long long &mem_pos, const char *mem) {
 
         VLOG(5) << "mappoint read 0:" << mem_pos;
 #ifdef SUPERPOINT
-        cv::Mat desp = cv::Mat::zeros(256, 1, CV_32FC1);
+        cv::Mat desp = cv::Mat::zeros(descriptor_len, 1, CV_32FC1);
         GetDataFromMem(
-            desp.data, ((mem) + mem_pos), 256 * sizeof(float), mem_pos);
+            desp.data, ((mem) + mem_pos), descriptor_len * sizeof(float),
+            mem_pos);
 #else
-        cv::Mat desp = cv::Mat::zeros(32, 1, CV_8U);
+        cv::Mat desp = cv::Mat::zeros(descriptor_len, 1, CV_8U);
         GetDataFromMem(
-            desp.data, ((mem) + mem_pos), 32 * sizeof(uchar), mem_pos);
+            desp.data, ((mem) + mem_pos), descriptor_len * sizeof(uchar),
+            mem_pos);
 #endif
         m_multi_desps.push_back({index, desp});
     }
@@ -121,7 +124,7 @@ void PutDataToMem(
 }
 
 std::tuple<std::vector<cv::KeyPoint>, cv::Mat>
-UnpackORBFeatures(long long &mem_cur, const char *mem) {
+UnpackFeatures(const int descriptor_len, long long &mem_cur, const char *mem) {
     unsigned int nKpts = 0;
     PutDataToMem(&(nKpts), mem + mem_cur, sizeof(nKpts), mem_cur);
     VLOG(5) << "keyframe kpts: " << nKpts;
@@ -144,11 +147,11 @@ UnpackORBFeatures(long long &mem_cur, const char *mem) {
     VLOG(5) << "keyframe read2:" << mem_cur;
 
 #ifdef SUPERPOINT
-    cv::Mat temp_desp(nKpts, 256, CV_32FC1, (void *)(mem + mem_cur));
+    cv::Mat temp_desp(nKpts, descriptor_len, CV_32FC1, (void *)(mem + mem_cur));
     cv::Mat desp = temp_desp.clone();
     mem_cur += desp.rows * desp.cols * sizeof(float);
 #else
-    cv::Mat temp_desp(nKpts, 32, CV_8UC1, (void *)(mem + mem_cur));
+    cv::Mat temp_desp(nKpts, descriptor_len, CV_8UC1, (void *)(mem + mem_cur));
     cv::Mat desp = temp_desp.clone();
     mem_cur += desp.rows * desp.cols * sizeof(uchar);
 #endif
@@ -171,7 +174,8 @@ void UnPackCamCWFromMem(
     VLOG(10) << "pose: " << QR.z();
 }
 
-void KeyFrame::ReadFromMemory(long long &mem_pos, const char *mem) {
+void KeyFrame::ReadFromMemory(
+    const int descriptor_len, long long &mem_pos, const char *mem) {
     PutDataToMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
 #ifdef USE_CONNECT_FOR_DETECTOR
     PutDataToMem(
@@ -197,7 +201,8 @@ void KeyFrame::ReadFromMemory(long long &mem_pos, const char *mem) {
 
     VLOG(10) << "keyframe id: " << mnId;
     VLOG(5) << "keyframe read0:" << mem_pos;
-    std::tie(mvKeypoints, mDescriptors) = UnpackORBFeatures(mem_pos, mem);
+    std::tie(mvKeypoints, mDescriptors) =
+        UnpackFeatures(descriptor_len, mem_pos, mem);
     UnPackCamCWFromMem(mem_pos, mem, mtcw, mRcw);
     VLOG(10) << "size: "
              << ObjRecognition::CameraIntrinsic::GetInstance().Width() << " "
@@ -270,14 +275,10 @@ Object::~Object() {
 bool Object::LoadPointCloud(const long long &mem_size, const char *mem) {
     unsigned int mapPointNum;
     long long mem_pos = 0;
-    VLOG(3) << "model mem size: " << mem_size;
-
-    char version_str[sizeof(m_version)];
-    GetDataFromMem(version_str, mem + mem_pos, m_version.size(), mem_pos);
-    GetDataFromMem(&m_timestamp, mem + mem_pos, sizeof(m_timestamp), mem_pos);
-    m_version = std::string(version_str, m_version.size());
-
     int kf_img_width, kf_img_height;
+    descriptor_len = -1;
+    GetDataFromMem(
+        &descriptor_len, mem + mem_pos, sizeof(descriptor_len), mem_pos);
     GetDataFromMem(&kf_img_width, mem + mem_pos, sizeof(kf_img_width), mem_pos);
     GetDataFromMem(
         &kf_img_height, mem + mem_pos, sizeof(kf_img_height), mem_pos);
@@ -305,9 +306,8 @@ bool Object::LoadPointCloud(const long long &mem_size, const char *mem) {
     m_pointclouds.reserve(mapPointNum);
 
     for (int i = 0; i < mapPointNum; i++) {
-
         std::shared_ptr<MapPoint> mapPoint = std::make_shared<MapPoint>();
-        if (mapPoint->Load(mem_pos, mem)) {
+        if (mapPoint->Load(descriptor_len, mem_pos, mem)) {
             m_pointclouds.push_back(mapPoint);
             m_pointclouds_map[mapPoint->GetID()] = mapPoint;
         } else {
@@ -322,7 +322,7 @@ bool Object::LoadPointCloud(const long long &mem_size, const char *mem) {
     m_keyframes.reserve(keyFrameNum);
     for (int i = 0; i < keyFrameNum; i++) {
         std::shared_ptr<KeyFrame> pKF = std::make_shared<KeyFrame>();
-        pKF->ReadFromMemory(mem_pos, mem);
+        pKF->ReadFromMemory(descriptor_len, mem_pos, mem);
         m_keyframes.push_back(pKF);
     }
     VLOG(5) << "readmemsize3" << mem_pos;
@@ -340,7 +340,7 @@ void Object::AddKeyFrames2Database(
     for (const auto &itKF : kfs) {
 #ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
         ObjRecognition::FrameIndex kf_id = itKF->GetID();
-        m_mp_keyframes.emplace(std::make_pair(kf_id, itKF));
+        m_mp_keyframes[kf_id] = itKF;
 #else
         itKF->SetVocabulary(m_voc);
         itKF->ComputeBowFeatures();

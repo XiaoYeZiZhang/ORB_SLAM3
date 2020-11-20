@@ -127,9 +127,8 @@ int main(int argc, char *argv[]) {
     google::InstallFailureSignalHandler();
     FLAGS_alsologtostderr = true;
     FLAGS_colorlogtostderr = true;
-    ORB_SLAM3::SPextractor *SPextractor = new ORB_SLAM3::SPextractor(
-        Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
-        Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007, true);
+    ORB_SLAM3::SPextractor *SPextractor =
+        new ORB_SLAM3::SPextractor(64, 1000, 1.2, 3, 0.015, 0.007, true);
     cv::Ptr<cv::ORB> m_orb_detector = cv::ORB::create(1000, 1.2);
     m_orb_detector->setScoreType(cv::ORB::FAST_SCORE);
     m_orb_detector->setFastThreshold(7);

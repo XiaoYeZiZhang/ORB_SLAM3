@@ -13,6 +13,7 @@ using namespace cv;
 using namespace std;
 using namespace std::chrono;
 
+#define desciptor_len 64
 namespace ORB_SLAM3 {
 
 const int PATCH_SIZE = 31;
@@ -77,21 +78,54 @@ void ExtractorNode_sp::DivideNode(
 }
 
 SPextractor::SPextractor(
-    int _nfeatures, float _scaleFactor, int _nlevels, float _iniThFAST,
-    float _minThFAST, bool _is_use_cuda)
+    int descriptor_len, int _nfeatures, float _scaleFactor, int _nlevels,
+    float _iniThFAST, float _minThFAST, bool _is_use_cuda)
     : nfeatures(_nfeatures), scaleFactor(_scaleFactor), nlevels(_nlevels),
-      iniThFAST(_iniThFAST), minThFAST(_minThFAST), is_use_cuda(_is_use_cuda) {
-    traced_module_480_640 = torch::jit::load(
-        "/home/zhangye/data1/traced_superpoint_model_480*640.pt");
-    traced_module_480_640.to(at::kCUDA);
+      iniThFAST(_iniThFAST), minThFAST(_minThFAST), is_use_cuda(_is_use_cuda),
+      m_descriptor_len(descriptor_len) {
+    switch (m_descriptor_len) {
+    case 256:
+        traced_module_480_640 = torch::jit::load(
+            "/home/zhangye/data1/256/traced_superpoint_model_64_480*640.pt");
+        traced_module_480_640.to(at::kCUDA);
 
-    traced_module_400_533 = torch::jit::load(
-        "/home/zhangye/data1/traced_superpoint_model_400*533.pt");
-    traced_module_400_533.to(at::kCUDA);
+        traced_module_400_533 = torch::jit::load(
+            "/home/zhangye/data1/256/traced_superpoint_model_64_400*533.pt");
+        traced_module_400_533.to(at::kCUDA);
 
-    traced_module_333_444 = torch::jit::load(
-        "/home/zhangye/data1/traced_superpoint_model_333*444.pt");
-    traced_module_333_444.to(at::kCUDA);
+        traced_module_333_444 = torch::jit::load(
+            "/home/zhangye/data1/256/traced_superpoint_model_64_333*444.pt");
+        traced_module_333_444.to(at::kCUDA);
+        break;
+    case 128:
+        traced_module_480_640 = torch::jit::load(
+            "/home/zhangye/data1/traced_superpoint_model_64_480*640.pt");
+        traced_module_480_640.to(at::kCUDA);
+
+        traced_module_400_533 = torch::jit::load(
+            "/home/zhangye/data1/traced_superpoint_model_64_400*533.pt");
+        traced_module_400_533.to(at::kCUDA);
+
+        traced_module_333_444 = torch::jit::load(
+            "/home/zhangye/data1/traced_superpoint_model_64_333*444.pt");
+        traced_module_333_444.to(at::kCUDA);
+        break;
+    case 64:
+        traced_module_480_640 = torch::jit::load(
+            "/home/zhangye/data1/64/traced_superpoint_model_64_480*640.pt");
+        traced_module_480_640.to(at::kCUDA);
+
+        traced_module_400_533 = torch::jit::load(
+            "/home/zhangye/data1/64/traced_superpoint_model_64_400*533.pt");
+        traced_module_400_533.to(at::kCUDA);
+
+        traced_module_333_444 = torch::jit::load(
+            "/home/zhangye/data1/64/traced_superpoint_model_64_333*444.pt");
+        traced_module_333_444.to(at::kCUDA);
+        break;
+    case 32:
+        break;
+    }
 
     mvScaleFactor.resize(nlevels);
     mvLevelSigma2.resize(nlevels);
@@ -592,7 +626,7 @@ void SPextractor::operator()(
     if (nkeypoints == 0)
         _descriptors.release();
     else {
-        _descriptors.create(nkeypoints, 256, CV_32F);
+        _descriptors.create(nkeypoints, desciptor_len, CV_32F);
         descriptors.copyTo(_descriptors.getMat());
     }
 

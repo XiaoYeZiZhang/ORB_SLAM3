@@ -142,8 +142,9 @@ public:
     void GetBoundingBoxCoordsRange();
     bool WriteToMemoryFor3DObject(
         const long long &mem_size, char *mem, const bool is_superpoint);
-    long long
-    GetMemSizeFor3DObject(const std::string &version, const bool is_superpoint);
+    long long GetMemSizeFor3DObject(
+        const unsigned int start_sfm_keyframe_id, const int &descriptor_len,
+        const bool is_superpoint);
     void SetScanBoundingbox_W(const std::vector<Eigen::Vector3d> &boundingbox);
     std::set<Map *> mspMaps;
 
@@ -183,7 +184,7 @@ protected:
     KeyFrameDatabase *mpKeyFrameDB;
     ORBVocabulary *mpORBVocabulary;
 
-    std::string m_3dobject_version_ = "V1.0.0.0";
+    int m_descriptor_size = 32;
     std::vector<MapPoint *> m_saved_mappoint_for_3dobject_;
     std::vector<KeyFrame *> m_saved_keyframe_for_3dobject_;
     std::vector<Eigen::Vector3d> m_boundingbox_w_;

@@ -32,10 +32,12 @@ public:
 private:
     void PreProcess(const std::shared_ptr<ObjRecognition::FrameData> &frm);
 
-    std::vector<PS::MatchSet2D>
-    Find2DMatches(const std::vector<KeyFrame::Ptr> &allKFs);
+    std::vector<PS::MatchSet2D> Find2DMatches(
+        const std::vector<KeyFrame::Ptr> &allKFs,
+        std::vector<KeyFrame::Ptr> &kf_mathceds);
     PS::MatchSet3D Find3DMatch();
-    PS::MatchSet3D Find3DMatchByConnection();
+    PS::MatchSet3D
+    Find3DMatchByConnection(const std::vector<KeyFrame::Ptr> &kf_mathceds);
 
     void PoseOptimize(const std::vector<int> &inliers_3d);
     bool PoseSolver(
