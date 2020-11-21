@@ -400,7 +400,7 @@ public:
         long long &mem_pos, char *mem, const Eigen::Matrix4d &Two,
         const bool is_superpoint);
     long long GetMemSizeFor3DObject(
-        const unsigned int start_sfm_keyframe_id, const int &descriptor_len,
+        const int start_sfm_keyframe_id, const int &descriptor_len,
         const bool is_superpoint);
 
     void SetKeyPoints(std::vector<cv::KeyPoint> &keypoints);

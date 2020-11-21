@@ -145,9 +145,9 @@ void Viewer::DrawDetectorInit() {
     // Define Camera Render Object (for view / scene browsing)
     s_cam_detector = pangolin::OpenGlRenderState(
         pangolin::ProjectionMatrix(
-            1024, 768, mViewpointF, mViewpointF, 512, 389, 0.1, 1000),
+            1024, 768, mViewpointF, mViewpointF, 512, 389, 0.01, 10000),
         pangolin::ModelViewLookAt(
-            mViewpointX, -3.5, mViewpointZ, 0, 0, 0, 0.0, -1.0, 0.0));
+            mViewpointX, mViewpointY, mViewpointZ, 0, 0, 0, 0.0, -1.0, 0.0));
 }
 
 void Viewer::DrawSLAMInit() {
@@ -267,6 +267,7 @@ void Viewer::DrawMatchedMappoints() {
     glColor3f(1.0f, 1.0f, 1.0f);
     glPointSize(9.0);
     glBegin(GL_POINTS);
+
     Eigen::Isometry3f T = Eigen::Isometry3f::Identity();
     T.rotate(m_Row.cast<float>());
     T.pretranslate(m_tow.cast<float>());
@@ -284,10 +285,9 @@ void Viewer::DrawMatchedMappoints() {
 
 void Viewer::ShowConnectedMapPoints() {
     if (m_pointCloud_model) {
-
-        glPointSize(2.0);
+        glPointSize(3.0);
         Eigen::Isometry3f T = Eigen::Isometry3f::Identity();
-        glBegin(GL_POINTS);
+
         for (const auto &mappoint : m_pointCloud_model->GetPointClouds()) {
             if (m_pointCloud_model->m_associated_mappoints_id.count(
                     mappoint->GetID())) {
@@ -295,11 +295,12 @@ void Viewer::ShowConnectedMapPoints() {
             } else {
                 glColor3f(1.0f, 0.0f, 0.0f);
             }
+            glBegin(GL_POINTS);
             Eigen::Vector3f p = mappoint->GetPose().cast<float>();
             p = T.inverse() * p;
             glVertex3f(p.x(), p.y(), p.z());
+            glEnd();
         }
-        glEnd();
     }
 }
 
@@ -307,13 +308,13 @@ void Viewer::ShowConnectedKeyframes() {
     if (m_pointCloud_model) {
         float cam_size = 0.1f;
         for (const auto &keyframe : m_pointCloud_model->GetKeyFrames()) {
-            Eigen::Vector3f color_keyframe;
             if (m_pointCloud_model->m_associated_keyframes_id.count(
                     keyframe->GetID())) {
-                color_keyframe = Eigen::Vector3f(0.0f, 1.0f, 1.0f);
+                glColor3f(0.0f, 1.0f, 1.0f);
             } else {
-                color_keyframe = Eigen::Vector3f(1.0f, 0.0f, 1.0f);
+                glColor3f(1.0f, 0.0f, 1.0f);
             }
+
             Eigen::Matrix3d Rcw;
             Eigen::Vector3d tcw;
             keyframe->GetPose(Rcw, tcw);
@@ -336,7 +337,6 @@ void Viewer::ShowConnectedKeyframes() {
 
             for (int i = 0; i < 5; ++i)
                 m_cam[i] = q * m_cam[i] + center;
-            glColor4fv(&color_keyframe(0));
             glBegin(GL_LINE_LOOP);
             glVertex3fv(m_cam[0].data());
             glVertex3fv(m_cam[1].data());
@@ -607,13 +607,14 @@ void Viewer::Draw() {
             }
 #endif
         } else if (switch_window_flag == 2) {
-#ifdef SUPERPOINT
-#else
             //            d_cam_detector.show = true;
             d_cam_detector.Activate(s_cam_detector);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            pangolin::glDrawAxis(0.6f);
+            glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
+            pangolin::glDraw_z0(0.5f, 100);
             ShowConnectedKeyframes();
             ShowConnectedMapPoints();
-#endif
         }
 
         mpFrameDrawer->DrawFrame(true);

@@ -135,7 +135,7 @@ void MapDrawer::DrawMapPoints_SuperPoint(
 #ifdef SUPERPOINT
     int covisualize_keyframe_num = 7;
 #else
-    int covisualize_keyframe_num = 4;
+    int covisualize_keyframe_num = 0;
 #endif
     const vector<MapPoint *> &vpMPs =
         mpAtlas_superpoint->GetAllMapPoints(covisualize_keyframe_num);

@@ -21,13 +21,13 @@
 
 #include "include/ORBSLAM3/Atlas.h"
 #include "include/ORBSLAM3/Viewer.h"
-
 #include "GeometricCamera.h"
 #include "Pinhole.h"
 #include "KannalaBrandt8.h"
 #include "ObjectRecognition/Utility/Camera.h"
 #include "include/Tools.h"
 #include "mode.h"
+#include <glog/logging.h>
 
 namespace ORB_SLAM3 {
 
@@ -306,7 +306,7 @@ Eigen::Vector3d Atlas::FromWorld2Plane(
 }
 
 long long Atlas::GetMemSizeFor3DObject(
-    const unsigned int start_sfm_keyframe_id, const int &descriptor_len,
+    const int start_sfm_keyframe_id, const int &descriptor_len,
     const bool is_superpoint) {
     // already set boundingbox
     GetBoundingBoxCoordsRange();
@@ -338,7 +338,7 @@ long long Atlas::GetMemSizeFor3DObject(
 #ifdef SUPERPOINT
         int covisualize_keyframe_num = 7;
 #else
-        int covisualize_keyframe_num = 4;
+        int covisualize_keyframe_num = 0;
 #endif
         for (Map *pMi : saved_map) {
             for (MapPoint *pMPi :
@@ -362,6 +362,8 @@ long long Atlas::GetMemSizeFor3DObject(
             LOG(ERROR) << "There is no mappoint in boundingbox, exit";
             return 0;
         }
+        VLOG(0) << "saved mappoints num: "
+                << m_saved_mappoint_for_3dobject_.size();
 
         VLOG(0) << "getmemsize2" << nTotalSize;
         if (!is_superpoint) {

@@ -516,7 +516,7 @@ void LocalMapping::LocalBAForSuperPoint() {
 
 void LocalMapping::TriangulateForSuperPoint(
     const std::vector<ORB_SLAM3::KeyFrame *> &allkeyframes,
-    const int keyframe_num, const unsigned int start_keyframe_id) {
+    const int keyframe_num, const int start_keyframe_id) {
     if (keyframe_num == allkeyframes.size() - 1) {
         return;
     }

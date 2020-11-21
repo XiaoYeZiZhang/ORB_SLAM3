@@ -25,7 +25,7 @@ public:
     bool RunScanner();
     bool SaveMappointFor3DObject(const std::string save_path);
     bool SaveMappointFor3DObject_SuperPoint(
-        const std::string save_path, const unsigned int start_sfm_keyframe_id,
+        const std::string save_path, const int start_sfm_keyframe_id,
         const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM);
     cv::Mat M2l;
     cv::Mat M1r;
@@ -70,12 +70,12 @@ private:
 
 #ifdef SUPERPOINT
     std::shared_ptr<ORB_SLAM3::SPextractor> SPextractor;
-    unsigned int start_sfm_keyframe_id;
+    int start_sfm_keyframe_id;
 #endif
 };
 
 bool TestViewer::SaveMappointFor3DObject_SuperPoint(
-    const std::string save_path, const unsigned int start_sfm_keyframe_id,
+    const std::string save_path, const int start_sfm_keyframe_id,
     const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM) {
     char *buffer = NULL;
     long long buffer_size = 0;
@@ -287,7 +287,8 @@ void TestViewer::ScanDebugMode() {
             // get boundingbox in slam word coords
             m_boundingbox_w = viewerAR.GetScanBoundingbox_W();
 #ifdef SUPERPOINT
-            start_sfm_keyframe_id = SLAM->mpTracker->GetLastKeyFrame()->mnId;
+            start_sfm_keyframe_id =
+                (int)SLAM->mpTracker->GetLastKeyFrame()->mnId;
             VLOG(0) << "start sfm keyframe id: " << start_sfm_keyframe_id;
 #endif
 
@@ -360,7 +361,8 @@ void TestViewer::SfMProcess() {
 
     std::vector<ORB_SLAM3::KeyFrame *> keyframes_for_SfM;
     for (auto keyframe : keyframes_slam) {
-        if (keyframe->mnId < start_sfm_keyframe_id) {
+        if (start_sfm_keyframe_id == -1 ||
+            keyframe->mnId < (long unsigned int)start_sfm_keyframe_id) {
             continue;
         }
         keyframes_for_SfM.emplace_back(keyframe);
@@ -456,7 +458,8 @@ bool TestViewer::RunScanner() {
             m_boundingbox_w = viewerAR.GetScanBoundingbox_W();
 
 #ifdef SUPERPOINT
-            start_sfm_keyframe_id = SLAM->mpTracker->GetLastKeyFrame()->mnId;
+            start_sfm_keyframe_id =
+                (int)SLAM->mpTracker->GetLastKeyFrame()->mnId;
             SLAM->mpAtlas_superpoint->SetStartSfMKeyFrameId(
                 start_sfm_keyframe_id);
             VLOG(0) << "start sfm keyframe id: " << start_sfm_keyframe_id;
@@ -578,7 +581,8 @@ bool TestViewer::RunScanner() {
 #ifdef SUPERPOINT
     std::vector<ORB_SLAM3::KeyFrame *> keyframes_for_SfM;
     for (auto keyframe : keyframes_slam) {
-        if (keyframe->mnId < start_sfm_keyframe_id) {
+        if (start_sfm_keyframe_id == -1 ||
+            keyframe->mnId < (long unsigned int)start_sfm_keyframe_id) {
             continue;
         }
         keyframes_for_SfM.emplace_back(keyframe);

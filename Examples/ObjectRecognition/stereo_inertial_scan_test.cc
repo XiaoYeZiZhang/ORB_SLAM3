@@ -26,7 +26,7 @@ public:
     bool RunScanner();
     bool SaveMappointFor3DObject(const std::string save_path);
     bool SaveMappointFor3DObject_SuperPoint(
-        const std::string save_path, const unsigned int start_sfm_keyframe_id,
+        const std::string save_path, const int start_sfm_keyframe_id,
         const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM);
 
     cv::Mat M2l;
@@ -79,12 +79,12 @@ private:
     std::vector<Eigen::Vector3d> m_boundingbox_w;
 #ifdef SUPERPOINT
     std::shared_ptr<ORB_SLAM3::SPextractor> SPextractor;
-    unsigned int start_sfm_keyframe_id;
+    int start_sfm_keyframe_id;
 #endif
 };
 
 bool TestViewer::SaveMappointFor3DObject_SuperPoint(
-    const std::string save_path, const unsigned int start_sfm_keyframe_id,
+    const std::string save_path, const int start_sfm_keyframe_id,
     const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM) {
     char *buffer = NULL;
     long long buffer_size = 0;
@@ -341,7 +341,8 @@ void TestViewer::ScanDebugMode() {
             }
 
 #ifdef SUPERPOINT
-            start_sfm_keyframe_id = SLAM->mpTracker->GetLastKeyFrame()->mnId;
+            start_sfm_keyframe_id =
+                (int)SLAM->mpTracker->GetLastKeyFrame()->mnId;
             VLOG(0) << "start sfm keyframe id: " << start_sfm_keyframe_id;
 #endif
             VLOG(0) << "fix the boundingbox";
@@ -409,7 +410,8 @@ void TestViewer::SfMProcess() {
 #endif
     std::vector<ORB_SLAM3::KeyFrame *> keyframes_for_SfM;
     for (auto keyframe : keyframes_slam) {
-        if (keyframe->mnId < start_sfm_keyframe_id) {
+        if (start_sfm_keyframe_id == -1 ||
+            keyframe->mnId < (long unsigned int)start_sfm_keyframe_id) {
             continue;
         }
         keyframes_for_SfM.emplace_back(keyframe);
@@ -418,7 +420,8 @@ void TestViewer::SfMProcess() {
     ORB_SLAM3::KeyFrame *keyframe;
     for (size_t i = 0; i < keyframes_slam.size(); i++) {
         ORB_SLAM3::KeyFrame *keyframe = keyframes_slam[i];
-        if (keyframe->mnId < start_sfm_keyframe_id) {
+        if (start_sfm_keyframe_id == -1 ||
+            keyframe->mnId < (long unsigned int)start_sfm_keyframe_id) {
             continue;
         }
 
@@ -656,7 +659,8 @@ bool TestViewer::RunScanner() {
 #ifdef SUPERPOINT
     std::vector<ORB_SLAM3::KeyFrame *> keyframes_for_SfM;
     for (auto keyframe : keyframes_slam) {
-        if (keyframe->mnId < start_sfm_keyframe_id) {
+        if (start_sfm_keyframe_id == -1 ||
+            keyframe->mnId < (long unsigned int)start_sfm_keyframe_id) {
             continue;
         }
         keyframes_for_SfM.emplace_back(keyframe);

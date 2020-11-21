@@ -180,6 +180,7 @@ void KeyFrame::ReadFromMemory(
 #ifdef USE_CONNECT_FOR_DETECTOR
     PutDataToMem(
         &connect_kfs_num, mem + mem_pos, sizeof(connect_kfs_num), mem_pos);
+    VLOG(0) << "keyframe connected keyframe: " << connect_kfs_num;
     for (auto i = 0; i < connect_kfs_num; i++) {
         long unsigned int connect_kf_id;
         PutDataToMem(
@@ -190,6 +191,7 @@ void KeyFrame::ReadFromMemory(
     PutDataToMem(
         &connect_mappoints_num, mem + mem_pos, sizeof(connect_mappoints_num),
         mem_pos);
+    VLOG(0) << "keyframe obs mappoint num: " << connect_mappoints_num;
     for (auto i = 0; i < connect_mappoints_num; i++) {
         long unsigned int connect_mappoint_id;
         PutDataToMem(

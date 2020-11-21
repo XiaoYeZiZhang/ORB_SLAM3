@@ -416,7 +416,7 @@ void ViewerAR::Pick3DPointCloud() {
 #ifdef SUPERPOINT
     int covisualize_keyframe_num = 7;
 #else
-    int covisualize_keyframe_num = 4;
+    int covisualize_keyframe_num = 0;
 #endif
     auto all_mappoints = mpMapDrawer->mpAtlas_superpoint->GetAllMapPoints(
         covisualize_keyframe_num);

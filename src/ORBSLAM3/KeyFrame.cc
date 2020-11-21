@@ -981,7 +981,7 @@ void KeyFrame::SetDesps(const cv::Mat &desps) {
 }
 
 long long KeyFrame::GetMemSizeFor3DObject(
-    const unsigned int start_sfm_keyframe_id, const int &descriptor_len,
+    const int start_sfm_keyframe_id, const int &descriptor_len,
     const bool is_superpoint) {
     long long totalSize = 0;
     totalSize += sizeof(mnId);
@@ -990,10 +990,14 @@ long long KeyFrame::GetMemSizeFor3DObject(
 #ifdef USE_CONNECT_FOR_DETECTOR
     // connect keyframe num
     saved_connected_keyframes_for3DObject.clear();
-    vector<KeyFrame *> covis_keyframes = GetVectorCovisibleKeyFrames();
+    vector<KeyFrame *> covis_keyframes = GetBestCovisibilityKeyFrames(15);
     for (auto keyframe : covis_keyframes) {
-        if (keyframe->mnId > start_sfm_keyframe_id) {
+        if (start_sfm_keyframe_id == -1) {
             saved_connected_keyframes_for3DObject.emplace_back(keyframe);
+        } else {
+            if (keyframe->mnId > (long unsigned int)start_sfm_keyframe_id) {
+                saved_connected_keyframes_for3DObject.emplace_back(keyframe);
+            }
         }
     }
     long unsigned int connect_kfs_size =

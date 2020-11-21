@@ -143,7 +143,7 @@ public:
     bool WriteToMemoryFor3DObject(
         const long long &mem_size, char *mem, const bool is_superpoint);
     long long GetMemSizeFor3DObject(
-        const unsigned int start_sfm_keyframe_id, const int &descriptor_len,
+        const int start_sfm_keyframe_id, const int &descriptor_len,
         const bool is_superpoint);
     void SetScanBoundingbox_W(const std::vector<Eigen::Vector3d> &boundingbox);
     std::set<Map *> mspMaps;
@@ -153,7 +153,7 @@ public:
         m_saved_keyframe_for_3dobject_ = keyframes_for_SfM;
     }
 
-    void SetStartSfMKeyFrameId(const unsigned int keyframe_id) {
+    void SetStartSfMKeyFrameId(const int keyframe_id) {
         start_sfm_keyframe_id = keyframe_id;
     }
     Eigen::Vector3d FromWorld2Plane(
@@ -196,7 +196,7 @@ protected:
     double m_bbx_ymax_p;
     double m_bbx_zmax_p;
 
-    unsigned int start_sfm_keyframe_id;
+    int start_sfm_keyframe_id;
 
 }; // class Atlas
 

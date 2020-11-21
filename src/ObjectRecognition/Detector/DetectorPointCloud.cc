@@ -231,11 +231,10 @@ std::vector<PS::MatchSet2D> PointCloudObjDetector::Find2DMatches(
 
 #else
     TIMER_UTILITY::Timer timer;
-    std::vector<KeyFrame::Ptr> kf_mathceds = mObj->FrameQueryMap(m_frame_cur);
+    kf_mathceds = mObj->FrameQueryMap(m_frame_cur);
     STATISTICS_UTILITY::StatsCollector detector_find_2d_match_time(
         "Time: detector query from map");
     detector_find_2d_match_time.AddSample(timer.Stop());
-
 #endif
     std::vector<PS::MatchSet2D> matches_2ds;
 
@@ -260,7 +259,7 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection(
 #ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
     std::vector<KeyFrame::Ptr> kf_mathceds = kf_mathceds_by_pose;
 #else
-    std::vector<KeyFrame::Ptr> kf_mathceds = mObj->FrameQueryMap(m_frame_cur);
+    std::vector<KeyFrame::Ptr> kf_mathceds = kf_mathceds_by_pose;
 #endif
 
     if (kf_mathceds.empty()) {
@@ -269,20 +268,16 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection(
         kf_mathceds.emplace_back(mObj->GetKeyFrames()[1]);
     }
 
-    std::set<int> associated_keyframe_id;
+    std::set<int> associated_keyframe_ids;
     std::set<MapPoint::Ptr> associated_mappoints;
-    std::set<MapPointIndex> associated_mappoints_id;
+    std::set<MapPointIndex> associated_mappoints_ids;
     for (const KeyFrame::Ptr &kf : kf_mathceds) {
-#ifdef SUPERPOINT
-#else
-        associated_keyframe_id.insert(kf->GetID());
-#endif
         auto connect_kf_ids = kf->connect_kfs;
+        connect_kf_ids.emplace_back(kf->GetID());
+        VLOG(0) << "single image connected keyframes:"
+                << kf->connect_kfs.size();
         for (auto connect_kf_id : connect_kf_ids) {
-#ifdef SUPERPOINT
-#else
-            associated_keyframe_id.insert(connect_kf_id);
-#endif
+            associated_keyframe_ids.insert(connect_kf_id);
             if (mObj->m_mp_keyframes.find(connect_kf_id) !=
                 mObj->m_mp_keyframes.end()) {
                 auto keyframe = mObj->m_mp_keyframes[connect_kf_id];
@@ -290,18 +285,12 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection(
                 for (auto mappoint_id : connected_mappoints_id) {
                     if (mObj->m_pointclouds_map.find(mappoint_id) ==
                         mObj->m_pointclouds_map.end()) {
-                        continue;
-                    }
-                    if (associated_mappoints.count(
-                            mObj->m_pointclouds_map[mappoint_id])) {
+                        // not in the boundingbox
                         continue;
                     }
                     associated_mappoints.insert(
                         mObj->m_pointclouds_map[mappoint_id]);
-#ifdef SUPERPOINT
-#else
-                    associated_mappoints_id.insert(mappoint_id);
-#endif
+                    associated_mappoints_ids.insert(mappoint_id);
                 }
             } else {
                 VLOG(0) << "the keyframe is not exist";
@@ -313,13 +302,18 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection(
     for (const auto &mappoint : associated_mappoints) {
         associated_mappoints_vector.emplace_back(mappoint);
     }
+    VLOG(0) << "associated mappoints num: "
+            << associated_mappoints_vector.size();
+    VLOG(0) << "associated keyframe num: " << associated_keyframe_ids.size();
 
-#ifdef SUPERPOINT
-#else
+    if (associated_mappoints_vector.empty()) {
+        LOG(ERROR) << "there is no connected computed mappoints";
+        return matches_3d;
+    }
+
     // associated_mappoints
-    mObj->SetAssociatedMapPointsByConnection(associated_mappoints_id);
-    mObj->SetAssociatedKeyFrames(associated_keyframe_id);
-#endif
+    mObj->SetAssociatedMapPointsByConnection(associated_mappoints_ids);
+    mObj->SetAssociatedKeyFrames(associated_keyframe_ids);
 
     cv::Mat pcDesp;
 
@@ -898,9 +892,16 @@ void PointCloudObjDetector::Process(
 #ifdef USE_CONNECT_FOR_DETECTOR
     PS::MatchSet3D matchset_3d;
     if (kf_mathceds.empty()) {
+        VLOG(0) << "use without connection";
         matchset_3d = Find3DMatch();
     } else {
         matchset_3d = Find3DMatchByConnection(kf_mathceds);
+        if (matchset_3d.empty()) {
+            matchset_3d = Find3DMatch();
+            VLOG(0) << "use without connection";
+        } else {
+            VLOG(0) << "use connection with" << matchset_3d.size();
+        }
     }
 #else
     PS::MatchSet3D matchset_3d = Find3DMatch();

@@ -203,7 +203,7 @@ System::System(
 #endif
 
 #ifdef OBJECTRECOGNITION
-    mpLocalMapper->SetObjRecogCallback(ObjRecognitionExd::ObjRecogCallback_V3);
+    mpLocalMapper->SetObjRecogCallback(ObjRecognitionExd::ObjRecogCallback);
 #endif
 
     mptLocalMapping = new thread(&ORB_SLAM3::LocalMapping::Run, mpLocalMapper);
@@ -948,7 +948,7 @@ void System::SetScanBoundingbox_W_Superpoint(
 
 bool System::PackAtlasToMemoryFor3DObject_SuperPoint(
     char **buffer_out, long long &buffer_out_len,
-    const unsigned int start_sfm_keyframe_id,
+    const int start_sfm_keyframe_id,
     const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM) {
     int descriptor_len = 64;
     mpAtlas_superpoint->SetSavedKeyFramesFor3DObjet_Superpoint(

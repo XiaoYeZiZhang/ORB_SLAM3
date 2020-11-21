@@ -34,7 +34,7 @@ void TrackerThread::Reset() {
 void TrackerThread::GetCurInputData() {
     std::lock_guard<std::mutex> lck(mInputMutex);
     if (!mInputQueue.empty()) {
-        VLOG(0) << "tracker: queue size: " << mInputQueue.size();
+        VLOG(5) << "tracker: queue size: " << mInputQueue.size();
         mCurData = mInputQueue.back();
         std::queue<std::shared_ptr<FrameData>> emptyQueue;
         std::swap(emptyQueue, mInputQueue);

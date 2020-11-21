@@ -184,7 +184,7 @@ public:
         map<long unsigned int, MapPoint *> &mpMPid);
 
     long long GetMemSizeFor3DObject(
-        const unsigned int start_sfm_keyframe_id, const int &descriptor_len,
+        const int start_sfm_keyframe_id, const int &descriptor_len,
         bool is_superpoint = false);
     void WriteToMemoryFor3DObject(
         long long &mem_pos, char *mem, const int &descriptor_len,
@@ -282,7 +282,7 @@ protected:
     std::mutex mMutexFeatures;
     std::mutex mMutexMap;
 
-    unsigned int m_start_sfm_keyframe_id;
+    int m_start_sfm_keyframe_id;
     unsigned int m_obs_for_sfm = 0;
 };
 

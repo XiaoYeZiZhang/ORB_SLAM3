@@ -610,7 +610,7 @@ void MapPoint::UpdateMap(Map *pMap) {
 }
 
 long long MapPoint::GetMemSizeFor3DObject(
-    const unsigned int start_sfm_keyframe_id, const int &descriptor_len,
+    const int start_sfm_keyframe_id, const int &descriptor_len,
     bool is_superpoint) {
     m_start_sfm_keyframe_id = start_sfm_keyframe_id;
     long long total_size = 0;
@@ -633,7 +633,8 @@ long long MapPoint::GetMemSizeFor3DObject(
     total_size += sizeof(unsigned int);
     m_obs_for_sfm = 0;
     for (auto &curOb : obs) {
-        if (curOb.first->mnId > start_sfm_keyframe_id) {
+        if (start_sfm_keyframe_id == -1 ||
+            curOb.first->mnId > (long unsigned int)start_sfm_keyframe_id) {
             total_size += sizeof(curOb.first);
             total_size += sizeof(get<0>(curOb.second));
             m_obs_for_sfm++;
@@ -674,7 +675,8 @@ void MapPoint::WriteToMemoryFor3DObject(
     Tools::PutDataToMem(mem + mem_pos, &obSize, sizeof(obSize), mem_pos);
 
     for (auto &curOb : obs) {
-        if (curOb.first->mnId > m_start_sfm_keyframe_id) {
+        if (m_start_sfm_keyframe_id == -1 ||
+            curOb.first->mnId > (long unsigned int)m_start_sfm_keyframe_id) {
             Tools::PutDataToMem(
                 mem + mem_pos, &(curOb.first->mnId), sizeof(curOb.first->mnId),
                 mem_pos);

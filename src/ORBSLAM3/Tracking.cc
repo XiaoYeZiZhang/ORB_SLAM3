@@ -20,25 +20,20 @@
  */
 
 #include "include/ORBSLAM3/Tracking.h"
-
 #include <opencv2/core/core.hpp>
-#include <opencv2/features2d/features2d.hpp>
-
 #include "include/ORBSLAM3/ORBmatcher.h"
 #include "include/ORBSLAM3/FrameDrawer.h"
 #include "include/ORBSLAM3/Converter.h"
 #include "include/ORBSLAM3/Initializer.h"
 #include "include/ORBSLAM3/G2oTypes.h"
 #include "include/ORBSLAM3/Optimizer.h"
-#include "include/ORBSLAM3/PnPsolver.h"
-
 #include <iostream>
-
 #include <mutex>
 #include <chrono>
 #include <include/CameraModels/Pinhole.h>
 #include <include/CameraModels/KannalaBrandt8.h>
 #include <include/ORBSLAM3/MLPnPsolver.h>
+#include "mode.h"
 
 using namespace std;
 
@@ -2618,10 +2613,8 @@ bool Tracking::NeedNewKeyFrame() {
         }
     }
 
-    return true;
-
     bool bNeedToInsertClose;
-    bNeedToInsertClose = (nTrackedClose < 100) && (nNonTrackedClose > 70);
+    bNeedToInsertClose = (nTrackedClose < 150) && (nNonTrackedClose > 40);
 
     // Thresholds
     float thRefRatio = 0.75f;
@@ -2641,9 +2634,12 @@ bool Tracking::NeedNewKeyFrame() {
             thRefRatio = 0.90f;
     }
 
+#ifdef SCANNER
+    return mCurrentFrame.mnId >= mnLastKeyFrameId + mMaxFrames - 26;
+#else
     // Condition 1a: More than "MaxFrames" have passed from last keyframe
     // insertion
-    const bool c1a = mCurrentFrame.mnId >= mnLastKeyFrameId + mMaxFrames;
+    const bool c1a = mCurrentFrame.mnId >= mnLastKeyFrameId + mMaxFrames - 20;
     // Condition 1b: More than "MinFrames" have passed and Local Mapping is idle
     const bool c1b =
         ((mCurrentFrame.mnId >= mnLastKeyFrameId + mMinFrames) &&
@@ -2652,35 +2648,30 @@ bool Tracking::NeedNewKeyFrame() {
     const bool c1c =
         mSensor != System::MONOCULAR && mSensor != System::IMU_MONOCULAR &&
         mSensor != System::IMU_STEREO &&
-        (mnMatchesInliers < nRefMatches * 0.25 || bNeedToInsertClose);
+        (mnMatchesInliers < nRefMatches * 0.30 || bNeedToInsertClose);
     // Condition 2: Few tracked points compared to reference keyframe. Lots of
     // visual odometry compared to map matches.
     const bool c2 =
         (((mnMatchesInliers < nRefMatches * thRefRatio ||
            bNeedToInsertClose)) &&
-         mnMatchesInliers > 15);
+         mnMatchesInliers > 10);
 
     // Temporal condition for Inertial cases
     bool c3 = false;
     if (mpLastKeyFrame) {
         if (mSensor == System::IMU_MONOCULAR) {
-            if ((mCurrentFrame.mTimeStamp - mpLastKeyFrame->mTimeStamp) >= 0.5)
+            if ((mCurrentFrame.mTimeStamp - mpLastKeyFrame->mTimeStamp) >= 0.1)
                 c3 = true;
         } else if (mSensor == System::IMU_STEREO) {
-            if ((mCurrentFrame.mTimeStamp - mpLastKeyFrame->mTimeStamp) >= 0.5)
+            if ((mCurrentFrame.mTimeStamp - mpLastKeyFrame->mTimeStamp) >= 0.1)
                 c3 = true;
         }
     }
 
     bool c4 = false;
-    if ((((mnMatchesInliers < 75) && (mnMatchesInliers > 15)) ||
+    if ((((mnMatchesInliers < 90) && (mnMatchesInliers > 10)) ||
          mState == RECENTLY_LOST) &&
-        ((mSensor ==
-          System::IMU_MONOCULAR))) // MODIFICATION_2, originally
-                                   // ((((mnMatchesInliers<75) &&
-                                   // (mnMatchesInliers>15)) ||
-                                   // mState==RECENTLY_LOST) && ((mSensor ==
-                                   // System::IMU_MONOCULAR)))
+        ((mSensor == System::IMU_MONOCULAR)))
         c4 = true;
     else
         c4 = false;
@@ -2694,7 +2685,7 @@ bool Tracking::NeedNewKeyFrame() {
             mpLocalMapper->InterruptBA();
             if (mSensor != System::MONOCULAR &&
                 mSensor != System::IMU_MONOCULAR) {
-                if (mpLocalMapper->KeyframesInQueue() < 3)
+                if (mpLocalMapper->KeyframesInQueue() < 5)
                     return true;
                 else
                     return false;
@@ -2703,6 +2694,7 @@ bool Tracking::NeedNewKeyFrame() {
         }
     } else
         return false;
+#endif
 }
 
 void Tracking::CreateNewKeyFrame() {

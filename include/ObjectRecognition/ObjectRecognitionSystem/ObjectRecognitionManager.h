@@ -65,7 +65,7 @@ private:
 };
 
 static void
-ObjRecogCallback_V3(ObjRecognition::ObjRecogFrameCallbackData *&callback_data) {
+ObjRecogCallback(ObjRecognition::ObjRecogFrameCallbackData *&callback_data) {
     ObjRecognition::ObjRecogFrameCallbackData frame;
     frame.id = (callback_data)->id;
 
