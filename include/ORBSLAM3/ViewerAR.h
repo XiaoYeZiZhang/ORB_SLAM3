@@ -182,6 +182,9 @@ public:
     bool GetStopFlag() {
         return m_is_stop;
     }
+    bool SetStopFlag() {
+        *menu_stop = true;
+    }
     bool GetFixFlag() {
         return m_is_fix;
     }

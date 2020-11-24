@@ -987,7 +987,7 @@ long long KeyFrame::GetMemSizeFor3DObject(
     totalSize += sizeof(mnId);
     VLOG(5) << "getmem key 1: " << totalSize;
 
-#ifdef USE_CONNECT_FOR_DETECTOR
+#ifdef SAVE_CONNECT_FOR_DETECTOR
     // connect keyframe num
     saved_connected_keyframes_for3DObject.clear();
     vector<KeyFrame *> covis_keyframes = GetBestCovisibilityKeyFrames(15);
@@ -1067,7 +1067,7 @@ void KeyFrame::WriteToMemoryFor3DObject(
     VLOG(10) << "keyframe id: " << mnId;
     Tools::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
 
-#ifdef USE_CONNECT_FOR_DETECTOR
+#ifdef SAVE_CONNECT_FOR_DETECTOR
     // connect keyframe id
     long unsigned int connect_kfs_size =
         saved_connected_keyframes_for3DObject.size();

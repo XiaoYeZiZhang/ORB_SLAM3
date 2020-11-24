@@ -414,7 +414,7 @@ void ViewerAR::Pick3DPointCloud() {
     pangolin::OpenGlMatrix projection_matrix = s_cam_SfM.GetProjectionMatrix();
 
 #ifdef SUPERPOINT
-    int covisualize_keyframe_num = 7;
+    int covisualize_keyframe_num = 3;
 #else
     int covisualize_keyframe_num = 0;
 #endif

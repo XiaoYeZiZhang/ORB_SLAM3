@@ -12,7 +12,7 @@ namespace DBoW2 {
 
 // --------------------------------------------------------------------------
 
-int FSUPERPOINT::L=256;
+int FSUPERPOINT::L=64;
 
 void FSUPERPOINT::meanValue(const std::vector<FSUPERPOINT::pDescriptor> &descriptors,
                             FSUPERPOINT::TDescriptor &mean)

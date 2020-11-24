@@ -177,10 +177,10 @@ void UnPackCamCWFromMem(
 void KeyFrame::ReadFromMemory(
     const int descriptor_len, long long &mem_pos, const char *mem) {
     PutDataToMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
-#ifdef USE_CONNECT_FOR_DETECTOR
+#ifdef SAVE_CONNECT_FOR_DETECTOR
     PutDataToMem(
         &connect_kfs_num, mem + mem_pos, sizeof(connect_kfs_num), mem_pos);
-    VLOG(0) << "keyframe connected keyframe: " << connect_kfs_num;
+    // VLOG(0) << "keyframe connected keyframe: " << connect_kfs_num;
     for (auto i = 0; i < connect_kfs_num; i++) {
         long unsigned int connect_kf_id;
         PutDataToMem(
@@ -191,7 +191,7 @@ void KeyFrame::ReadFromMemory(
     PutDataToMem(
         &connect_mappoints_num, mem + mem_pos, sizeof(connect_mappoints_num),
         mem_pos);
-    VLOG(0) << "keyframe obs mappoint num: " << connect_mappoints_num;
+    // VLOG(0) << "keyframe obs mappoint num: " << connect_mappoints_num;
     for (auto i = 0; i < connect_mappoints_num; i++) {
         long unsigned int connect_mappoint_id;
         PutDataToMem(
@@ -304,7 +304,7 @@ bool Object::LoadPointCloud(const long long &mem_size, const char *mem) {
 
     VLOG(5) << "readmemsize1" << mem_pos;
     GetDataFromMem(&mapPointNum, mem + mem_pos, sizeof(mapPointNum), mem_pos);
-    VLOG(5) << "MapPoint num: " << mapPointNum;
+    VLOG(0) << "MapPoint num: " << mapPointNum;
     m_pointclouds.reserve(mapPointNum);
 
     for (int i = 0; i < mapPointNum; i++) {

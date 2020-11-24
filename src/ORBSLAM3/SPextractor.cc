@@ -86,28 +86,28 @@ SPextractor::SPextractor(
     switch (m_descriptor_len) {
     case 256:
         traced_module_480_640 = torch::jit::load(
-            "/home/zhangye/data1/256/traced_superpoint_model_64_480*640.pt");
+            "/home/zhangye/data1/256/traced_superpoint_model_480*640.pt");
         traced_module_480_640.to(at::kCUDA);
 
         traced_module_400_533 = torch::jit::load(
-            "/home/zhangye/data1/256/traced_superpoint_model_64_400*533.pt");
+            "/home/zhangye/data1/256/traced_superpoint_model_400*533.pt");
         traced_module_400_533.to(at::kCUDA);
 
         traced_module_333_444 = torch::jit::load(
-            "/home/zhangye/data1/256/traced_superpoint_model_64_333*444.pt");
+            "/home/zhangye/data1/256/traced_superpoint_model_333*444.pt");
         traced_module_333_444.to(at::kCUDA);
         break;
     case 128:
         traced_module_480_640 = torch::jit::load(
-            "/home/zhangye/data1/traced_superpoint_model_64_480*640.pt");
+            "/home/zhangye/data1/128/traced_superpoint_model_128_480*640.pt");
         traced_module_480_640.to(at::kCUDA);
 
         traced_module_400_533 = torch::jit::load(
-            "/home/zhangye/data1/traced_superpoint_model_64_400*533.pt");
+            "/home/zhangye/data1/128/traced_superpoint_model_128_400*533.pt");
         traced_module_400_533.to(at::kCUDA);
 
         traced_module_333_444 = torch::jit::load(
-            "/home/zhangye/data1/traced_superpoint_model_64_333*444.pt");
+            "/home/zhangye/data1/128/traced_superpoint_model_128_333*444.pt");
         traced_module_333_444.to(at::kCUDA);
         break;
     case 64:
@@ -124,6 +124,17 @@ SPextractor::SPextractor(
         traced_module_333_444.to(at::kCUDA);
         break;
     case 32:
+        traced_module_480_640 = torch::jit::load(
+            "/home/zhangye/data1/32/traced_superpoint_model_32_480*640.pt");
+        traced_module_480_640.to(at::kCUDA);
+
+        traced_module_400_533 = torch::jit::load(
+            "/home/zhangye/data1/32/traced_superpoint_model_32_400*533.pt");
+        traced_module_400_533.to(at::kCUDA);
+
+        traced_module_333_444 = torch::jit::load(
+            "/home/zhangye/data1/32/traced_superpoint_model_32_333*444.pt");
+        traced_module_333_444.to(at::kCUDA);
         break;
     }
 

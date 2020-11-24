@@ -558,9 +558,10 @@ bool TestViewer::RunScanner() {
 
 #ifdef SUPERPOINT
     if (ni >= nImages) {
+        viewerAR.SetStopFlag();
+        SLAM->Shutdown();
         SfMProcess();
         viewerAR.SetSfMFinishFlag();
-        SLAM->Shutdown();
     }
 #endif
 
@@ -598,12 +599,7 @@ bool TestViewer::RunScanner() {
     }
 #endif
 
-    // Save camera trajectory
-    const string kf_file = slam_saved_path + "/kf_" + dataset_name + ".txt";
-    const string f_file = slam_saved_path + "/f_" + dataset_name + ".txt";
-    SLAM->SaveTrajectoryEuRoC(f_file);
-    SLAM->SaveKeyFrameTrajectoryEuRoC(kf_file);
-
+    // need to press finish scan button
     tViewer.join();
     return true;
 }

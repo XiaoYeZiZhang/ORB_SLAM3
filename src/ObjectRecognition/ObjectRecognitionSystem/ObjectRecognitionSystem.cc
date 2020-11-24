@@ -208,8 +208,6 @@ int ObjRecogThread::Process() {
     std::shared_ptr<ObjRecogFrameCallbackData> platformFrame =
         std::static_pointer_cast<ObjRecogFrameCallbackData>(frame_tmp);
 
-    // STSLAMCommon::Timer timer("raw data process");
-
     std::shared_ptr<FrameData> cur_frame = std::make_shared<FrameData>();
 
     cur_frame->mTimeStamp = platformFrame->timestamp;
@@ -223,7 +221,6 @@ int ObjRecogThread::Process() {
 
 #ifdef ORBPOINT
     TIMER_UTILITY::Timer timer_orb;
-    // STSLAMCommon::Timer ORBExtractorTimer("ORBExtractor process");
     SLAMCommon::ORBExtractor orb_extractor(
         Parameters::GetInstance().KObjRecognitionORB_nFeatures, 1.2f, 8, 20, 7);
     orb_extractor.DetectKeyPoints(cur_frame->img, cur_frame->mKpts);
@@ -238,7 +235,6 @@ int ObjRecogThread::Process() {
     TIMER_UTILITY::Timer timer_superpoint;
     (*SPextractor)(
         cur_frame->img, cv::Mat(), cur_frame->mKpts, cur_frame->mDesp);
-    // VLOG(0) << "Superpoint per frame: " << cur_frame->mKpts.size();
     STATISTICS_UTILITY::StatsCollector SUPERPOINT_objRecognition(
         "Time: SUPERPOINT extractor for objRecognition");
     SUPERPOINT_objRecognition.AddSample(timer_superpoint.Stop());
@@ -259,7 +255,6 @@ int ObjRecogThread::Process() {
 
     SetInfo();
 
-    // timer.Stop();
     return ret;
 }
 

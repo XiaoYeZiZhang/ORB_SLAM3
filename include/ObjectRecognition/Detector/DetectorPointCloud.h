@@ -76,6 +76,8 @@ private:
     float reproj_error;
 
     bool has_good_result;
+
+    std::vector<MapPoint::Ptr> associated_mappoints_vector;
 };
 
 } // namespace ObjRecognition

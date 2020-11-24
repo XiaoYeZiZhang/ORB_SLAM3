@@ -148,7 +148,6 @@ int ObjRecongManager::LoadDic(char const *buffer, int buffer_len) {
     }
 
     int voc_ok = read_compressed_voc(buffer, buffer_len, voc_.get());
-    // VLOG(10) << "after load voc, cost " << timer.Stop();
     if (voc_ok == -1) {
         VLOG(0) << "BackEndSystem: voc parse failed.";
     } else if (voc_ok == -2) {

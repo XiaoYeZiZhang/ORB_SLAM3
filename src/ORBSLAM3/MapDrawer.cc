@@ -133,7 +133,7 @@ void MapDrawer::DrawMapPoints_SuperPoint(
     const std::vector<double> &boundingbox_p_corner,
     const std::set<MapPoint *> &mappoint_picked, const Eigen::Matrix4d &Twp) {
 #ifdef SUPERPOINT
-    int covisualize_keyframe_num = 7;
+    int covisualize_keyframe_num = 3;
 #else
     int covisualize_keyframe_num = 0;
 #endif

@@ -285,14 +285,15 @@ void Viewer::DrawMatchedMappoints() {
 
 void Viewer::ShowConnectedMapPoints() {
     if (m_pointCloud_model) {
-        glPointSize(3.0);
         Eigen::Isometry3f T = Eigen::Isometry3f::Identity();
 
         for (const auto &mappoint : m_pointCloud_model->GetPointClouds()) {
             if (m_pointCloud_model->m_associated_mappoints_id.count(
                     mappoint->GetID())) {
+                glPointSize(3.0);
                 glColor3f(0.0f, 1.0f, 0.0f);
             } else {
+                glPointSize(2.0);
                 glColor3f(1.0f, 0.0f, 0.0f);
             }
             glBegin(GL_POINTS);
@@ -310,52 +311,51 @@ void Viewer::ShowConnectedKeyframes() {
         for (const auto &keyframe : m_pointCloud_model->GetKeyFrames()) {
             if (m_pointCloud_model->m_associated_keyframes_id.count(
                     keyframe->GetID())) {
-                glColor3f(0.0f, 1.0f, 1.0f);
+                glColor4f(0.0f, 1.0f, 1.0f, 1.0f);
+                Eigen::Matrix3d Rcw;
+                Eigen::Vector3d tcw;
+                keyframe->GetPose(Rcw, tcw);
+
+                Eigen::Matrix3d Rwc = Rcw.transpose();
+                Eigen::Vector3d twc = -Rwc * tcw;
+
+                Eigen::Vector3f p = twc.cast<float>();
+                Eigen::Quaterniond Qwc(Rwc);
+
+                const Eigen::Vector3f &center = p;
+                Eigen::Quaternionf q = Qwc.cast<float>();
+                const float length = cam_size;
+                Eigen::Vector3f m_cam[5] = {
+                    Eigen::Vector3f(0.0f, 0.0f, 0.0f),
+                    Eigen::Vector3f(-length, -length, length),
+                    Eigen::Vector3f(-length, length, length),
+                    Eigen::Vector3f(length, length, length),
+                    Eigen::Vector3f(length, -length, length)};
+
+                for (int i = 0; i < 5; ++i)
+                    m_cam[i] = q * m_cam[i] + center;
+                glBegin(GL_LINE_LOOP);
+                glVertex3fv(m_cam[0].data());
+                glVertex3fv(m_cam[1].data());
+                glVertex3fv(m_cam[4].data());
+                glVertex3fv(m_cam[3].data());
+                glVertex3fv(m_cam[2].data());
+                glEnd();
+                glBegin(GL_LINES);
+                glVertex3fv(m_cam[0].data());
+                glVertex3fv(m_cam[3].data());
+                glEnd();
+                glBegin(GL_LINES);
+                glVertex3fv(m_cam[0].data());
+                glVertex3fv(m_cam[4].data());
+                glEnd();
+                glBegin(GL_LINES);
+                glVertex3fv(m_cam[1].data());
+                glVertex3fv(m_cam[2].data());
+                glEnd();
             } else {
-                glColor3f(1.0f, 0.0f, 1.0f);
+                glColor4f(1.0f, 0.0f, 1.0f, 0.1f);
             }
-
-            Eigen::Matrix3d Rcw;
-            Eigen::Vector3d tcw;
-            keyframe->GetPose(Rcw, tcw);
-
-            Eigen::Matrix3d Rwc = Rcw.transpose();
-            Eigen::Vector3d twc = -Rwc * tcw;
-
-            Eigen::Vector3f p = tcw.cast<float>();
-            Eigen::Quaterniond Qwc(Rwc);
-
-            const Eigen::Vector3f &center = p;
-            Eigen::Quaternionf q = Qwc.cast<float>();
-            const float length = cam_size;
-            Eigen::Vector3f m_cam[5] = {
-                Eigen::Vector3f(0.0f, 0.0f, 0.0f),
-                Eigen::Vector3f(-length, -length, length),
-                Eigen::Vector3f(-length, length, length),
-                Eigen::Vector3f(length, length, length),
-                Eigen::Vector3f(length, -length, length)};
-
-            for (int i = 0; i < 5; ++i)
-                m_cam[i] = q * m_cam[i] + center;
-            glBegin(GL_LINE_LOOP);
-            glVertex3fv(m_cam[0].data());
-            glVertex3fv(m_cam[1].data());
-            glVertex3fv(m_cam[4].data());
-            glVertex3fv(m_cam[3].data());
-            glVertex3fv(m_cam[2].data());
-            glEnd();
-            glBegin(GL_LINES);
-            glVertex3fv(m_cam[0].data());
-            glVertex3fv(m_cam[3].data());
-            glEnd();
-            glBegin(GL_LINES);
-            glVertex3fv(m_cam[0].data());
-            glVertex3fv(m_cam[4].data());
-            glEnd();
-            glBegin(GL_LINES);
-            glVertex3fv(m_cam[1].data());
-            glVertex3fv(m_cam[2].data());
-            glEnd();
         }
     }
 }
@@ -483,9 +483,9 @@ void Viewer::Draw() {
 
             d_cam_slam.Activate(s_cam_slam);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            pangolin::glDrawAxis(0.6f);
-            glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
-            pangolin::glDraw_z0(0.5f, 100);
+            // pangolin::glDrawAxis(0.6f);
+            // glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
+            // pangolin::glDraw_z0(0.5f, 100);
 
             mpMapDrawer->DrawCurrentCamera(Twc);
             if (*menuShowKeyFrames || *menuShowGraph || *menuShowInertialGraph)
@@ -526,8 +526,6 @@ void Viewer::Draw() {
 
             if (*menuStop) {
                 is_stop = true;
-                SetFinish();
-                mpSystem->Shutdown();
                 break;
             }
 
@@ -610,9 +608,9 @@ void Viewer::Draw() {
             //            d_cam_detector.show = true;
             d_cam_detector.Activate(s_cam_detector);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            pangolin::glDrawAxis(0.6f);
-            glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
-            pangolin::glDraw_z0(0.5f, 100);
+            // pangolin::glDrawAxis(0.6f);
+            // glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
+            // pangolin::glDraw_z0(0.5f, 100);
             ShowConnectedKeyframes();
             ShowConnectedMapPoints();
         }

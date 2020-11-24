@@ -82,6 +82,7 @@ private:
     bool m_first_detection_good;
 
     float reproj_error;
+    std::vector<cv::Point2d> opticalflow_point2ds_tmp;
 };
 } // namespace ObjRecognition
 #endif // ORB_SLAM3_TRACKERPOINTCLOUD_H

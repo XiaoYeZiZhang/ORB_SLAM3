@@ -270,7 +270,7 @@ void PointCloudModelViewer::DrawMapPoints_SuperPoint(
     for (auto mappoint : point_cloud_object_->GetPointClouds()) {
         Eigen::Vector3d pos = mappoint->GetPose();
         if (mappoint_picked.count(mappoint)) {
-            glColor3f(0.0, 0.0, 1.0);
+            glColor3f(0.0, 0.0, 0.0);
             glVertex3f(pos.x(), pos.y(), pos.z());
         } else {
             glColor3f(0.0, 1.0, 0.0);
@@ -288,7 +288,7 @@ void PointCloudModelViewer::Draw(const int w, const int h) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         d_cam_ShowMappoint.Activate(s_cam_ShowMappoint);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        pangolin::glDrawAxis(0.6f);
+        // pangolin::glDrawAxis(0.6f);
         DrawSelected2DRegion(w, h);
         Pick3DPointCloud();
         DrawMapPoints_SuperPoint(m_pointClouds_picked);

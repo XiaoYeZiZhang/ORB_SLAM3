@@ -353,15 +353,14 @@ void TestViewer::ObjectResultParse(
     const char *info_char = m_objrecog_result.info;
     objrecog_info_str = std::string(info_char);
     SaveObjRecogResult();
-    // ObjectResultTransmitMultiTabs();
 }
 
 bool TestViewer::RunObjectRecognition() {
     cv::Mat imLeft, imRight, imLeftRect, imRightRect;
 
     int proccIm = 0;
-
     for (int ni = 0; ni < nImages; ni++, proccIm++) {
+        std::cout << ni << "/" << nImages << std::endl;
         if (SLAM->mpViewer->GetIsStopFlag()) {
             break;
         }
@@ -436,32 +435,24 @@ bool TestViewer::RunObjectRecognition() {
         if (ttrack < T)
             usleep((T - ttrack) * 1e6); // 1e6
     }
+    std::cout << "finish!" << std::endl;
 
 #ifdef OBJECTRECOGNITION
-    //    ObjRecognition::GlobalSummary::SaveAllPoses(m_result_dir);
-
     std::string statics_result_filename;
 #ifdef SUPERPOINT
-    statics_result_filename = "statics_result_SUPERPOINT.txt";
+    statics_result_filename =
+        mappoint_filename_superpoint + "_result_SUPERPOINT.txt";
 #else
-    statics_result_filename = "statics_result_ORB.txt";
+    statics_result_filename = mappoint_filename + "_result_ORB.txt";
 #endif
     ObjRecognition::GlobalSummary::SaveStatics(
         slam_saved_path, STATISTICS_UTILITY::Statistics::Print(),
         statics_result_filename);
 
-    /*ObjRecognition::GlobalSummary::SaveTimer(
-        m_result_dir, STSLAMCommon::Timing::Print());*/
-
     ObjRecognitionExd::ObjRecongManager::Instance().Destroy();
 #endif
 
     SLAM->Shutdown();
-
-    //    const string kf_file = slam_saved_path + "/kf_" + dataset_name +
-    //    ".txt"; const string f_file = slam_saved_path + "/f_" + dataset_name +
-    //    ".txt"; SLAM->SaveTrajectoryEuRoC(f_file);
-    //    SLAM->SaveKeyFrameTrajectoryEuRoC(kf_file);
     return true;
 }
 

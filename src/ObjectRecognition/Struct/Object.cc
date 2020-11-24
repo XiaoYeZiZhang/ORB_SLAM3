@@ -4,6 +4,7 @@
 
 #include "Struct/Object.h"
 #include <glog/logging.h>
+#include "mode.h"
 
 namespace ObjRecognition {
 
@@ -149,12 +150,22 @@ void ObjectBase::SetPose(
     const Eigen::Vector3d &tcw, const Eigen::Matrix3d &Rwo,
     const Eigen::Vector3d &two) {
     std::lock_guard<std::mutex> lck(mPoseMutex);
+
+#ifdef USE_NO_METHOD_FOR_FUSE
+    if (state == TrackingGood || state == TrackingBad ||
+        state == TrackingUnreliable) {
+        tracker_state_.SetData(Rwo, Rcw, two, tcw, state, frmIndex, timeStamp);
+    } else {
+        detector_state_.SetData(Rwo, Rcw, two, tcw, state, frmIndex, timeStamp);
+    }
+#else
     if (state == TrackingGood || state == TrackingBad ||
         state == TrackingUnreliable) {
         TrackingStateSetPose(state, frmIndex, timeStamp, Rcw, tcw, Rwo, two);
     } else {
         DetectionStateSetPose(state, frmIndex, timeStamp, Rcw, tcw, Rwo, two);
     }
+#endif
 }
 
 void ObjectBase::GetPose(
@@ -163,6 +174,14 @@ void ObjectBase::GetPose(
     Eigen::Vector3d &two) {
     std::lock_guard<std::mutex> lck(mPoseMutex);
 
+#ifdef USE_NO_METHOD_FOR_FUSE
+    if (tracker_state_.GetState() != TrackingBad) {
+        tracker_state_.GetData(Rwo, Rcw, two, tcw, state, frmIndex, timeStamp);
+    } else {
+        detector_state_.GetData(Rwo, Rcw, two, tcw, state, frmIndex, timeStamp);
+    }
+
+#else
     if (tracker_state_.GetState() == TrackingGood ||
         (tracker_state_.GetState() == TrackingUnreliable &&
          detector_state_.GetState() != DetectionGood)) {
@@ -177,6 +196,7 @@ void ObjectBase::GetPose(
         VLOG(5) << "Get Detector Pose: " << Rwo;
         state = DetectionBad;
     }
+#endif
 }
 
 std::vector<Eigen::Vector3d> ObjectBase::GetBoundingBox() {

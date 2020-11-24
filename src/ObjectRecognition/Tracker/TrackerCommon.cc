@@ -132,7 +132,6 @@ int SearchByProjection(
     const std::vector<cv::KeyPoint> &keyPoints, const cv::Mat &descriptors,
     std::vector<bool> &matchKeyPointsState,
     std::map<int, MapPointIndex> &matches2dTo3d) {
-    // STSLAMCommon::Timer timer_projection("Search by projection");
 
     const int width = CameraIntrinsic::GetInstance().Width();
     const int height = CameraIntrinsic::GetInstance().Height();
@@ -195,7 +194,6 @@ int SearchByProjection(
         j++;
     }
     // TODO(Zhangye) :check the orientation????
-    // timer_projection.Stop();
     VLOG(20) << ("PointCloudObjTracker::SearchByProjection done");
     return matches;
 }
@@ -207,7 +205,6 @@ int SearchByProjection_Superpoint(
     const std::vector<cv::KeyPoint> &keyPoints, const cv::Mat &descriptors,
     std::vector<bool> &matchKeyPointsState,
     std::map<int, MapPointIndex> &matches2dTo3d) {
-    // STSLAMCommon::Timer timer_projection("Search by projection");
 
     const int width = CameraIntrinsic::GetInstance().Width();
     const int height = CameraIntrinsic::GetInstance().Height();
@@ -270,7 +267,6 @@ int SearchByProjection_Superpoint(
         j++;
     }
     // TODO(Zhangye) :check the orientation????
-    // timer_projection.Stop();
     VLOG(20) << ("PointCloudObjTracker::SearchByProjection done");
     return matches;
 }

@@ -47,7 +47,6 @@ public:
     int kTrackerProjectSuccessNumTh;
     int kTrackerMatchPointsNumTh;
     int kTrackerPnPInliersGoodNumTh;
-    int kTrackerPnP3DInliersGoodNumTh;
     int kTrackerPnPInliersUnreliableNumTh;
 
     int kDetectorKNNMatchNumTh;

@@ -6,7 +6,6 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
 #include "ORBSLAM3/SPextractor.h"
-#include "Utility/Parameters.h"
 #include <glog/logging.h>
 #include <chrono>
 using namespace std::chrono;
@@ -14,7 +13,6 @@ void FindMatchByKNN(
     const std::vector<cv::KeyPoint> keypoints1,
     const std::vector<cv::KeyPoint> keypoints2, const cv::Mat &frmDesp,
     const cv::Mat &pcDesp, std::vector<cv::DMatch> &goodMatches) {
-    // STSLAMCommon::Timer detectionFindMatch("detection find match by KNN");
     std::vector<cv::DMatch> matches;
     std::vector<std::vector<cv::DMatch>> knnMatches;
     // use L2 norm instead of Hamming distance
@@ -78,7 +76,6 @@ void FindMatchByKNN(
 void FindMatchByKNN_opencv(
     const cv::Mat &frmDesp, const cv::Mat &pcDesp,
     std::vector<cv::DMatch> &goodMatches) {
-    // STSLAMCommon::Timer detectionFindMatch("detection find match by KNN");
     std::vector<cv::DMatch> matches;
     std::vector<std::vector<cv::DMatch>> knnMatches;
     // use L2 norm instead of Hamming distance
@@ -116,8 +113,6 @@ void FindMatchByKNN_opencv(
             goodMatches.push_back(matches[i]);
         }
     }
-    // VLOG(10) << "detection find match by KNN time: "
-    //       << detectionFindMatch.Stop();
 }
 
 int main(int argc, char *argv[]) {

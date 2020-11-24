@@ -2635,8 +2635,10 @@ bool Tracking::NeedNewKeyFrame() {
     }
 
 #ifdef SCANNER
-    return mCurrentFrame.mnId >= mnLastKeyFrameId + mMaxFrames - 26;
+    return mCurrentFrame.mnId >= mnLastKeyFrameId + mMaxFrames - 28;
 #else
+    return mCurrentFrame.mnId >= mnLastKeyFrameId + mMaxFrames - 27;
+    /*
     // Condition 1a: More than "MaxFrames" have passed from last keyframe
     // insertion
     const bool c1a = mCurrentFrame.mnId >= mnLastKeyFrameId + mMaxFrames - 20;
@@ -2694,6 +2696,7 @@ bool Tracking::NeedNewKeyFrame() {
         }
     } else
         return false;
+        */
 #endif
 }
 

@@ -96,7 +96,6 @@ void FindMatchByKNN_Homography(
     const std::vector<cv::KeyPoint> &keypoints2, const cv::Mat &frmDesp,
     const cv::Mat &pcDesp, std::vector<cv::DMatch> &goodMatches,
     const float ratio_threshold) {
-    // STSLAMCommon::Timer detectionFindMatch("detection find match by KNN");
     std::vector<cv::DMatch> matches;
     std::vector<std::vector<cv::DMatch>> knnMatches;
     cv::BFMatcher matcher(cv::NormTypes::NORM_HAMMING);
@@ -134,9 +133,6 @@ void FindMatchByKNN_Homography(
             VLOG(0) << "detector best dist bigger than 200";
         }
     }
-    // VLOG(10) << "detection find match by KNN time: "
-    //       << detectionFindMatch.Stop();
-
     std::vector<cv::Point2f> srcPoints(goodMatches.size());
     std::vector<cv::Point2f> dstPoints(goodMatches.size());
 
@@ -145,16 +141,18 @@ void FindMatchByKNN_Homography(
         dstPoints[i] = keypoints1[goodMatches[i].queryIdx].pt;
     }
 
-    std::vector<uchar> inliersMask(srcPoints.size());
-    auto homography =
-        findHomography(srcPoints, dstPoints, CV_FM_RANSAC, 6.0, inliersMask);
+    if (!srcPoints.empty()) {
+        std::vector<uchar> inliersMask(srcPoints.size());
+        auto homography = findHomography(
+            srcPoints, dstPoints, CV_FM_RANSAC, 6.0, inliersMask);
 
-    std::vector<cv::DMatch> inliers;
-    for (size_t i = 0; i < inliersMask.size(); i++) {
-        if (inliersMask[i])
-            inliers.push_back(matches[i]);
+        std::vector<cv::DMatch> inliers;
+        for (size_t i = 0; i < inliersMask.size(); i++) {
+            if (inliersMask[i])
+                inliers.push_back(matches[i]);
+        }
+        goodMatches.swap(inliers);
     }
-    goodMatches.swap(inliers);
 }
 
 void FindMatchByKNN(
@@ -227,7 +225,6 @@ void FindMatchByKNN_SuperPoint(
     for (size_t i = 0; i < matches.size(); i++) {
         goodMatches.push_back(matches[i]);
     }
-    return;
 }
 
 void FindMatchByKNN_SuperPoint_Homography(
