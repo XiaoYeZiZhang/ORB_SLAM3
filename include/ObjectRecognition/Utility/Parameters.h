@@ -47,13 +47,15 @@ public:
     int kTrackerProjectSuccessNumTh;
     int kTrackerMatchPointsNumTh;
     int kTrackerPnPInliersGoodNumTh;
+    int kTrackerPnPInliersGoodNumTh_PoseSolver;
     int kTrackerPnPInliersUnreliableNumTh;
 
     int kDetectorKNNMatchNumTh;
     int kDetectorPnPInliersGoodNumTh;
     int kDetectorPnPInliersUnreliableNumTh;
     int kDetectorPnPInliersGoodWithKFNumTh;
-    int kDetectorPnP3DInliersGoodWithKFNumTh;
+    int kDetectorPnPInliersGoodWithKFNumTh_PoseSolver;
+
     int kDetectorPnPInliersUnreliableWithKFNumTh;
 
     double KORBExtractor_scaleFactor;

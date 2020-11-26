@@ -336,7 +336,7 @@ long long Atlas::GetMemSizeFor3DObject(
         sort(saved_map.begin(), saved_map.end(), compFunctor());
 
 #ifdef SUPERPOINT
-        int covisualize_keyframe_num = 3;
+        int covisualize_keyframe_num = 4;
 #else
         int covisualize_keyframe_num = 0;
 #endif

@@ -23,9 +23,6 @@ void SuperPointMatcher::FindMatchByBruteForce(
     cv::BFMatcher matcher(cv::NormTypes::NORM_L2, true);
     matcher.match(frmDesp, pcDesp, matches);
 
-    VLOG(15) << "after distance Ratio matches size: " << matches.size();
-
-    const int kgoodMatchesThreshold = 200;
     for (auto &match : matches) {
         goodMatches.push_back(match);
     }
@@ -92,33 +89,36 @@ int SuperPointMatcher::SearchForTriangulation(
         const size_t idx1 = good_matches[i].queryIdx;
         MapPoint *pMP1 = pKF1->GetSuperpointMapPoint(idx1);
         // If there is already a MapPoint skip
-        if (pMP1)
+        if (pMP1) {
             continue;
+        }
         const cv::KeyPoint &kp1 = pKF1->mvKeysUn_superpoint[idx1];
         const cv::Mat &d1 = pKF1->mDescriptors_superpoint.row(idx1);
 
-        float bestDist = TH_LOW;
         int bestIdx2 = -1;
         size_t idx2 = good_matches[i].trainIdx;
         MapPoint *pMP2 = pKF2->GetSuperpointMapPoint(idx2);
 
         // If we have already matched or there is a MapPoint skip
-        if (vbMatched2[idx2] || pMP2)
+        if (vbMatched2[idx2] || pMP2) {
             continue;
+        }
 
         const cv::Mat &d2 = pKF2->mDescriptors_superpoint.row(idx2);
         const float dist = DescriptorDistance(d1, d2);
 
-        if (dist > TH_LOW || dist > bestDist)
+        if (dist > 0.8) {
             continue;
+        }
 
         const cv::KeyPoint &kp2 = pKF2->mvKeysUn_superpoint[idx2];
 
         const float distex = ex - kp2.pt.x;
         const float distey = ey - kp2.pt.y;
         if (distex * distex + distey * distey <
-            100 * pKF2->mvScaleFactors_suerpoint[kp2.octave])
+            100 * pKF2->mvScaleFactors_suerpoint[kp2.octave]) {
             continue;
+        }
 
         if (CheckDistEpipolarLine(kp1, kp2, F12, pKF2)) {
             bestIdx2 = idx2;

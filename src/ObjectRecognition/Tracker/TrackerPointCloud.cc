@@ -432,27 +432,23 @@ bool PointCloudObjTracker::PoseSolver(
     std::vector<std::vector<int>> inliers_2d;
     const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
 
-    const float kPnpReprojectionError = 6.5;
-    Eigen::Vector3d gravity = Eigen::Vector3d(0.0, 0.0, 1.0);
-    Eigen::Vector3d gravityCamera = Rcw_cur_ * gravity;
-
+    const float kPnpReprojectionError = 4.0;
     options.focal_length = static_cast<float>(Kcv.at<double>(0, 0));
     options.max_reproj_err = kPnpReprojectionError / options.focal_length;
     options.enable_2d_solver = false;
     options.enable_3d_solver = true;
     options.ransac_iterations = 100;
     options.ransac_confidence = 0.90;
-    options.gravity_dir = gravityCamera.cast<float>();
-    options.gravity_dir_max_err_deg = 180;
-    options.enable_gravity_solver = true;
+    options.enable_gravity_solver = false;
     options.prefer_pure_2d_solver = false;
     options.try_refine_translation_before_optimization_for_2d_only_matches =
-        false;
+        true;
 
     const int kPnpMinMatchesNum = 0;
-    // 80
-    const int kPnpMinInlierNum =
-        Parameters::GetInstance().kTrackerPnPInliersGoodNumTh;
+
+    int kPnpMinInlierNum =
+        Parameters::GetInstance().kTrackerPnPInliersGoodNumTh_PoseSolver;
+
     const double kPnpMinInlierRatio = 0.0;
     options.callbacks.emplace_back(PS::EarlyBreakBy3DInlierCounting(
         kPnpMinMatchesNum, kPnpMinInlierNum, kPnpMinInlierRatio));
@@ -496,9 +492,9 @@ void PointCloudObjTracker::PnPResultHandle() {
 #endif
 
 #ifdef USE_INLIER
-    const int KTrackerPnPInliersGoodTh =
+    int KTrackerPnPInliersGoodTh =
         Parameters::GetInstance().kTrackerPnPInliersGoodNumTh;
-    const int KTrackerPnPInliersUnreliableTh =
+    int KTrackerPnPInliersUnreliableTh =
         Parameters::GetInstance().kTrackerPnPInliersUnreliableNumTh;
 
     if (Rwo_cur_ == Eigen::Matrix3d::Identity() &&
@@ -506,11 +502,30 @@ void PointCloudObjTracker::PnPResultHandle() {
         m_tracker_state = TrackingBad;
     } else {
         // TODO(zhangye) check the threshold
+
+#ifdef OBJECT_BOX
 #ifdef SUPERPOINT
-        int proj_success_num = m_projection_matches2dTo3d_cur.size() * 0.13;
+        int proj_success_num = m_match_points_projection_num * 0.15;
 #else
-        int proj_success_num = 60;
+        int proj_success_num = m_match_points_projection_num * 0.10;
 #endif
+#endif
+#ifdef OBJECT_BAG
+#ifdef SUPERPOINT
+        int proj_success_num = 70;
+#else
+        int proj_success_num = m_match_points_projection_num * 0.12;
+#endif
+#endif
+
+#ifdef OBJECT_TOY
+#ifdef SUPERPOINT
+        int proj_success_num = 70;
+#else
+        int proj_success_num = 70;
+#endif
+#endif
+
         if (m_pnp_solver_result &&
             m_pnp_inliers_num > KTrackerPnPInliersGoodTh &&
             m_pnp_inliers_projection_num > proj_success_num) {

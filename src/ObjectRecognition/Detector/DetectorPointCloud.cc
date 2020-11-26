@@ -541,10 +541,8 @@ bool PointCloudObjDetector::PoseSolver(
     pnp_inliers_3d_num_ = 0;
     pnp_inliers_2d_num_ = 0;
 
-    const float kPnpReprojectionError = 6.5;
+    const float kPnpReprojectionError = 4.0;
     const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
-    Eigen::Vector3d gravity = Eigen::Vector3d(0.0, 0.0, 1.0);
-    Eigen::Vector3d gravityCamera = Rcw_cur_ * gravity;
 
     options.focal_length = static_cast<float>(Kcv.at<double>(0, 0));
     options.max_reproj_err = kPnpReprojectionError / options.focal_length;
@@ -555,23 +553,26 @@ bool PointCloudObjDetector::PoseSolver(
     options.enable_3d_solver = true;
     options.ransac_iterations = 100;
     options.ransac_confidence = 0.85;
-    options.gravity_dir = gravityCamera.cast<float>();
-    options.gravity_dir_max_err_deg = 180;
-    options.enable_gravity_solver = true;
+    options.enable_gravity_solver = false;
     options.prefer_pure_2d_solver = false;
     options.try_refine_translation_before_optimization_for_2d_only_matches =
-        false;
+        true;
     const int kPnpMinMatchesNum = 0;
 
 #ifdef OBJ_WITH_KF
-    // 50
-    const int kPnpMinInlierNum =
-        Parameters::GetInstance().kDetectorPnPInliersGoodWithKFNumTh;
+    int kPnpMinInlierNum =
+        Parameters::GetInstance().kDetectorPnPInliersGoodWithKFNumTh_PoseSolver;
 #else
-    const int kPnpMinInlierNum =
+    int kPnpMinInlierNum =
         Parameters::GetInstance().kDetectorPnPInliersGoodNumTh;
 #endif
 
+#ifdef SUPERPOINT
+#ifdef OBJECT_TOY
+    kPnpMinInlierNum = knn_match_num_ * 0.13;
+#endif
+
+#endif
     const double kPnpMinInlierRatio = 0.0;
     options.callbacks.emplace_back(PS::EarlyBreakBy3DInlierCounting(
         kPnpMinMatchesNum, kPnpMinInlierNum, kPnpMinInlierRatio));
@@ -579,15 +580,6 @@ bool PointCloudObjDetector::PoseSolver(
 
     pnp_solver_result_ = PS::Ransac(
         options, matches_3d, matches_2d, &T, &inliers_3d, &inliers_2d);
-
-    //    VLOG(0) << "detectionPoseSolver 3d matches size: " <<
-    //    matches_3d.size(); VLOG(0) << "detectionPoseSolver 3d inliers size: "
-    //    << inliers_3d.size(); for (int i = 0; i < matches_2d.size(); i++) {
-    //        VLOG(0) << "detectionPoseSolver 2d matches size: "
-    //                << matches_2d.at(i).size();
-    //        VLOG(0) << "detectionPoseSolver 2d inliers size: "
-    //                << inliers_2d.at(i).size();
-    //    }
 
     Eigen::Matrix3d Rco = T.m_R.cast<double>();
     Eigen::Vector3d tco = T.m_t.cast<double>();
@@ -636,10 +628,29 @@ void PointCloudObjDetector::PnPResultHandle() {
     const int kDetectorPnPInliersThUnreliable =
         Parameters::GetInstance().kDetectorPnPInliersUnreliableNumTh;
 #endif
+
+#ifdef OBJECT_BOX
 #ifdef SUPERPOINT
-    int proj_success_num = 40;
+    int proj_success_num = 80;
 #else
-    int proj_success_num = knn_match_num_ * 0.5;
+    int proj_success_num = knn_match_num_ * 0.2;
+#endif
+#endif
+
+#ifdef OBJECT_BAG
+#ifdef SUPERPOINT
+    int proj_success_num = 60;
+#else
+    int proj_success_num = knn_match_num_ * 0.2;
+#endif
+#endif
+
+#ifdef OBJECT_TOY
+#ifdef SUPERPOINT
+    int proj_success_num = knn_match_num_ * 0.2;
+#else
+    int proj_success_num = knn_match_num_ * 0.2;
+#endif
 #endif
 
 #ifdef USE_OLNY_SCAN_MAPPOINT

@@ -6,8 +6,8 @@
 #define ORB_SLAM3_MODE_H
 
 // mode
-#define SCANNER
-//#define OBJECTRECOGNITION
+//#define SCANNER
+#define OBJECTRECOGNITION
 
 // feature point mode
 #define SUPERPOINT
@@ -24,6 +24,8 @@
 //#define USE_NO_EXTRA_ORB_EXTRACT
 //#define USE_NO_METHOD_FOR_FUSE
 
+#define OBJECT_BOX
+//#define OBJECT_BAG
 //#define OBJECT_TOY
 
 #endif // ORB_SLAM3_MODE_H

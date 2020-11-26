@@ -508,9 +508,7 @@ void LocalMapping::MapPointCulling() {
 }
 
 void LocalMapping::LocalBAForSuperPoint() {
-    // Optimizer::GlobalBundleAdjustemnt_Superpoint(
-    // mpAtlas_superpoint->GetCurrentMap(), 20);
-    VLOG(0) << "Start LBA Optimization";
+    std::cout << "Start LBA Optimization" << std::endl;
     Optimizer::LocalBundleAdjustment_Superpoint(mpAtlas_superpoint);
 }
 
