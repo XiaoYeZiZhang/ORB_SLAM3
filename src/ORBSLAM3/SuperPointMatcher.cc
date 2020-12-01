@@ -103,14 +103,11 @@ int SuperPointMatcher::SearchForTriangulation(
         if (vbMatched2[idx2] || pMP2) {
             continue;
         }
-
         const cv::Mat &d2 = pKF2->mDescriptors_superpoint.row(idx2);
         const float dist = DescriptorDistance(d1, d2);
-
-        if (dist > 0.8) {
+        if (dist > 1.0) {
             continue;
         }
-
         const cv::KeyPoint &kp2 = pKF2->mvKeysUn_superpoint[idx2];
 
         const float distex = ex - kp2.pt.x;

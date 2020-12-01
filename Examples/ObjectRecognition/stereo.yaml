@@ -1,12 +1,12 @@
 %YAML:1.0
-#mappoint_filename: "box_version2.bin"
-#mappoint_filename_superpoint: "box_superpoint_64.bin"
+mappoint_filename: "box_version2.bin"
+mappoint_filename_superpoint: "box_superpoint_64.bin"
 
 #mappoint_filename: "bag_version2.bin"
 #mappoint_filename_superpoint: "bag_superpoint_64.bin"
 
-mappoint_filename: "toy_version2.bin"
-mappoint_filename_superpoint: "toy_superpoint64_full.bin"
+#mappoint_filename: "toy_version2.bin"
+#mappoint_filename_superpoint: "toy_superpoint_64.bin"
 
 
 saved_path: "/home/zhangye/data1/objectRecognition/saved"
@@ -14,13 +14,21 @@ voc_path: "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/ORBvoc.t
 voc_path_superpoint: "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/Superpoint/superpoint_voc.yml.gz"
 
 #data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606023509_scan"
-#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606025836_norm1"
-
-data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/xingxing2/1606047029_scan"
-data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/xingxing2/1606047159_norm1"
+data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606025836_norm1"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606027319_norm3"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606026237_occu1"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606026304_quickmove1"
 
 #data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/bag/1606100612_scan"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/bag/1606100752_norm1"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/bag/1606100801_norm2"
+
+#data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/xingxing2/1606047029_scan"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/xingxing2/1606047159_norm1"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/xingxing2/1606047313_norm2"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/xingxing2/1606047197_norm3"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/xingxing2/1606047269_occlu2"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/xingxing2/1606047233_quickmove_1"
 
 config_path: "/home/zhangye/data1/objectRecognition/scan_realsense/realsense_stereo_params.yaml"
 dataset_name: "dataset_box"

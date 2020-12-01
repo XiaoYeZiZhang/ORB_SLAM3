@@ -327,7 +327,7 @@ void RemoveOpticalFlowAndProjectionCommonMatch(
 }
 
 PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
-    TIMER_UTILITY::Timer timer;
+
     PS::MatchSet3D matchset_3d;
     const std::vector<MapPoint::Ptr> pointClouds = mObj->GetPointClouds();
     if (pointClouds.empty()) {
@@ -358,7 +358,7 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
         std::vector<bool>(mapPointsWorld.size(), false);
     std::vector<Eigen::Vector2d> projectPoints;
     projectPoints.reserve(mapPointsWorld.size());
-
+    TIMER_UTILITY::Timer timer;
     ObjTrackerCommon::ProjectSearch(
         mapPointsWorld, Rcw_cur_, tcw_cur_, projectFailState, projectPoints,
         false);
@@ -390,6 +390,9 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
 
     RemoveOpticalFlowAndProjectionCommonMatch(
         m_frame_cur, m_projection_matches2dTo3d_cur);
+    STATISTICS_UTILITY::StatsCollector tracker_projection_match(
+        "Time: tracker find projection match");
+    tracker_projection_match.AddSample(timer.Stop());
 
     m_match_points_projection_num = m_projection_matches2dTo3d_cur.size();
     m_match_points_num =
@@ -406,9 +409,6 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
     // ShowProjectedPointsAndMatchingKeyPoints(projectPoints,
     // matchKeyPointsState);
 
-    STATISTICS_UTILITY::StatsCollector tracker_projection_match(
-        "Time: tracker find projection match");
-    tracker_projection_match.AddSample(timer.Stop());
     return matchset_3d;
 }
 
