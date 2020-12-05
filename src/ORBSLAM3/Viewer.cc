@@ -284,6 +284,7 @@ void Viewer::DrawMatchedMappoints() {
 }
 
 void Viewer::ShowConnectedMapPoints() {
+
     if (m_pointCloud_model) {
         Eigen::Isometry3f T = Eigen::Isometry3f::Identity();
 
@@ -552,7 +553,11 @@ void Viewer::Draw() {
 
             if (!im.empty()) {
                 Tcw = Tcw_;
+#ifdef TEST_COLOR_IMAGE
+                cv::cvtColor(im, im, CV_BGR2RGB);
+#else
                 cv::cvtColor(im, im, CV_GRAY2RGB);
+#endif
                 PrintSLAMStatusForViewer(slam_status, image_num, im);
                 DrawImageTexture(imageTexture, im);
 

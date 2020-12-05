@@ -95,34 +95,16 @@ int Evaluate(
 
 std::unique_ptr<HypoGenerator>
 MakeHypoGenerator(const MatchData &match_data, const Options &options) {
-    const bool valid_gravity_dir =
-        options.gravity_dir.norm() > std::numeric_limits<float>::epsilon();
-    if (valid_gravity_dir)
-        CHECK_LT(std::abs(options.gravity_dir.norm() - 1), 1E-3F);
-    else
-        CHECK(!options.enable_gravity_solver);
-
-    bool enable_gravity_dir_check =
-        valid_gravity_dir && !options.enable_gravity_solver;
-
     const int nr_views = static_cast<int>(match_data.matches_2d.size());
     std::unique_ptr<RoundRobinGenerator> rrhypo =
         std::make_unique<RoundRobinGenerator>();
     if (options.enable_2d_solver) {
         std::unique_ptr<ScaleFreeGenerator> scale_less_solver =
-            options.enable_gravity_solver
-                ? std::unique_ptr<ScaleFreeGenerator>(
-                      MakeIfHasEnoughSupport<Essential3Generator>(
-                          match_data, options.gravity_dir))
-                : MakeIfHasEnoughSupport<Essential5Generator>(match_data);
+            MakeIfHasEnoughSupport<Essential5Generator>(match_data);
 
         if (scale_less_solver) {
             std::unique_ptr<ScaleOnlyGenerator> scale_solver =
-
-                options.prefer_pure_2d_solver
-                    ? std::unique_ptr<ScaleOnlyGenerator>(
-                          MakeIfHasEnoughSupport<ScaleSolver2D>(match_data))
-                    : MakeIfHasEnoughSupport<ScaleSolver3D>(match_data);
+                MakeIfHasEnoughSupport<ScaleSolver3D>(match_data);
             if (!scale_solver)
                 scale_solver =
                     !options.prefer_pure_2d_solver
@@ -139,11 +121,7 @@ MakeHypoGenerator(const MatchData &match_data, const Options &options) {
 
     if (options.enable_3d_solver) {
         std::unique_ptr<HypoGenerator> hypo_3d =
-            options.enable_gravity_solver
-                ? std::unique_ptr<HypoGenerator>(
-                      MakeIfHasEnoughSupport<P2PGenerator>(
-                          match_data, options.gravity_dir))
-                : MakeIfHasEnoughSupport<PnPGenerator>(match_data);
+            MakeIfHasEnoughSupport<PnPGenerator>(match_data);
         if (hypo_3d)
             rrhypo->Add(std::move(hypo_3d), 1);
     }
@@ -154,11 +132,6 @@ MakeHypoGenerator(const MatchData &match_data, const Options &options) {
     }
 
     std::unique_ptr<HypoGenerator> hypo = std::move(rrhypo);
-    if (enable_gravity_dir_check)
-        hypo = std::make_unique<GravityCheckGenerator>(
-            std::move(hypo), options.gravity_dir,
-            options.gravity_dir_max_err_deg);
-
     return hypo;
 }
 

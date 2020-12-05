@@ -27,6 +27,9 @@ public:
     cv::Mat M1r;
     cv::Mat M2r;
     cv::Mat M1l;
+
+    cv::Mat M2C;
+    cv::Mat M1C;
     // yaml
     std::string voc_path;
     std::string voc_path_superpoint;
@@ -40,8 +43,11 @@ public:
 private:
     void LoadImages(
         const string &strPathLeft, const string &strPathRight,
-        const string &strPathTimes, vector<string> &vstrImageLeft,
-        vector<string> &vstrImageRight, vector<double> &vTimeStamps);
+        const string &strPathColor, const string &strPathTimes,
+        const string &sstrPathTimes_color, vector<string> &vstrImageLeft,
+        vector<string> &vstrImageRight, vector<string> &vstrImageColor,
+        vector<double> &vTimeStamps);
+
     bool SaveResultInit();
     void ObjectResultParse(const ObjRecognition::ObjRecogResult &result);
     void SaveObjRecogResult();
@@ -49,6 +55,7 @@ private:
     std::string m_result_dir;
     vector<string> vstrImageLeft;
     vector<string> vstrImageRight;
+    vector<string> vstrImageColor;
     vector<double> vTimestampsCam;
     int nImages;
     bool mRGB;
@@ -156,16 +163,30 @@ bool TestViewer::InitObjectRecognition() {
 
 void TestViewer::LoadImages(
     const string &strPathLeft, const string &strPathRight,
-    const string &strPathTimes, vector<string> &vstrImageLeft,
-    vector<string> &vstrImageRight, vector<double> &vTimeStamps) {
+    const string &strPathColor, const string &strPathTimes,
+    const string &strPathTimes_color, vector<string> &vstrImageLeft,
+    vector<string> &vstrImageRight, vector<string> &vstrImageColor,
+    vector<double> &vTimeStamps) {
+
     ifstream fTimes;
     fTimes.open(strPathTimes.c_str());
     if (!fTimes.is_open()) {
         LOG(FATAL) << "error open timestamp.txt";
     }
+
+#ifdef TEST_COLOR_IMAGE
+    ifstream fTimes_colorimage;
+    fTimes_colorimage.open(strPathTimes_color.c_str());
+    if (!fTimes_colorimage.is_open()) {
+        LOG(FATAL) << "error open timestamp_colorimage.txt";
+    }
+    vstrImageColor.reserve(5000);
+#endif
+
     vTimeStamps.reserve(5000);
     vstrImageLeft.reserve(5000);
     vstrImageRight.reserve(5000);
+
     while (!fTimes.eof()) {
         string s;
         getline(fTimes, s);
@@ -179,6 +200,20 @@ void TestViewer::LoadImages(
             vTimeStamps.push_back(t / 1e9);
         }
     }
+
+#ifdef TEST_COLOR_IMAGE
+    while (!fTimes_colorimage.eof()) {
+        string s;
+        getline(fTimes_colorimage, s);
+        if (!s.empty()) {
+            stringstream ss;
+            ss << s;
+            vstrImageColor.push_back(strPathColor + "/" + ss.str());
+            double t;
+            ss >> t;
+        }
+    }
+#endif
 }
 
 bool TestViewer::InitSLAM() {
@@ -187,10 +222,12 @@ bool TestViewer::InitSLAM() {
     string pathTimeStamps = data_path + "/cam0/timestamp.txt";
     string pathCam0 = data_path + "/cam0/data";
     string pathCam1 = data_path + "/cam1/data";
+    string pathCam2 = data_path + "/cam2/data";
+    string pathTimeStamps_colorimage = data_path + "/cam2/timestamp.txt";
 
     LoadImages(
-        pathCam0, pathCam1, pathTimeStamps, vstrImageLeft, vstrImageRight,
-        vTimestampsCam);
+        pathCam0, pathCam1, pathCam2, pathTimeStamps, pathTimeStamps_colorimage,
+        vstrImageLeft, vstrImageRight, vstrImageColor, vTimestampsCam);
     VLOG(0) << "LOADED!";
     nImages = vstrImageLeft.size();
 
@@ -228,6 +265,12 @@ bool TestViewer::InitSLAM() {
     cv::initUndistortRectifyMap(
         K_r, D_r, R_r, P_r.rowRange(0, 3).colRange(0, 3),
         cv::Size(cols_r, rows_r), CV_32F, M1r, M2r);
+
+#ifdef TEST_COLOR_IMAGE
+    cv::initUndistortRectifyMap(
+        K_l, D_r, R_r, P_r.rowRange(0, 3).colRange(0, 3),
+        cv::Size(cols_r, rows_r), CV_32F, M1C, M2C);
+#endif
 
     double fx = fsSettings["Camera.fx"];
     double fy = fsSettings["Camera.fy"];
@@ -357,6 +400,7 @@ void TestViewer::ObjectResultParse(
 
 bool TestViewer::RunObjectRecognition() {
     cv::Mat imLeft, imRight, imLeftRect, imRightRect;
+    cv::Mat imColor, imColorRect;
 
     int proccIm = 0;
     for (int ni = 0; ni < nImages; ni++, proccIm++) {
@@ -368,6 +412,15 @@ bool TestViewer::RunObjectRecognition() {
         imLeft = cv::imread(vstrImageLeft[ni], cv::IMREAD_UNCHANGED);
         imRight = cv::imread(vstrImageRight[ni], cv::IMREAD_UNCHANGED);
 
+#ifdef TEST_COLOR_IMAGE
+        imColor = cv::imread(vstrImageColor[ni], cv::IMREAD_UNCHANGED);
+        if (imColor.empty()) {
+            cerr << endl
+                 << "Failed to load image at: " << string(vstrImageColor[ni])
+                 << endl;
+            return 1;
+        }
+#endif
         if (imLeft.empty()) {
             cerr << endl
                  << "Failed to load image at: " << string(vstrImageLeft[ni])
@@ -384,6 +437,11 @@ bool TestViewer::RunObjectRecognition() {
 
         cv::remap(imLeft, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
         cv::remap(imRight, imRightRect, M1r, M2r, cv::INTER_LINEAR);
+
+#ifdef TEST_COLOR_IMAGE
+        imColorRect = imColor;
+        // cv::remap(imColor, imColorRect, M1C, M2C, cv::INTER_LINEAR);
+#endif
 
         double tframe = vTimestampsCam[ni];
 
@@ -402,12 +460,12 @@ bool TestViewer::RunObjectRecognition() {
         cv::Mat im_clone_left = imLeftRect.clone();
         int slam_state = SLAM->GetTrackingState();
 
-        if (mRGB)
-            SLAM->mpViewer->SetSLAMInfo(im_clone_left, slam_state, ni, camPos);
-        else {
-            cv::cvtColor(im_clone_left, im_clone_left, CV_RGB2BGR);
-            SLAM->mpViewer->SetSLAMInfo(im_clone_left, slam_state, ni, camPos);
-        }
+#ifdef TEST_COLOR_IMAGE
+        cv::Mat im_clone_color = imColorRect.clone();
+        SLAM->mpViewer->SetSLAMInfo(im_clone_color, slam_state, ni, camPos);
+#else
+        SLAM->mpViewer->SetSLAMInfo(im_clone_left, slam_state, ni, camPos);
+#endif
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 =

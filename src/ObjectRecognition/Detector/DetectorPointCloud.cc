@@ -546,14 +546,10 @@ bool PointCloudObjDetector::PoseSolver(
 
     options.focal_length = static_cast<float>(Kcv.at<double>(0, 0));
     options.max_reproj_err = kPnpReprojectionError / options.focal_length;
-    options.enable_2d_solver = false;
-#ifdef OBJ_WITH_KF
     options.enable_2d_solver = true;
-#endif
     options.enable_3d_solver = true;
     options.ransac_iterations = 100;
     options.ransac_confidence = 0.85;
-    options.enable_gravity_solver = false;
     options.prefer_pure_2d_solver = false;
     options.try_refine_translation_before_optimization_for_2d_only_matches =
         true;

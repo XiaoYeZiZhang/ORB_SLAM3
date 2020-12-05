@@ -439,7 +439,6 @@ bool PointCloudObjTracker::PoseSolver(
     options.enable_3d_solver = true;
     options.ransac_iterations = 100;
     options.ransac_confidence = 0.90;
-    options.enable_gravity_solver = false;
     options.prefer_pure_2d_solver = false;
     options.try_refine_translation_before_optimization_for_2d_only_matches =
         true;

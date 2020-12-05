@@ -18,7 +18,7 @@
 
 // for expirements
 #define SAVE_CONNECT_FOR_DETECTOR // need more info for scanner
-//#define USE_CONNECT_FOR_DETECTOR
+#define USE_CONNECT_FOR_DETECTOR
 //#define USE_OLNY_SCAN_MAPPOINT
 //#define USE_NO_OPTICALFLOW_FOR_TRACKER
 //#define USE_NO_EXTRA_ORB_EXTRACT
@@ -28,4 +28,5 @@
 //#define OBJECT_BAG
 //#define OBJECT_TOY
 
+//#define TEST_COLOR_IMAGE
 #endif // ORB_SLAM3_MODE_H
