@@ -102,15 +102,41 @@ public:
 
         // always good practice to set everything back to defaults once configured.
 //        glActiveTexture(GL_TEXTURE0);
-        glColor3f(1.0f, 0.0f, 0.0f);
+
+        if (textures.size() > 0) {
+            glColor3f(1.0f, 1.0f, 1.0f);
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+            glEnable(GL_TEXTURE_2D);
+            glActiveTexture(GL_TEXTURE0 + 0); // active proper texture unit before binding
+            printf("texture type %s\n", textures[0].type.c_str());
+            printf("texture number %lu\n", textures.size());
+            printf("texture id %u\n", textures[0].id);
+            glBindTexture(GL_TEXTURE_2D, textures[0].id);
+
+//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        } else {
+            glColor3f(1.0f, 0.0f, 0.0f);
+        }
+
         glBegin(GL_TRIANGLES);
         Vertex ver;
-        printf("ind size %lu\n", indices.size());
+//        printf("ind size %lu\n", indices.size());
         for (auto ind : indices) {
             ver = vertices[ind];
             glVertex3d(ver.Position[0], ver.Position[1], ver.Position[2]);
+            if (textures.size() > 0) {
+                printf("texCoords %f %f\n", ver.TexCoords[0], ver.TexCoords[1]);
+                glTexCoord2f(ver.TexCoords[0], ver.TexCoords[1]);
+            }
         }
         glEnd();
+        if (textures.size() > 0) {
+            glDisable(GL_TEXTURE_2D);
+        }
+//        printf("texture vs %lu\n", textures.size());
     }
 
 private:

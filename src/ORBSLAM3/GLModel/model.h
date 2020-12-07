@@ -122,7 +122,11 @@ private:
                 vec.x = mesh->mTextureCoords[0][i].x;
                 vec.y = mesh->mTextureCoords[0][i].y;
                 vertex.TexCoords = vec;
-                // tangent
+            }
+            else
+                vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+
+            if (mesh->HasTangentsAndBitangents()) {
                 vector.x = mesh->mTangents[i].x;
                 vector.y = mesh->mTangents[i].y;
                 vector.z = mesh->mTangents[i].z;
@@ -132,9 +136,10 @@ private:
                 vector.y = mesh->mBitangents[i].y;
                 vector.z = mesh->mBitangents[i].z;
                 vertex.Bitangent = vector;
+            } else {
+                vertex.Tangent = glm::vec3(0.0f, 0.0f, 0.0f);
+                vertex.Bitangent = glm::vec3(0.0f, 0.0f, 0.0f);
             }
-            else
-                vertex.TexCoords = glm::vec2(0.0f, 0.0f);
 
             vertices.push_back(vertex);
         }
@@ -226,8 +231,9 @@ private:
                 format = GL_RGBA;
 
             glBindTexture(GL_TEXTURE_2D, textureID);
+            printf("textureID %u\nformat %u\n", textureID, format);
             glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
+//            glGenerateMipmap(GL_TEXTURE_2D);
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

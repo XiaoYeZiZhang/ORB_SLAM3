@@ -61,8 +61,9 @@ Viewer::Viewer(
     image_width = ObjRecognition::CameraIntrinsic::GetInstance().Width();
     image_height = ObjRecognition::CameraIntrinsic::GetInstance().Height();
     imageTexture = pangolin::GlTexture();
-    textModel = new Model("/home/zhangye/data1/objectRecognition/obj/text3d.obj");
-
+//    textModel = new Model("/home/zhangye/data1/objectRecognition/obj/text3d.obj");
+    textModel = new Model("/home/zhangye/data1/objectRecognition/obj/example.obj");
+    printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERSION));
 
 //    ObjRecognition::ObjRecogResult result =
 //        ObjRecognitionExd::ObjRecongManager::Instance()
