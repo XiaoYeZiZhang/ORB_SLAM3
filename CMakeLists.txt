@@ -48,6 +48,7 @@ MESSAGE(${OpenCV_VERSION})
 
 find_package(Eigen3 REQUIRED)
 find_package(Pangolin REQUIRED)
+find_package(ASSIMP REQUIRED)
 find_package(gflags REQUIRED)
 find_package(glog REQUIRED)
 
@@ -56,6 +57,7 @@ find_package(Torch REQUIRED)
 
 
 include_directories(
+${ASSIMP_INCLUDE_DIRS}
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/include
 ${PROJECT_SOURCE_DIR}/include/CameraModels
@@ -142,6 +144,7 @@ set (ORBSLAM3_FILES
         include/ORBSLAM3/FrameObjectProcess.h
         include/ORBSLAM3/QuickHull.cc
         include/ORBSLAM3/QuickHull.h
+        src/ORBSLAM3/GLModel/stb_image.cpp
         src/ORBSLAM3/TwoViewReconstruction.cc
         src/ORBSLAM3/ViewerAR.cc
         include/ORBSLAM3/ViewerAR.h)
@@ -324,8 +327,10 @@ add_library(${PROJECT_NAME} SHARED  ${SOURCE_FILES}
 )
 
 add_subdirectory(Thirdparty/g2o)
+#link_libraries(${ASSIMP_LIBRARIES})
 
 target_link_libraries(${PROJECT_NAME}
+${ASSIMP_LIBRARIES}
 ${TORCH_LIBRARIES}
 ${OpenCV_LIBS}
 ${EIGEN3_LIBS}

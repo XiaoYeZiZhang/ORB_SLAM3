@@ -27,7 +27,14 @@
 #include "ORBSLAM3/ViewerCommon.h"
 #include "include/Tools.h"
 #include "mode.h"
+#include <src/ORBSLAM3/GLModel/model.h>
+
 namespace ORB_SLAM3 {
+
+std::pair<Eigen::Matrix3d, Eigen::Vector3d> cal_trans(std::vector<Eigen::Vector3d> boundingbox);
+std::pair<Eigen::Vector3d, Eigen::Vector3d> get_bound(const vector<Eigen::Vector3d> &boundingbox);
+
+Model *textModel;
 
 Viewer::Viewer(
     System *pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
@@ -54,6 +61,55 @@ Viewer::Viewer(
     image_width = ObjRecognition::CameraIntrinsic::GetInstance().Width();
     image_height = ObjRecognition::CameraIntrinsic::GetInstance().Height();
     imageTexture = pangolin::GlTexture();
+    textModel = new Model("/home/zhangye/data1/objectRecognition/obj/text3d.obj");
+
+
+//    ObjRecognition::ObjRecogResult result =
+//        ObjRecognitionExd::ObjRecongManager::Instance()
+//            .GetObjRecognitionResult();
+//
+//    Eigen::Matrix<float, 3, 3> Rwo;
+//    Rwo.col(0) = Eigen::Vector3f::Map(&result.R_obj_buffer[0], 3);
+//    Rwo.col(1) = Eigen::Vector3f::Map(&result.R_obj_buffer[3], 3);
+//    Rwo.col(2) = Eigen::Vector3f::Map(&result.R_obj_buffer[6], 3);
+//    Eigen::Vector3f two =
+//        Eigen::Vector3f::Map(&result.t_obj_buffer[0], 3);
+//
+//    Eigen::Matrix4d Two = Eigen::Matrix4d::Identity();
+//    Two << Rwo(0, 0), Rwo(0, 1), Rwo(0, 2), two(0), Rwo(1, 0),
+//        Rwo(1, 1), Rwo(1, 2), two(1), Rwo(2, 0), Rwo(2, 1),
+//        Rwo(2, 2), two(2), 0, 0, 0, 1;
+//
+//    cv::Mat Two_cv;
+//    eigen2cv(Two, Two_cv);
+//    pangolin::OpenGlMatrix glTwo;
+//    Tools::ChangeCV44ToGLMatrixDouble(Two_cv, glTwo);
+//    std::vector<Eigen::Vector3d> boundingbox;
+//    for (size_t i = 0; i < 8; i++) {
+//        boundingbox.emplace_back(Eigen::Vector3d(
+//            result.bounding_box[i * 3],
+//            result.bounding_box[i * 3 + 1],
+//            result.bounding_box[i * 3 + 2]));
+//    }
+
+//    Eigen::Matrix3d trans = cal_trans(boundingbox);
+//    textModel->set_trans(trans);
+}
+
+std::pair<Eigen::Matrix3d, Eigen::Vector3d> cal_trans(std::vector<Eigen::Vector3d> boundingbox) {
+    Eigen::Matrix3d rot;
+    Eigen::Vector3d x, y, z, offset;
+    x = boundingbox[1] - boundingbox[0];
+    z = boundingbox[4] - boundingbox[0];
+    y = boundingbox[2] - boundingbox[0];
+    rot.block<3,1>(0,0) = x;
+    rot.block<3,1>(0,1) = y;
+    rot.block<3,1>(0,2) = z;
+    double ratio = 3.0/4;
+    offset = (boundingbox[0] + boundingbox[7]) / 2;
+//    offset = offset - y/2;
+    offset = offset - ratio*y;
+    return std::make_pair(rot, offset);
 }
 
 bool Viewer::ParseViewerParamFile(cv::FileStorage &fSettings) {
@@ -196,6 +252,25 @@ void Viewer::DrawSLAMInit() {
             .SetHandler(new pangolin::Handler3D(s_cam_slam));
 }
 
+void Viewer::Draw3dText() {
+    textModel->Draw();
+}
+
+
+std::pair<Eigen::Vector3d, Eigen::Vector3d> get_bound(const vector<Eigen::Vector3d> &boundingbox) {
+    Eigen::Vector3d min_bound(1e9, 1e9, 1e9), max_bound(-1e9, -1e9, -1e9);
+    for (auto bbox : boundingbox) {
+        min_bound.x() = std::min(min_bound.x(), bbox.x());
+        min_bound.y() = std::min(min_bound.y(), bbox.y());
+        min_bound.z() = std::min(min_bound.z(), bbox.z());
+
+        max_bound.x() = std::max(max_bound.x(), bbox.x());
+        max_bound.y() = std::max(max_bound.y(), bbox.y());
+        max_bound.z() = std::max(max_bound.z(), bbox.z());
+    }
+    return std::make_pair(min_bound, max_bound);
+}
+
 void Viewer::DrawBoundingboxInImage(
     const vector<Eigen::Vector3d> &boundingbox) {
     glColor3f(1.0f, 0.0f, 0.0f);
@@ -210,6 +285,10 @@ void Viewer::DrawBoundingboxInImage(
     Eigen::Vector3d point5 = boundingbox[5];
     Eigen::Vector3d point6 = boundingbox[6];
     Eigen::Vector3d point7 = boundingbox[7];
+
+//    auto bound = get_bound(boundingbox);
+//    std::cout << "min_bound" << bound.first << std::endl;
+//    std::cout << "max_bound" << bound.second << std::endl;
 
     glVertex3d(point0.x(), point0.y(), point0.z());
     glVertex3d(point1.x(), point1.y(), point1.z());
@@ -598,12 +677,23 @@ void Viewer::Draw() {
                 glMatrixMode(GL_MODELVIEW);
                 LoadCameraPose(Tcw);
 
+                static bool flag = true;
+                if (flag) {
+                    flag = false;
+                    auto trans = cal_trans(boundingbox);
+                    textModel->set_trans(trans.first, trans.second);
+                    std::cout << "rot" << trans.first << std::endl;
+                    std::cout << "offset" << trans.second << std::endl;
+//                    exit(0);
+                }
+
                 if (result.state_buffer[0] == 0) {
                     // tracking good
                     // draw under slam camera coords
                     glPushMatrix();
                     glTwo.Multiply();
                     DrawBoundingboxInImage(boundingbox);
+                    Draw3dText();
                     DrawPointCloudInImage(result.pointCloud_pos);
                     glPopMatrix();
                 }

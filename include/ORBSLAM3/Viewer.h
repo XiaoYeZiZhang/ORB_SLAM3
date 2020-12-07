@@ -82,6 +82,7 @@ public:
     void DrawDetectorInit();
     static void
     DrawBoundingboxInImage(const vector<Eigen::Vector3d> &boundingbox);
+    void Draw3dText();
     void
     DrawPointCloudInImage(const std::vector<Eigen::Vector3d> &pointcloud_pos);
     void DrawMatchedMappoints();
@@ -159,6 +160,7 @@ private:
     pangolin::GlTexture imageTexture;
     int image_width;
     int image_height;
+    std::vector<Eigen::Vector3d> m_boundingbox;
 };
 
 } // namespace ORB_SLAM3
