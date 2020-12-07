@@ -126,11 +126,11 @@ public:
 //        printf("ind size %lu\n", indices.size());
         for (auto ind : indices) {
             ver = vertices[ind];
-            glVertex3d(ver.Position[0], ver.Position[1], ver.Position[2]);
             if (textures.size() > 0) {
                 printf("texCoords %f %f\n", ver.TexCoords[0], ver.TexCoords[1]);
                 glTexCoord2f(ver.TexCoords[0], ver.TexCoords[1]);
             }
+            glVertex3d(ver.Position[0], ver.Position[1], ver.Position[2]);
         }
         glEnd();
         if (textures.size() > 0) {

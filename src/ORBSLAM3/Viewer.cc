@@ -61,9 +61,6 @@ Viewer::Viewer(
     image_width = ObjRecognition::CameraIntrinsic::GetInstance().Width();
     image_height = ObjRecognition::CameraIntrinsic::GetInstance().Height();
     imageTexture = pangolin::GlTexture();
-//    textModel = new Model("/home/zhangye/data1/objectRecognition/obj/text3d.obj");
-    textModel = new Model("/home/zhangye/data1/objectRecognition/obj/example.obj");
-    printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERSION));
 
 //    ObjRecognition::ObjRecogResult result =
 //        ObjRecognitionExd::ObjRecongManager::Instance()
@@ -788,8 +785,8 @@ void Viewer::Run() {
     // 3D Mouse handler requires depth testing to be enabled
     glEnable(GL_DEPTH_TEST);
     // Issue specific OpenGl we might need
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//    glEnable(GL_BLEND);
+//    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     std::function<void(void)> switch_win_callback =
         std::bind(&Viewer::SwitchWindow, this);
@@ -803,6 +800,11 @@ void Viewer::Run() {
     DrawDetectorInit();
 #endif
 #endif
+
+//    textModel = new Model("/home/zhangye/data1/objectRecognition/obj/text3d.obj");
+    textModel = new Model("/home/zhangye/data1/objectRecognition/obj/example.obj");
+    printf("OpenGL version supported by this platform (%s): \n", glGetString(GL_VERSION));
+
     Draw();
 }
 
