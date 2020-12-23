@@ -1,17 +1,17 @@
 //
-// Created by zhangye on 2020-09-14.
+// Created by root on 2020/10/13.
 //
 #include <iostream>
 #include <algorithm>
 #include <chrono>
-#include <ctime>
 #include <opencv2/core/core.hpp>
 #include <Eigen/Dense>
+#include <include/ObjectRecognition/Utility/GlobalSummary.h>
 #include "ORBSLAM3/System.h"
-#include "Utility/GlobalSummary.h"
 #include "Utility/FileIO.h"
 #include "ORBSLAM3/ImuTypes.h"
 #include "Utility/Camera.h"
+#include "Utility/Statistics.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
 #include "ORBSLAM3/FrameObjectProcess.h"
 #include "mode.h"
@@ -21,34 +21,51 @@ class TestViewer {
 public:
     TestViewer() {
     }
-
     ~TestViewer() {
         delete SLAM;
     }
-    bool InitSLAM(char **argv);
-    bool InitObjectRecognition(char **argv);
-    bool RunObjectRecognition(char **argv);
+    bool InitSLAM();
+    bool InitObjectRecognition();
+    bool RunObjectRecognition();
+
+    cv::Mat M2l;
+    cv::Mat M1r;
+    cv::Mat M2r;
+    cv::Mat M1l;
+
+    // yaml
+    std::string voc_path;
+    std::string voc_path_superpoint;
+    std::string data_path;
+    std::string config_path;
+    std::string slam_saved_path;
+    std::string mappoint_filename;
+    std::string mappoint_filename_superpoint;
+    std::string dataset_name;
 
 private:
-    void LoadImages(
-        const string &strImagePath, const string &strPathTimes,
-        vector<string> &vstrImages, vector<double> &vTimeStamps);
     void LoadIMU(
         const string &strImuPath, vector<double> &vTimeStamps,
         vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro);
+
+    void LoadImages(
+        const string &strPathLeft, const string &strPathTimes,
+        vector<string> &vstrImages, vector<double> &vTimeStamps);
     bool SaveResultInit();
     void ObjectResultParse(const ObjRecognition::ObjRecogResult &result);
     void SaveObjRecogResult();
 
-    std::string m_result_dir;
-    vector<string> vstrImageFilenames;
-    vector<double> vTimestampsCam;
     vector<cv::Point3f> vAcc, vGyro;
     vector<double> vTimestampsImu;
+    std::string m_result_dir;
+    vector<string> vstrImages;
+    vector<double> vTimestampsCam;
     int nImages;
     int nImu;
-    int first_imu;
+    int first_imu = 0;
+    bool mRGB;
     ORB_SLAM3::System *SLAM;
+    vector<ORB_SLAM3::IMU::Point> vImuMeas;
 
     // 3d object
     std::shared_ptr<ObjRecognition::Object> m_pointCloud =
@@ -63,9 +80,44 @@ private:
     std::string objrecog_info_str;
 };
 
+void TestViewer::LoadIMU(
+    const string &strImuPath, vector<double> &vTimeStamps,
+    vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro) {
+    ifstream fImu;
+    fImu.open(strImuPath.c_str());
+    vTimeStamps.reserve(5000);
+    vAcc.reserve(5000);
+    vGyro.reserve(5000);
+
+    while (!fImu.eof()) {
+        string s;
+        getline(fImu, s);
+        if (s[0] == '#')
+            continue;
+
+        if (!s.empty()) {
+            string item;
+            size_t pos = 0;
+            double data[7];
+            int count = 0;
+            while ((pos = s.find(',')) != string::npos) {
+                item = s.substr(0, pos);
+                data[count++] = stod(item);
+                s.erase(0, pos + 1);
+            }
+            item = s.substr(0, pos);
+            data[6] = stod(item);
+
+            vTimeStamps.push_back(data[0] / 1e9);
+            vAcc.push_back(cv::Point3f(data[4], data[5], data[6]));
+            vGyro.push_back(cv::Point3f(data[1], data[2], data[3]));
+        }
+    }
+}
+
 bool TestViewer::SaveResultInit() {
     // STObjRecognition::GlobalSummary::SetDatasetPath(m_dataset_dir);
-    m_result_dir = m_result_dir + "/" + GetTimeStampString();
+    m_result_dir = slam_saved_path + "/" + GetTimeStampString();
     if (!CreateFolder(m_result_dir)) {
         LOG(INFO) << "can't create the result dir" << m_result_dir;
     }
@@ -90,8 +142,10 @@ bool TestViewer::SaveResultInit() {
     return true;
 }
 
-bool TestViewer::InitObjectRecognition(char **argv) {
+bool TestViewer::InitObjectRecognition() {
     ObjRecognitionExd::ObjRecongManager::Instance().CreateWithConfig();
+
+    // set slam data callback
 
     // char *voc_buf = nullptr;
     // unsigned int voc_buf_size = 0;
@@ -100,14 +154,33 @@ bool TestViewer::InitObjectRecognition(char **argv) {
     // ObjRecognitionExd::ObjRecongManager::Instance().LoadDic(voc_buf,
     // voc_buf_size);
 
-    std::string voc_path = argv[1];
-    std::string cloud_point_model_dir = argv[5];
+#ifdef SUPERPOINT
+    std::string cloud_point_model_dir =
+        slam_saved_path + "/" + mappoint_filename_superpoint;
+#else
+    std::string cloud_point_model_dir =
+        slam_saved_path + "/" + mappoint_filename;
+#endif
 
+    VLOG(0) << "Load Vocabulary Start";
+#ifdef SUPERPOINT
+#ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
+#else
+    bool voc_load_res = ObjRecognitionExd::ObjRecongManager::Instance().LoadVoc(
+        voc_path_superpoint);
+#endif
+#else
     bool voc_load_res =
         ObjRecognitionExd::ObjRecongManager::Instance().LoadVoc(voc_path);
+#endif
+    VLOG(0) << "Load Vocabulary Done!";
+
+#ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
+#else
     if (!voc_load_res) {
         LOG(ERROR) << "vocabulary load fail!";
     }
+#endif
 
     int model_id = 0;
     char *cloud_point_model_buffer = nullptr;
@@ -118,6 +191,11 @@ bool TestViewer::InitObjectRecognition(char **argv) {
     ObjRecognitionExd::ObjRecongManager::Instance().LoadModel(
         model_id, cloud_point_model_buffer, cloud_point_model_buf_size,
         m_pointCloud);
+
+    STATISTICS_UTILITY::StatsCollector pointCloudNum("Mappoint num");
+    pointCloudNum.AddSample(m_pointCloud->GetPointCloudsNum());
+
+    delete[] cloud_point_model_buffer;
     SLAM->SetPointCloudModel(m_pointCloud);
     SLAM->mpViewer->SetPointCloudModel(m_pointCloud);
     //    SaveResultInit();
@@ -125,10 +203,13 @@ bool TestViewer::InitObjectRecognition(char **argv) {
 }
 
 void TestViewer::LoadImages(
-    const string &strImagePath, const string &strPathTimes,
+    const string &strPathLeft, const string &strPathTimes,
     vector<string> &vstrImages, vector<double> &vTimeStamps) {
     ifstream fTimes;
     fTimes.open(strPathTimes.c_str());
+    if (!fTimes.is_open()) {
+        LOG(FATAL) << "error open timestamp.txt";
+    }
     vTimeStamps.reserve(5000);
     vstrImages.reserve(5000);
     while (!fTimes.eof()) {
@@ -137,10 +218,7 @@ void TestViewer::LoadImages(
         if (!s.empty()) {
             stringstream ss;
             ss << s;
-            /*euroc data*/
-            // vstrImages.push_back(strImagePath + "/" + ss.str() + ".png");
-            /*realsense data*/
-            vstrImages.push_back(strImagePath + "/" + ss.str());
+            vstrImages.push_back(strPathLeft + "/" + ss.str());
             double t;
             ss >> t;
             vTimeStamps.push_back(t / 1e9);
@@ -148,83 +226,38 @@ void TestViewer::LoadImages(
     }
 }
 
-void TestViewer::LoadIMU(
-    const string &strImuPath, vector<double> &vTimeStamps,
-    vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro) {
-    ifstream fImu;
-    fImu.open(strImuPath.c_str());
-    vTimeStamps.reserve(5000);
-    vAcc.reserve(5000);
-    vGyro.reserve(5000);
-    first_imu = 0;
+bool TestViewer::InitSLAM() {
 
-    while (!fImu.eof()) {
-        string s;
-        getline(fImu, s);
-        if (s[0] == '#')
-            continue;
-
-        if (!s.empty()) {
-            string item;
-            size_t pos = 0;
-            double data[7];
-            int count = 0;
-            while ((pos = s.find(',')) != string::npos) {
-                item = s.substr(0, pos);
-                data[count++] = stod(item);
-                s.erase(0, pos + 1);
-            }
-            item = s.substr(0, pos);
-            data[6] = stod(item);
-
-            /*euroc data*/
-            vTimeStamps.push_back(data[0] / 1e9);
-            vAcc.push_back(cv::Point3f(data[4], data[5], data[6]));
-            vGyro.push_back(cv::Point3f(data[1], data[2], data[3]));
-        }
-    }
-}
-
-bool TestViewer::InitSLAM(char **argv) {
-    string file_name;
-    file_name = string(argv[5]);
-    int tot_images = 0;
     VLOG(0) << "Loading images ...";
 
-    string pathSeq(argv[3]);
-    string pathTimeStamps(argv[4]);
+    string pathTimeStamps = data_path + "/cam0/timestamp.txt";
+    string pathCam0 = data_path + "/cam0/data";
+    string pathImu = data_path + "/imu0/data.csv";
 
-    /*euroc data*/
-    string pathCam0 = pathSeq + "/cam0/data";
-    string pathImu = pathSeq + "/imu0/data.csv";
-    // 图像要和时间戳对齐
-    LoadImages(pathCam0, pathTimeStamps, vstrImageFilenames, vTimestampsCam);
+    LoadImages(pathCam0, pathTimeStamps, vstrImages, vTimestampsCam);
     VLOG(0) << "LOADED!";
+    nImages = vstrImages.size();
 
     VLOG(0) << "Loading IMU ...";
     LoadIMU(pathImu, vTimestampsImu, vAcc, vGyro);
-    VLOG(0) << "LOADED!";
-
-    nImages = vstrImageFilenames.size();
-    tot_images += nImages;
+    VLOG(0) << "LOADED!" << endl;
     nImu = vTimestampsImu.size();
 
     if ((nImages <= 0) || (nImu <= 0)) {
-        cerr << "ERROR: Failed to load images or IMU " << endl;
-        return false;
+        cerr << "ERROR: Failed to load images or IMU" << endl;
+        return 1;
     }
-
-    // Find first imu to be considered, supposing imu measurements start
-    // first
 
     while (vTimestampsImu[first_imu] <= vTimestampsCam[0])
         first_imu++;
     first_imu--; // first imu measurement to be considered
 
-    // Create SLAM system. It initializes all system threads and gets ready to
-    // process frames.
+    cv::FileStorage fsSettings(config_path, cv::FileStorage::READ);
+    if (!fsSettings.isOpened()) {
+        cerr << "ERROR: Wrong path to settings" << endl;
+        return -1;
+    }
 
-    cv::FileStorage fsSettings(argv[2], cv::FileStorage::READ);
     double fx = fsSettings["Camera.fx"];
     double fy = fsSettings["Camera.fy"];
     double cx = fsSettings["Camera.cx"];
@@ -259,13 +292,16 @@ bool TestViewer::InitSLAM(char **argv) {
     Parameters::GetInstance().SetObjRecognitionORBFeatures(
         ObjRecognition_ORB_nFeatures);
 
-    bool is_objRecognition = false;
+    mRGB = static_cast<bool>((int)fsSettings["Camera.RGB"]);
+    bool is_recognition = false;
+
 #ifdef OBJECTRECOGNITION
-    is_objRecognition = true;
+    is_recognition = true;
 #endif
     SLAM = new ORB_SLAM3::System(
-        argv[1], argv[2], ORB_SLAM3::System::IMU_MONOCULAR, true,
-        is_objRecognition);
+        voc_path, config_path, ORB_SLAM3::System::IMU_MONOCULAR, true,
+        is_recognition);
+
     return true;
 }
 
@@ -308,17 +344,16 @@ void TestViewer::SaveObjRecogResult() {
 
 void TestViewer::ObjectResultParse(
     const ObjRecognition::ObjRecogResult &result) {
-
     m_objrecog_result = result;
     Eigen::Matrix<float, 3, 3> Rcw =
         ObjRecognition::TypeConverter::Mat3Array2Mat3Eigen(
             m_objrecog_result.R_camera);
-    Eigen::Vector3f Tcw = Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
+    Eigen::Vector3f tcw = Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
     Eigen::Matrix<float, 3, 3> Rwo;
     Rwo.col(0) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[0], 3);
     Rwo.col(1) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[3], 3);
     Rwo.col(2) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[6], 3);
-    Eigen::Vector3f Two =
+    Eigen::Vector3f two =
         Eigen::Vector3f::Map(&m_objrecog_result.t_obj_buffer[0], 3);
 
     Eigen::Matrix3f Rco = Eigen::Matrix3f::Identity();
@@ -331,13 +366,13 @@ void TestViewer::ObjectResultParse(
     Rco = Rco; // * Rslam2gl.transpose();
     Rwo = Rcw.transpose() * Rco;
     Eigen::Matrix3f Row = Eigen::Matrix3f::Identity();
-    Eigen::Vector3f Tow = Eigen::Vector3f::Zero();
+    Eigen::Vector3f tow = Eigen::Vector3f::Zero();
     Row = Rwo.transpose();
-    Tow = -Row * Two;
+    tow = -Row * two;
 
     if (result.num == 1) {
         m_Row = Row.cast<double>(); // world -> obj
-        m_tow = Tow.cast<double>();
+        m_tow = tow.cast<double>();
     } else {
         m_Row = Eigen::Matrix3d::Identity();
         m_tow = Eigen::Vector3d::Zero();
@@ -347,66 +382,44 @@ void TestViewer::ObjectResultParse(
     int info_size = m_objrecog_result.info_length;
     const char *info_char = m_objrecog_result.info;
     objrecog_info_str = std::string(info_char);
-
-    // save the object recognition result to file.
     SaveObjRecogResult();
-
     // ObjectResultTransmitMultiTabs();
 }
 
-bool TestViewer::RunObjectRecognition(char **argv) {
-    int proccIm = 0;
-    // Main loop
+bool TestViewer::RunObjectRecognition() {
     cv::Mat im;
-    vector<ORB_SLAM3::IMU::Point> vImuMeas;
-    proccIm = 0;
-    cv::FileStorage fSettings(argv[2], cv::FileStorage::READ);
-    bool bRGB = static_cast<bool>((int)fSettings["Camera.RGB"]);
-    cv::Mat K = cv::Mat::eye(3, 3, CV_32F);
-    K = ObjRecognition::CameraIntrinsic::GetInstance().GetCVK();
-    cv::Mat DistCoef = cv::Mat::zeros(4, 1, CV_32F);
-    DistCoef.at<float>(0) = fSettings["Camera.k1"];
-    DistCoef.at<float>(1) = fSettings["Camera.k2"];
-    DistCoef.at<float>(2) = fSettings["Camera.p1"];
-    DistCoef.at<float>(3) = fSettings["Camera.p2"];
-    const float k3 = fSettings["Camera.k3"];
-    if (k3 != 0) {
-        DistCoef.resize(5);
-        DistCoef.at<float>(4) = k3;
-    }
-
-    // nImages = 20;
+    int proccIm = 0;
     for (int ni = 0; ni < nImages; ni++, proccIm++) {
-        // Read image from file
-        im = cv::imread(vstrImageFilenames[ni], CV_LOAD_IMAGE_UNCHANGED);
-
-        double tframe = vTimestampsCam[ni];
+        if (SLAM->mpViewer->GetIsStopFlag()) {
+            break;
+        }
+        im = cv::imread(vstrImages[ni], cv::IMREAD_UNCHANGED);
 
         if (im.empty()) {
             cerr << endl
-                 << "Failed to load image at: " << vstrImageFilenames[ni]
+                 << "Failed to load image at: " << string(vstrImages[ni])
                  << endl;
-            return false;
+            return 1;
         }
 
-        // Load un_im measurements from previous frame
+        double tframe = vTimestampsCam[ni];
+
+        // Load imu measurements from previous frame
         vImuMeas.clear();
 
-        if (ni > 0) {
-            // cout << "t_cam " << tframe << endl;
-
-            while (vTimestampsImu[first_imu] <= vTimestampsCam[ni]) {
+        if (ni > 0)
+            while (
+                vTimestampsImu[first_imu] <=
+                vTimestampsCam
+                    [ni]) // while(vTimestampsImu[first_imu]<=vTimestampsCam[ni])
+            {
                 vImuMeas.push_back(ORB_SLAM3::IMU::Point(
                     vAcc[first_imu].x, vAcc[first_imu].y, vAcc[first_imu].z,
                     vGyro[first_imu].x, vGyro[first_imu].y, vGyro[first_imu].z,
                     vTimestampsImu[first_imu]));
                 first_imu++;
             }
-        }
 
-        /*cout << "first un_im: " << first_imu << endl;
-        cout << "first un_im time: " << fixed << vTimestampsImu[first_imu] <<
-        endl; cout << "size vImu: " << vImuMeas.size() << endl;*/
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t1 =
             std::chrono::steady_clock::now();
@@ -415,20 +428,18 @@ bool TestViewer::RunObjectRecognition(char **argv) {
             std::chrono::monotonic_clock::now();
 #endif
 
-        // Pass the image to the SLAM system
-        // cout << "tframe = " << tframe << endl;
         cv::Mat camPos = SLAM->TrackMonocular(
-            im, tframe, vImuMeas); // TODO change to monocular_inertial
+            im, tframe,
+            vImuMeas); // TODO change to monocular_inertial
 
         cv::Mat im_clone = im.clone();
-        cv::Mat un_im;
         int slam_state = SLAM->GetTrackingState();
-        cv::undistort(im_clone, un_im, K, DistCoef);
-        if (bRGB)
-            SLAM->mpViewer->SetSLAMInfo(un_im, slam_state, ni, camPos);
+
+        if (mRGB)
+            SLAM->mpViewer->SetSLAMInfo(im_clone, slam_state, ni, camPos);
         else {
-            cv::cvtColor(un_im, un_im, CV_RGB2BGR);
-            SLAM->mpViewer->SetSLAMInfo(un_im, slam_state, ni, camPos);
+            cv::cvtColor(im_clone, im_clone, CV_RGB2BGR);
+            SLAM->mpViewer->SetSLAMInfo(im_clone, slam_state, ni, camPos);
         }
 
 #ifdef COMPILEDWITHC11
@@ -447,7 +458,7 @@ bool TestViewer::RunObjectRecognition(char **argv) {
         ObjectResultParse(ObjRecognitionExd::ObjRecongManager::Instance()
                               .GetObjRecognitionResult());
 #endif
-        // Wait to load the next frame
+
         double T = 0;
         if (ni < nImages - 1)
             T = vTimestampsCam[ni + 1] - tframe;
@@ -458,44 +469,43 @@ bool TestViewer::RunObjectRecognition(char **argv) {
             usleep((T - ttrack) * 1e6); // 1e6
     }
 #ifdef OBJECTRECOGNITION
-    ObjRecognition::GlobalSummary::SaveAllPoses(m_result_dir);
+    //    ObjRecognition::GlobalSummary::SaveAllPoses(m_result_dir);
+
+    std::string statics_result_filename;
+#ifdef SUPERPOINT
+    statics_result_filename = "statics_result_SUPERPOINT.txt";
+#else
+    statics_result_filename = "statics_result_ORB.txt";
+#endif
+    ObjRecognition::GlobalSummary::SaveStatics(
+        slam_saved_path, STATISTICS_UTILITY::Statistics::Print(),
+        statics_result_filename);
 
     /*ObjRecognition::GlobalSummary::SaveTimer(
-        m_result_dir, STSLAMCommon::Timing::Print());
-
-    ObjRecognition::GlobalSummary::SaveStatics(
-        m_result_dir, STSLAMCommon::Statistics::Print());*/
+        m_result_dir, STSLAMCommon::Timing::Print());*/
 
     ObjRecognitionExd::ObjRecongManager::Instance().Destroy();
 #endif
 
-    // Stop all threads
     SLAM->Shutdown();
 
-    // Save camera trajectory
-    const string kf_file = "kf_" + string(argv[6]) + ".txt";
-    const string f_file = "f_" + string(argv[6]) + ".txt";
-    SLAM->SaveTrajectoryEuRoC(f_file);
-    SLAM->SaveKeyFrameTrajectoryEuRoC(kf_file);
-
+    //    const string kf_file = slam_saved_path + "/kf_" + dataset_name +
+    //    ".txt"; const string f_file = slam_saved_path + "/f_" + dataset_name +
+    //    ".txt"; SLAM->SaveTrajectoryEuRoC(f_file);
     return true;
 }
 
 int main(int argc, char *argv[]) {
-
-    Eigen::Vector2d x;
-    x.homogeneous();
-    if (argc < 6) {
-        cerr << endl
-             << "Usage: ./mono_inertial_euroc path_to_vocabulary "
-                "path_to_settings path_to_sequence_folder_1 "
-                "path_to_times_file_1 (path_to_image_folder_2 "
-                "path_to_times_file_2 ... path_to_image_folder_N "
-                "path_to_times_file_N) "
-             << endl;
+#ifdef OBJECTRECOGNITION
+#else
+    LOG(FATAL) << "not in the object detection and tracking mode";
+#endif
+    if (argc < 1) {
+        cerr << endl << "Usage: ./ path_to_yaml " << endl;
         return 1;
     }
 
+    // vlog setting
     FLAGS_alsologtostderr = 1;
     google::InitGoogleLogging(argv[0]);
     google::ParseCommandLineFlags(&argc, &argv, true);
@@ -505,7 +515,22 @@ int main(int argc, char *argv[]) {
 
     TestViewer testViewer;
 
-    bool initial_slam_result = testViewer.InitSLAM(argv);
+    cv::FileStorage fsSettings(argv[1], cv::FileStorage::READ);
+    if (!fsSettings.isOpened()) {
+        cerr << "ERROR: Wrong path to settings" << endl;
+        return -1;
+    }
+
+    fsSettings["voc_path_superpoint"] >> testViewer.voc_path_superpoint;
+    fsSettings["voc_path"] >> testViewer.voc_path;
+    fsSettings["data_path_objRecognition"] >> testViewer.data_path;
+    fsSettings["config_path"] >> testViewer.config_path;
+    fsSettings["saved_path"] >> testViewer.slam_saved_path;
+    fsSettings["mappoint_filename"] >> testViewer.mappoint_filename;
+    fsSettings["mappoint_filename_superpoint"] >>
+        testViewer.mappoint_filename_superpoint;
+    fsSettings["dataset_name"] >> testViewer.dataset_name;
+    bool initial_slam_result = testViewer.InitSLAM();
 
     if (!initial_slam_result) {
         LOG(FATAL) << "slam initialize fail!";
@@ -514,14 +539,14 @@ int main(int argc, char *argv[]) {
 
 #ifdef OBJECTRECOGNITION
     bool initialize_objectRecognition_result =
-        testViewer.InitObjectRecognition(argv);
+        testViewer.InitObjectRecognition();
     if (!initialize_objectRecognition_result) {
         LOG(FATAL) << "objectRecognition initialize fail!";
         return 0;
     }
 #endif
 
-    testViewer.RunObjectRecognition(argv);
+    testViewer.RunObjectRecognition();
 
     return 0;
 }

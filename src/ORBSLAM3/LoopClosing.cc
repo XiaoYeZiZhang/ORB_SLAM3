@@ -59,7 +59,7 @@ void LoopClosing::Run() {
 
     mbFinished = false;
 
-    while (false) {
+    while (true) {
         // NEW LOOP AND MERGE DETECTION ALGORITHM
         //----------------------------
         if (CheckNewKeyFrames()) {

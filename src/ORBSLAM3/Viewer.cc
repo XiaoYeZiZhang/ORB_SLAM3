@@ -542,7 +542,7 @@ void Viewer::Draw() {
             // glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
             // pangolin::glDraw_z0(0.5f, 100);
 
-            mpMapDrawer->DrawCurrentCamera(Twc);
+            // mpMapDrawer->DrawCurrentCamera(Twc);
             if (*menuShowKeyFrames || *menuShowGraph || *menuShowInertialGraph)
                 mpMapDrawer->DrawKeyFrames(
                     *menuShowKeyFrames, *menuShowGraph, *menuShowInertialGraph);
@@ -668,7 +668,7 @@ void Viewer::Draw() {
                     glPushMatrix();
                     glTwo.Multiply();
                     DrawBoundingboxInImage(boundingbox);
-                    Draw3dText();
+                    // Draw3dText();
                     DrawPointCloudInImage(result.pointCloud_pos);
                     glPopMatrix();
                 }

@@ -5162,8 +5162,8 @@ int Optimizer::OptimizeSim3(
             float y = P3D2c.at<float>(1) * invz;
 
             // Project in image and check it is not outside
-            float u = pKF2->fx * x + pKFm->cx;
-            float v = pKF2->fy * y + pKFm->cy;
+            float u = pKF2->fx * x + pKF2->cx;
+            float v = pKF2->fy * y + pKF2->cy;
             obs2 << u, v;
             kpUn2 = cv::KeyPoint(cv::Point2f(u, v), pMP2->mnTrackScaleLevel);
         }

@@ -654,6 +654,16 @@ void PointCloudObjDetector::PnPResultHandle() {
     kDetectorPnPInliersThUnreliable = 10;
 #endif
 
+    //    VLOG(0) << "detector frame: " << m_frame_cur->m_frame_index;
+    //    VLOG(0) << "detector Rcw: " << Rcw_cur_;
+    //    VLOG(0) << "detector tcw: " << tcw_cur_;
+    //
+    //    VLOG(0) << "detector Rco: " << Rco_cur_;
+    //    VLOG(0) << "detector tco: " << tco_cur_;
+    //
+    //    VLOG(0) << "detector Rwo: " << Rwo_cur_;
+    //    VLOG(0) << "detector two: " << two_cur_;
+
     if (pnp_solver_result_ && pnp_inliers_num_ >= kDetectorPnPInliersThGood &&
         pnp_inliers_3d_num_ >= proj_success_num) {
         detect_state_ = DetectionGood;

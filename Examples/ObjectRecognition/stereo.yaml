@@ -1,5 +1,6 @@
 %YAML:1.0
-mappoint_filename: "test_move_box_version1.bin"
+mappoint_filename: "box_version_test_monocular_inertial.bin"
+#mappoint_filename: "box_version2.bin"
 mappoint_filename_superpoint: "box_superpoint_64.bin"
 
 #mappoint_filename: "bag_version2.bin"
@@ -16,12 +17,12 @@ voc_path_superpoint: "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabula
 #data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/box_test/scan/1606798025"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/box_test/data1/1606797615"
 
-data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/box_test_move/scan/1606831972"
+#data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/box_test_move/scan/1606831972"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/box_test_move/data2/1606832210"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/box_test_move/data1/1606832099"
 
 
-#data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606023509_scan"
+data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606023509_scan"
 data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606025836_norm1"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606027319_norm3"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606026237_occu1"

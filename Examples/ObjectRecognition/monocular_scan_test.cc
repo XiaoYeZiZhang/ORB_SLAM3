@@ -1,19 +1,18 @@
 //
-// Created by root on 2020/10/13.
+// Created by root on 2020/12/23.
 //
 #include <ctime>
 #include <opencv2/core/core.hpp>
 #include <Eigen/Dense>
 #include <include/ORBSLAM3/SPextractor.h>
+#include <include/ObjectRecognition/Utility/Parameters.h>
+#include <include/ORBSLAM3/FrameObjectProcess.h>
+#include <chrono>
 #include "ORBSLAM3/System.h"
-#include "Utility/GlobalSummary.h"
 #include "Utility/FileIO.h"
-#include "Utility/Parameters.h"
-#include "ORBSLAM3/ImuTypes.h"
 #include "Utility/Camera.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
 #include "include/Tools.h"
-#include "ORBSLAM3/FrameObjectProcess.h"
 #include "ORBSLAM3/ViewerAR.h"
 #include "mode.h"
 using namespace std;
@@ -28,7 +27,6 @@ public:
     bool SaveMappointFor3DObject_SuperPoint(
         const std::string save_path, const int start_sfm_keyframe_id,
         const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM);
-
     cv::Mat M2l;
     cv::Mat M1r;
     cv::Mat M2r;
@@ -42,16 +40,12 @@ public:
     std::string mappoint_filename;
     std::string mappoint_filename_superpoint;
     std::string dataset_name;
-
     std::vector<ORB_SLAM3::KeyFrame *> keyframes_slam;
 
 private:
     void LoadImages(
-        const string &strPathLeft, const string &strPathTimes,
+        const string &strPath, const string &strPathTimes,
         vector<string> &vstrImages, vector<double> &vTimeStamps);
-    void LoadIMU(
-        const string &strImuPath, vector<double> &vTimeStamps,
-        vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro);
     void SfMProcess();
     void FindMatchByKNN(
         const cv::Mat &frmDesp, const cv::Mat &pcDesp,
@@ -61,12 +55,8 @@ private:
     std::string m_result_dir;
     vector<string> vstrImages;
     vector<double> vTimestampsCam;
-    vector<cv::Point3f> vAcc, vGyro;
-    vector<double> vTimestampsImu;
+
     int nImages;
-    int nImu;
-    int first_imu = 0;
-    vector<ORB_SLAM3::IMU::Point> vImuMeas;
     ORB_SLAM3::System *SLAM;
 
     // ar
@@ -75,6 +65,7 @@ private:
     float fps = -1;
     cv::Mat K;
     std::vector<Eigen::Vector3d> m_boundingbox_w;
+
 #ifdef SUPERPOINT
     std::shared_ptr<ORB_SLAM3::SPextractor> SPextractor;
     int start_sfm_keyframe_id;
@@ -88,12 +79,15 @@ bool TestViewer::SaveMappointFor3DObject_SuperPoint(
     long long buffer_size = 0;
     SLAM->SetScanBoundingbox_W_Superpoint(m_boundingbox_w);
 
+    VLOG(0) << "Start Saving Mappoints";
     bool save_result = SLAM->PackAtlasToMemoryFor3DObject_SuperPoint(
         &buffer, buffer_size, start_sfm_keyframe_id, keyframes_for_SfM);
+    VLOG(0) << "Save Done";
     if (save_result) {
         std::ofstream out(save_path, std::ios::out | std::ios::binary);
         if (out.is_open()) {
             out.write(buffer, buffer_size);
+            VLOG(0) << "Write Done!";
             delete[] buffer;
             return true;
         } else {
@@ -128,43 +122,8 @@ bool TestViewer::SaveMappointFor3DObject(const std::string save_path) {
     return false;
 }
 
-void TestViewer::LoadIMU(
-    const string &strImuPath, vector<double> &vTimeStamps,
-    vector<cv::Point3f> &vAcc, vector<cv::Point3f> &vGyro) {
-    ifstream fImu;
-    fImu.open(strImuPath.c_str());
-    vTimeStamps.reserve(5000);
-    vAcc.reserve(5000);
-    vGyro.reserve(5000);
-
-    while (!fImu.eof()) {
-        string s;
-        getline(fImu, s);
-        if (s[0] == '#')
-            continue;
-
-        if (!s.empty()) {
-            string item;
-            size_t pos = 0;
-            double data[7];
-            int count = 0;
-            while ((pos = s.find(',')) != string::npos) {
-                item = s.substr(0, pos);
-                data[count++] = stod(item);
-                s.erase(0, pos + 1);
-            }
-            item = s.substr(0, pos);
-            data[6] = stod(item);
-
-            vTimeStamps.push_back(data[0] / 1e9);
-            vAcc.push_back(cv::Point3f(data[4], data[5], data[6]));
-            vGyro.push_back(cv::Point3f(data[1], data[2], data[3]));
-        }
-    }
-}
-
 void TestViewer::LoadImages(
-    const string &strPathLeft, const string &strPathTimes,
+    const string &strPath, const string &strPathTimes,
     vector<string> &vstrImages, vector<double> &vTimeStamps) {
     ifstream fTimes;
     fTimes.open(strPathTimes.c_str());
@@ -179,7 +138,7 @@ void TestViewer::LoadImages(
         if (!s.empty()) {
             stringstream ss;
             ss << s;
-            vstrImages.push_back(strPathLeft + "/" + ss.str());
+            vstrImages.push_back(strPath + "/" + ss.str());
             double t;
             ss >> t;
             vTimeStamps.push_back(t / 1e9);
@@ -188,31 +147,17 @@ void TestViewer::LoadImages(
 }
 
 bool TestViewer::InitSLAM() {
-
     VLOG(0) << "Loading images ...";
+
     // data root path
     string pathTimeStamps = data_path + "/cam0/timestamp.txt";
     string pathCam0 = data_path + "/cam0/data";
-    string pathImu = data_path + "/imu0/data.csv";
 
     // load images
     LoadImages(pathCam0, pathTimeStamps, vstrImages, vTimestampsCam);
     VLOG(0) << "LOADED!";
+
     nImages = vstrImages.size();
-
-    VLOG(0) << "Loading IMU ...";
-    LoadIMU(pathImu, vTimestampsImu, vAcc, vGyro);
-    VLOG(0) << "LOADED!" << endl;
-    nImu = vTimestampsImu.size();
-
-    if ((nImages <= 0) || (nImu <= 0)) {
-        cerr << "ERROR: Failed to load images or IMU for sequence" << endl;
-        return 1;
-    }
-
-    while (vTimestampsImu[first_imu] <= vTimestampsCam[0])
-        first_imu++;
-    first_imu--; // first imu measurement to be considered
 
     cv::FileStorage fsSettings(config_path, cv::FileStorage::READ);
     if (!fsSettings.isOpened()) {
@@ -220,37 +165,8 @@ bool TestViewer::InitSLAM() {
         return -1;
     }
 
-    cv::Mat K_l, K_r, P_l, P_r, R_l, R_r, D_l, D_r;
-    fsSettings["LEFT.K"] >> K_l;
-    fsSettings["RIGHT.K"] >> K_r;
-    fsSettings["LEFT.P"] >> P_l;
-    fsSettings["RIGHT.P"] >> P_r;
-    fsSettings["LEFT.R"] >> R_l;
-    fsSettings["RIGHT.R"] >> R_r;
-    fsSettings["LEFT.D"] >> D_l;
-    fsSettings["RIGHT.D"] >> D_r;
-
     int rows_l = fsSettings["LEFT.height"];
     int cols_l = fsSettings["LEFT.width"];
-    int rows_r = fsSettings["RIGHT.height"];
-    int cols_r = fsSettings["RIGHT.width"];
-
-    if (K_l.empty() || K_r.empty() || P_l.empty() || P_r.empty() ||
-        R_l.empty() || R_r.empty() || D_l.empty() || D_r.empty() ||
-        rows_l == 0 || rows_r == 0 || cols_l == 0 || cols_r == 0) {
-        cerr << "ERROR: Calibration parameters to rectify stereo are missing!"
-             << endl;
-        return -1;
-    }
-
-    // get map, use remap() to get the rectified image
-    cv::initUndistortRectifyMap(
-        K_l, D_l, R_l, P_l.rowRange(0, 3).colRange(0, 3),
-        cv::Size(cols_l, rows_l), CV_32F, M1l, M2l);
-    cv::initUndistortRectifyMap(
-        K_r, D_r, R_r, P_r.rowRange(0, 3).colRange(0, 3),
-        cv::Size(cols_r, rows_r), CV_32F, M1r, M2r);
-
     double fx = fsSettings["Camera.fx"];
     double fy = fsSettings["Camera.fy"];
     double cx = fsSettings["Camera.cx"];
@@ -283,8 +199,10 @@ bool TestViewer::InitSLAM() {
 
     Parameters::GetInstance().SetObjRecognitionORBFeatures(
         ObjRecognition_ORB_nFeatures);
+
     bRGB = static_cast<bool>((int)fsSettings["Camera.RGB"]);
     fps = fsSettings["Camera.fps"];
+
 #ifdef SUPERPOINT
     SPextractor =
         std::make_shared<ORB_SLAM3::SPextractor>(ORB_SLAM3::SPextractor(
@@ -295,15 +213,18 @@ bool TestViewer::InitSLAM() {
 #endif
 
     SLAM = new ORB_SLAM3::System(
-        voc_path, config_path, ORB_SLAM3::System::IMU_MONOCULAR, false, false);
+        voc_path, config_path, ORB_SLAM3::System::MONOCULAR, false, false);
 
     return true;
 }
 
 void TestViewer::SfMDebugMode() {
     while (true) {
+        if (viewerAR.GetSfMContinueFlag()) {
+            return;
+        }
+
         if (!viewerAR.GetSfMDebugFlag()) {
-            VLOG(0) << viewerAR.GetSfMDebugFlag();
             viewerAR.SetSfMDebugReverse();
             return;
         }
@@ -328,16 +249,16 @@ void TestViewer::ScanDebugMode() {
         if (viewerAR.GetFixFlag()) {
             // get boundingbox in slam word coords
             m_boundingbox_w = viewerAR.GetScanBoundingbox_W();
-            if (m_boundingbox_w.empty()) {
-                LOG(FATAL) << "error in save boundingbox";
-            }
-
 #ifdef SUPERPOINT
             start_sfm_keyframe_id =
                 (int)SLAM->mpTracker->GetLastKeyFrame()->mnId;
             VLOG(0) << "start sfm keyframe id: " << start_sfm_keyframe_id;
 #endif
-            VLOG(0) << "fix the boundingbox";
+
+            if (m_boundingbox_w.empty()) {
+                LOG(FATAL) << "error in save boundingbox";
+            }
+
 #ifdef ORBPOINT
             // extract more keypoihts
             ORB_SLAM3::FrameObjectProcess::GetInstance()->SetBoundingBox(
@@ -400,6 +321,7 @@ void TestViewer::SfMProcess() {
     mpSuperpointvocabulary = new ORB_SLAM3::SUPERPOINTVocabulary();
     mpSuperpointvocabulary->load(voc_path_superpoint);
 #endif
+
     std::vector<ORB_SLAM3::KeyFrame *> keyframes_for_SfM;
     for (auto keyframe : keyframes_slam) {
         if (start_sfm_keyframe_id == -1 ||
@@ -409,17 +331,14 @@ void TestViewer::SfMProcess() {
         keyframes_for_SfM.emplace_back(keyframe);
     }
 
+    // extract superpoint on each keyframe
     ORB_SLAM3::KeyFrame *keyframe;
-    for (size_t i = 0; i < keyframes_slam.size(); i++) {
-        ORB_SLAM3::KeyFrame *keyframe = keyframes_slam[i];
-        if (start_sfm_keyframe_id == -1 ||
-            keyframe->mnId < (long unsigned int)start_sfm_keyframe_id) {
-            continue;
-        }
-
+    for (size_t i = 0; i < keyframes_for_SfM.size(); i++) {
+        keyframe = keyframes_for_SfM[i];
         keyframe->mvKeys = std::vector<cv::KeyPoint>();
         keyframe->mvKeysUn = std::vector<cv::KeyPoint>();
         keyframe->mDescriptors = cv::Mat();
+
         cv::Mat Tcw_cv = keyframe->GetPose();
         Eigen::Matrix4d Tcw_eigen;
         cv::cv2eigen(Tcw_cv, Tcw_eigen);
@@ -430,12 +349,13 @@ void TestViewer::SfMProcess() {
         //            keyframe->imgLeft,
         //            ObjRecognition::CameraIntrinsic::GetInstance().GetEigenK(),
         //            Rcw, tcw, m_boundingbox_w, mask);
+
         auto start = std::chrono::high_resolution_clock::now();
         (*SPextractor)(
             keyframe->imgLeft, cv::Mat(), keyframe->mvKeys_superpoint,
             keyframe->mDescriptors_superpoint);
         VLOG(0) << "Time taken by extract superpoint " << std::to_string(i)
-                << "/" << std::to_string(keyframes_slam.size() - 1) << ": "
+                << "/" << std::to_string(keyframes_for_SfM.size() - 1) << ": "
                 << (duration_cast<std::chrono::microseconds>(
                         std::chrono::high_resolution_clock::now() - start))
                            .count() /
@@ -458,31 +378,17 @@ void TestViewer::SfMProcess() {
         // compute dbow
         keyframe->ComputeBoW_SuperPoint(mpSuperpointvocabulary);
 #endif
+
         keyframe->SetMap_SuperPoint(SLAM->mpAtlas_superpoint->GetCurrentMap());
     }
-
     VLOG(0) << "All keyframe exract superpoint done !";
-    for (auto key_num = 0; key_num < keyframes_slam.size(); key_num++) {
-        SLAM->mpLocalMapper->TriangulateForSuperPoint(
-            keyframes_slam, key_num, start_sfm_keyframe_id);
-    }
 
+    for (auto key_num = 0; key_num < keyframes_for_SfM.size(); key_num++) {
+        SLAM->mpLocalMapper->TriangulateForSuperPoint(
+            keyframes_for_SfM, key_num, start_sfm_keyframe_id);
+    }
     VLOG(0) << "SfM done!";
-    while (true) {
-        if (viewerAR.GetSfMContinueLBAFlag()) {
-            break;
-        } else {
-            usleep(3000);
-        }
-    }
     SLAM->mpLocalMapper->LocalBAForSuperPoint();
-    while (true) {
-        if (viewerAR.GetSaveMapPointAfterLBAFlag()) {
-            break;
-        } else {
-            usleep(3000);
-        }
-    }
 #endif
 }
 
@@ -508,22 +414,24 @@ bool TestViewer::RunScanner() {
     // Main loop
     cv::Mat im;
     int proccIm = 0;
-    int ni = 0;
+    int ni;
     for (ni = 0; ni < nImages; ni++, proccIm++) {
         if (viewerAR.GetFixFlag()) {
             // get boundingbox in slam word coords
             m_boundingbox_w = viewerAR.GetScanBoundingbox_W();
+
 #ifdef SUPERPOINT
-            start_sfm_keyframe_id = SLAM->mpTracker->GetLastKeyFrame()->mnId;
+            start_sfm_keyframe_id =
+                (int)SLAM->mpTracker->GetLastKeyFrame()->mnId;
             SLAM->mpAtlas_superpoint->SetStartSfMKeyFrameId(
                 start_sfm_keyframe_id);
             VLOG(0) << "start sfm keyframe id: " << start_sfm_keyframe_id;
 #endif
+
             if (m_boundingbox_w.empty()) {
                 LOG(FATAL) << "error in save boundingbox";
             }
             VLOG(0) << "fix the boundingbox";
-
 #ifdef ORBPOINT
             // obstract more keypoihts
             ORB_SLAM3::FrameObjectProcess::GetInstance()->SetBoundingBox(
@@ -555,22 +463,6 @@ bool TestViewer::RunScanner() {
 
         double tframe = vTimestampsCam[ni];
 
-        // Load imu measurements from previous frame
-        vImuMeas.clear();
-
-        if (ni > 0)
-            while (
-                vTimestampsImu[first_imu] <=
-                vTimestampsCam
-                    [ni]) // while(vTimestampsImu[first_imu]<=vTimestampsCam[ni])
-            {
-                vImuMeas.push_back(ORB_SLAM3::IMU::Point(
-                    vAcc[first_imu].x, vAcc[first_imu].y, vAcc[first_imu].z,
-                    vGyro[first_imu].x, vGyro[first_imu].y, vGyro[first_imu].z,
-                    vTimestampsImu[first_imu]));
-                first_imu++;
-            }
-
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t1 =
             std::chrono::steady_clock::now();
@@ -578,9 +470,8 @@ bool TestViewer::RunScanner() {
         std::chrono::monotonic_clock::time_point t1 =
             std::chrono::monotonic_clock::now();
 #endif
-
         cv::Mat Tcw = SLAM->TrackMonocular(
-            im, tframe, vImuMeas); // TODO change to monocular_inertial
+            im, tframe); // TODO change to monocular_inertial
 
         cv::Mat im_clone = im.clone();
         int state = SLAM->GetTrackingState();
@@ -619,13 +510,15 @@ bool TestViewer::RunScanner() {
 
 #ifdef SUPERPOINT
     if (ni >= nImages) {
+        viewerAR.SetStopFlag();
+        SLAM->Shutdown();
         SfMProcess();
         viewerAR.SetSfMFinishFlag();
-        SLAM->Shutdown();
     }
 #endif
 
 #ifdef SUPERPOINT
+    // shut down before sfm, in viewerar.cc
 #else
     // Stop all threads
     SLAM->Shutdown();
@@ -637,6 +530,7 @@ bool TestViewer::RunScanner() {
 #else
     std::string mappoint_save_path = slam_saved_path + "/" + mappoint_filename;
 #endif
+
 #ifdef SUPERPOINT
     std::vector<ORB_SLAM3::KeyFrame *> keyframes_for_SfM;
     for (auto keyframe : keyframes_slam) {
@@ -657,12 +551,7 @@ bool TestViewer::RunScanner() {
     }
 #endif
 
-    // Save camera trajectory
-    const string kf_file = slam_saved_path + "/kf_" + dataset_name + ".txt";
-    const string f_file = slam_saved_path + "/f_" + dataset_name + ".txt";
-    SLAM->SaveTrajectoryEuRoC(f_file);
-    SLAM->SaveKeyFrameTrajectoryEuRoC(kf_file);
-
+    // need to press finish scan button
     tViewer.join();
     return true;
 }
@@ -701,6 +590,7 @@ int main(int argc, char *argv[]) {
     fsSettings["mappoint_filename_superpoint"] >>
         testViewer.mappoint_filename_superpoint;
     fsSettings["dataset_name"] >> testViewer.dataset_name;
+
     bool initial_slam_result = testViewer.InitSLAM();
     if (!initial_slam_result) {
         LOG(FATAL) << "slam initialize fail!";

@@ -2637,6 +2637,7 @@ bool Tracking::NeedNewKeyFrame() {
 #ifdef SCANNER
     return mCurrentFrame.mnId >= mnLastKeyFrameId + mMaxFrames - 28;
 #else
+
     return mCurrentFrame.mnId >= mnLastKeyFrameId + mMaxFrames - 27;
     /*
     // Condition 1a: More than "MaxFrames" have passed from last keyframe
@@ -3138,6 +3139,7 @@ bool Tracking::Relocalization() {
                     0.99, 10, 300, 6, 0.5,
                     5.991); // This solver needs at least 6 points
                 vpMLPnPsolvers[i] = pSolver;
+                nCandidates++;
             }
         }
     }

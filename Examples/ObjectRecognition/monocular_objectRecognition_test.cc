@@ -1,5 +1,5 @@
 //
-// Created by zhangye on 2020-09-14.
+// Created by root on 2020/12/23.
 //
 #include <iostream>
 #include <algorithm>
@@ -7,7 +7,6 @@
 #include <glog/logging.h>
 #include <opencv2/core/core.hpp>
 #include <Eigen/Dense>
-#include <chrono>
 #include <include/ObjectRecognition/Utility/GlobalSummary.h>
 #include "ORBSLAM3/System.h"
 #include "Utility/FileIO.h"
@@ -44,19 +43,15 @@ public:
 
 private:
     void LoadImages(
-        const string &strPathLeft, const string &strPathRight,
-        const string &strPathColor, const string &strPathTimes,
-        const string &sstrPathTimes_color, vector<string> &vstrImageLeft,
-        vector<string> &vstrImageRight, vector<string> &vstrImageColor,
-        vector<double> &vTimeStamps);
+        const string &strPath, const string &strPathTimes,
+        vector<string> &vstrImages, vector<double> &vTimeStamps);
 
     bool SaveResultInit();
     void ObjectResultParse(const ObjRecognition::ObjRecogResult &result);
     void SaveObjRecogResult();
 
     std::string m_result_dir;
-    vector<string> vstrImageLeft;
-    vector<string> vstrImageRight;
+    vector<string> vstrImages;
     vector<string> vstrImageColor;
     vector<double> vTimestampsCam;
     int nImages;
@@ -105,15 +100,6 @@ bool TestViewer::SaveResultInit() {
 
 bool TestViewer::InitObjectRecognition() {
     ObjRecognitionExd::ObjRecongManager::Instance().CreateWithConfig();
-
-    // set slam data callback
-
-    // char *voc_buf = nullptr;
-    // unsigned int voc_buf_size = 0;
-    // LoadVoc("/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/voc.dat.zip",
-    // &voc_buf, voc_buf_size);
-    // ObjRecognitionExd::ObjRecongManager::Instance().LoadDic(voc_buf,
-    // voc_buf_size);
 
 #ifdef SUPERPOINT
     std::string cloud_point_model_dir =
@@ -164,11 +150,8 @@ bool TestViewer::InitObjectRecognition() {
 }
 
 void TestViewer::LoadImages(
-    const string &strPathLeft, const string &strPathRight,
-    const string &strPathColor, const string &strPathTimes,
-    const string &strPathTimes_color, vector<string> &vstrImageLeft,
-    vector<string> &vstrImageRight, vector<string> &vstrImageColor,
-    vector<double> &vTimeStamps) {
+    const string &strPath, const string &strPathTimes,
+    vector<string> &vstrImages, vector<double> &vTimeStamps) {
 
     ifstream fTimes;
     fTimes.open(strPathTimes.c_str());
@@ -186,8 +169,7 @@ void TestViewer::LoadImages(
 #endif
 
     vTimeStamps.reserve(5000);
-    vstrImageLeft.reserve(5000);
-    vstrImageRight.reserve(5000);
+    vstrImages.reserve(5000);
 
     while (!fTimes.eof()) {
         string s;
@@ -195,8 +177,7 @@ void TestViewer::LoadImages(
         if (!s.empty()) {
             stringstream ss;
             ss << s;
-            vstrImageLeft.push_back(strPathLeft + "/" + ss.str());
-            vstrImageRight.push_back(strPathRight + "/" + ss.str());
+            vstrImages.push_back(strPath + "/" + ss.str());
             double t;
             ss >> t;
             vTimeStamps.push_back(t / 1e9);
@@ -223,50 +204,16 @@ bool TestViewer::InitSLAM() {
     VLOG(0) << "Loading images ...";
     string pathTimeStamps = data_path + "/cam0/timestamp.txt";
     string pathCam0 = data_path + "/cam0/data";
-    string pathCam1 = data_path + "/cam1/data";
-    string pathCam2 = data_path + "/cam2/data";
-    string pathTimeStamps_colorimage = data_path + "/cam2/timestamp.txt";
 
-    LoadImages(
-        pathCam0, pathCam1, pathCam2, pathTimeStamps, pathTimeStamps_colorimage,
-        vstrImageLeft, vstrImageRight, vstrImageColor, vTimestampsCam);
+    LoadImages(pathCam0, pathTimeStamps, vstrImages, vTimestampsCam);
     VLOG(0) << "LOADED!";
-    nImages = vstrImageLeft.size();
+    nImages = vstrImages.size();
 
     cv::FileStorage fsSettings(config_path, cv::FileStorage::READ);
     if (!fsSettings.isOpened()) {
         cerr << "ERROR: Wrong path to settings" << endl;
         return -1;
     }
-
-    cv::Mat K_l, K_r, P_l, P_r, R_l, R_r, D_l, D_r;
-    fsSettings["LEFT.K"] >> K_l;
-    fsSettings["RIGHT.K"] >> K_r;
-    fsSettings["LEFT.P"] >> P_l;
-    fsSettings["RIGHT.P"] >> P_r;
-    fsSettings["LEFT.R"] >> R_l;
-    fsSettings["RIGHT.R"] >> R_r;
-    fsSettings["LEFT.D"] >> D_l;
-    fsSettings["RIGHT.D"] >> D_r;
-    int rows_l = fsSettings["LEFT.height"];
-    int cols_l = fsSettings["LEFT.width"];
-    int rows_r = fsSettings["RIGHT.height"];
-    int cols_r = fsSettings["RIGHT.width"];
-
-    if (K_l.empty() || K_r.empty() || P_l.empty() || P_r.empty() ||
-        R_l.empty() || R_r.empty() || D_l.empty() || D_r.empty() ||
-        rows_l == 0 || rows_r == 0 || cols_l == 0 || cols_r == 0) {
-        cerr << "ERROR: Calibration parameters to rectify stereo are missing!"
-             << endl;
-        return -1;
-    }
-
-    cv::initUndistortRectifyMap(
-        K_l, D_l, R_l, P_l.rowRange(0, 3).colRange(0, 3),
-        cv::Size(cols_l, rows_l), CV_32F, M1l, M2l);
-    cv::initUndistortRectifyMap(
-        K_r, D_r, R_r, P_r.rowRange(0, 3).colRange(0, 3),
-        cv::Size(cols_r, rows_r), CV_32F, M1r, M2r);
 
 #ifdef TEST_COLOR_IMAGE
     cv::initUndistortRectifyMap(
@@ -315,7 +262,8 @@ bool TestViewer::InitSLAM() {
     is_recognition = true;
 #endif
     SLAM = new ORB_SLAM3::System(
-        voc_path, config_path, ORB_SLAM3::System::STEREO, true, is_recognition);
+        voc_path, config_path, ORB_SLAM3::System::MONOCULAR, true,
+        is_recognition);
 
     return true;
 }
@@ -401,7 +349,7 @@ void TestViewer::ObjectResultParse(
 }
 
 bool TestViewer::RunObjectRecognition() {
-    cv::Mat imLeft, imRight, imLeftRect, imRightRect;
+    cv::Mat im;
     cv::Mat imColor, imColorRect;
     int proccIm = 0;
 
@@ -412,8 +360,7 @@ bool TestViewer::RunObjectRecognition() {
             break;
         }
         // Read image from file
-        imLeft = cv::imread(vstrImageLeft[ni], cv::IMREAD_UNCHANGED);
-        imRight = cv::imread(vstrImageRight[ni], cv::IMREAD_UNCHANGED);
+        im = cv::imread(vstrImages[ni], cv::IMREAD_UNCHANGED);
 
 #ifdef TEST_COLOR_IMAGE
         imColor = cv::imread(vstrImageColor[ni], cv::IMREAD_UNCHANGED);
@@ -424,22 +371,12 @@ bool TestViewer::RunObjectRecognition() {
             return 1;
         }
 #endif
-        if (imLeft.empty()) {
+        if (im.empty()) {
             cerr << endl
-                 << "Failed to load image at: " << string(vstrImageLeft[ni])
+                 << "Failed to load image at: " << string(vstrImages[ni])
                  << endl;
             return 1;
         }
-
-        if (imRight.empty()) {
-            cerr << endl
-                 << "Failed to load image at: " << string(vstrImageRight[ni])
-                 << endl;
-            return 1;
-        }
-
-        cv::remap(imLeft, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
-        cv::remap(imRight, imRightRect, M1r, M2r, cv::INTER_LINEAR);
 
 #ifdef TEST_COLOR_IMAGE
         imColorRect = imColor;
@@ -456,18 +393,17 @@ bool TestViewer::RunObjectRecognition() {
             std::chrono::monotonic_clock::now();
 #endif
 
-        cv::Mat camPos = SLAM->TrackStereo(
-            imLeftRect, imRightRect, tframe, vector<ORB_SLAM3::IMU::Point>(),
-            vstrImageLeft[ni]); // TODO change to monocular_inertial
+        cv::Mat camPos = SLAM->TrackMonocular(
+            im, tframe); // TODO change to monocular_inertial
 
-        cv::Mat im_clone_left = imLeftRect.clone();
+        cv::Mat im_clone = im.clone();
         int slam_state = SLAM->GetTrackingState();
 
 #ifdef TEST_COLOR_IMAGE
         cv::Mat im_clone_color = imColorRect.clone();
         SLAM->mpViewer->SetSLAMInfo(im_clone_color, slam_state, ni, camPos);
 #else
-        SLAM->mpViewer->SetSLAMInfo(im_clone_left, slam_state, ni, camPos);
+        SLAM->mpViewer->SetSLAMInfo(im_clone, slam_state, ni, camPos);
 #endif
 
 #ifdef COMPILEDWITHC11
@@ -502,6 +438,7 @@ bool TestViewer::RunObjectRecognition() {
         1000.0;
 
     std::cout << "time total: " << end << std::endl;
+    std::cout << "finish!" << std::endl;
 
 #ifdef OBJECTRECOGNITION
     std::string statics_result_filename;

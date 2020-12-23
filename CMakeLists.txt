@@ -350,13 +350,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 add_executable(superpoint_test
         Examples/Superpoint/Superpoint_test.cc)
 target_link_libraries(superpoint_test ${PROJECT_NAME})
-#add_executable(objectRecognition_test
-#        Examples/ObjectRecognition/mono_inertial_objectRecognition_test.cc)
-#target_link_libraries(objectRecognition_test ${PROJECT_NAME})
-#
-#add_executable(scanner_test
-#        Examples/ObjectRecognition/mono_inertial_scanner_test.cc)
-#target_link_libraries(scanner_test ${PROJECT_NAME})
+
+
 
 add_executable(stereo_objectRecognition_test
         Examples/ObjectRecognition/stereo_objectRecognition_test.cc)
@@ -366,14 +361,30 @@ add_executable(stereo_scan_test
         Examples/ObjectRecognition/stereo_scan_test.cc)
 target_link_libraries(stereo_scan_test ${PROJECT_NAME})
 
-add_executable(stereo_inertial_objectRecognition_test
-        Examples/ObjectRecognition/stereo_inertial_objectRecognition_test.cc)
-target_link_libraries(stereo_inertial_objectRecognition_test ${PROJECT_NAME})
-
-add_executable(stereo_inertial_scan_test
-        Examples/ObjectRecognition/stereo_inertial_scan_test.cc)
-target_link_libraries( stereo_inertial_scan_test ${PROJECT_NAME})
+#add_executable(stereo_inertial_objectRecognition_test
+#        Examples/ObjectRecognition/stereo_inertial_objectRecognition_test.cc)
+#target_link_libraries(stereo_inertial_objectRecognition_test ${PROJECT_NAME})
+#
+#add_executable(stereo_inertial_scan_test
+#        Examples/ObjectRecognition/stereo_inertial_scan_test.cc)
+#target_link_libraries( stereo_inertial_scan_test ${PROJECT_NAME})
 
 add_executable(scan_mappoint_show
         Examples/ObjectRecognition/MapPointVisualization.cc)
 target_link_libraries(scan_mappoint_show ${PROJECT_NAME})
+
+add_executable(mono_objectRecognition_test
+        Examples/ObjectRecognition/monocular_objectRecognition_test.cc)
+target_link_libraries(mono_objectRecognition_test ${PROJECT_NAME})
+
+add_executable(mono_scan_test
+        Examples/ObjectRecognition/monocular_scan_test.cc)
+target_link_libraries(mono_scan_test ${PROJECT_NAME})
+
+add_executable(mono_inertial_objectRecognition_test
+        Examples/ObjectRecognition/mono_inertial_objectRecognition_test.cc)
+target_link_libraries(mono_inertial_objectRecognition_test ${PROJECT_NAME})
+
+add_executable(mono_inertial_scanner_test
+        Examples/ObjectRecognition/mono_inertial_scanner_test.cc)
+target_link_libraries(mono_inertial_scanner_test ${PROJECT_NAME})
