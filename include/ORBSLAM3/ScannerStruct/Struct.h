@@ -1,6 +1,3 @@
-//
-// Created by root on 2020/9/27.
-//
 #ifndef ORB_SLAM3_STRUCT_H
 #define ORB_SLAM3_STRUCT_H
 #include <Eigen/Dense>

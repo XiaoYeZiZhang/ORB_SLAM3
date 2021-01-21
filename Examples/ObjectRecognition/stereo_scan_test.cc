@@ -1,20 +1,18 @@
-//
-// Created by root on 2020/10/12.
-//
 #include <ctime>
 #include <opencv2/core/core.hpp>
 #include <Eigen/Dense>
-#include <include/ORBSLAM3/SPextractor.h>
-#include <include/ObjectRecognition/Utility/Parameters.h>
-#include <include/ORBSLAM3/FrameObjectProcess.h>
 #include <chrono>
-#include "ORBSLAM3/System.h"
-#include "Utility/FileIO.h"
-#include "Utility/Camera.h"
-#include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
-#include "include/Tools.h"
-#include "ORBSLAM3/ViewerAR.h"
+#include "SPextractor.h"
+#include "Parameters.h"
+#include "FrameObjectProcess.h"
+#include "System.h"
+#include "FileIO.h"
+#include "Camera.h"
+#include "Tools.h"
+#include "ViewerAR.h"
 #include "mode.h"
+#include <opencv2/core/eigen.hpp>
+
 using namespace std;
 using namespace std::chrono;
 class TestViewer {
@@ -23,9 +21,9 @@ public:
     }
     bool InitSLAM();
     bool RunScanner();
-    bool SaveMappointFor3DObject(const std::string save_path);
+    bool SaveMappointFor3DObject(std::string save_path);
     bool SaveMappointFor3DObject_SuperPoint(
-        const std::string save_path, const int start_sfm_keyframe_id,
+        const std::string save_path, int start_sfm_keyframe_id,
         const std::vector<ORB_SLAM3::KeyFrame *> &keyframes_for_SfM);
     cv::Mat M2l;
     cv::Mat M1r;
@@ -53,7 +51,6 @@ private:
         std::vector<cv::DMatch> &goodMatches);
     void ScanDebugMode();
     void SfMDebugMode();
-    std::string m_result_dir;
     vector<string> vstrImageLeft;
     vector<string> vstrImageRight;
     vector<double> vTimestampsCam;
@@ -153,13 +150,9 @@ void TestViewer::LoadImages(
 
 bool TestViewer::InitSLAM() {
     VLOG(0) << "Loading images ...";
-
-    // data root path
     string pathTimeStamps = data_path + "/cam0/timestamp.txt";
     string pathCam0 = data_path + "/cam0/data";
     string pathCam1 = data_path + "/cam1/data";
-
-    // load images
     LoadImages(
         pathCam0, pathCam1, pathTimeStamps, vstrImageLeft, vstrImageRight,
         vTimestampsCam);

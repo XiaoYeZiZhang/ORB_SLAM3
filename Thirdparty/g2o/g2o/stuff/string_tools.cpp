@@ -35,11 +35,7 @@
 #include <algorithm>
 #include <cstdio>
 #include <iostream>
-#include <iterator>
-
-#if (defined (UNIX) || defined(CYGWIN)) && !defined(ANDROID)
 #include <wordexp.h>
-#endif
 
 namespace g2o {
 
@@ -119,25 +115,6 @@ int strPrintf(std::string& str, const char* fmt, ...)
   str = auxPtr;
   free(auxPtr);
   return numChars;
-}
-
-std::string strExpandFilename(const std::string& filename)
-{
-#if (defined (UNIX) || defined(CYGWIN)) && !defined(ANDROID)
-  string result = filename;
-  wordexp_t p;
-
-  wordexp(filename.c_str(), &p, 0);
-  if(p.we_wordc > 0) {
-    result = p.we_wordv[0];
-  }
-  wordfree(&p);
-  return result;
-#else
-  (void) filename;
-  std::cerr << "WARNING: " << __PRETTY_FUNCTION__ << " not implemented" << std::endl;
-  return std::string();
-#endif
 }
 
 std::vector<std::string> strSplit(const std::string& str, const std::string& delimiters)

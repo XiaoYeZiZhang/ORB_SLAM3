@@ -1,7 +1,3 @@
-//
-// Created by root on 2020/10/26.
-//
-
 #include "ORBSLAM3/SuperPointMatcher.h"
 #include "mode.h"
 namespace ORB_SLAM3 {
@@ -11,8 +7,7 @@ const float SuperPointMatcher::TH_HIGH = 0.70;
 const float SuperPointMatcher::TH_LOW = 0.30;
 const int SuperPointMatcher::HISTO_LENGTH = 30;
 
-SuperPointMatcher::SuperPointMatcher(float nnratio, bool checkOri)
-    : mfNNratio(nnratio), mbCheckOrientation(checkOri) {
+SuperPointMatcher::SuperPointMatcher(float nnratio) : mfNNratio(nnratio) {
 }
 
 void SuperPointMatcher::FindMatchByBruteForce(
@@ -125,17 +120,6 @@ int SuperPointMatcher::SearchForTriangulation(
             const cv::KeyPoint &kp2 = pKF2->mvKeysUn_superpoint[bestIdx2];
             vMatches12[idx1] = bestIdx2;
             nmatches++;
-
-            if (false) {
-                float rot = kp1.angle - kp2.angle;
-                if (rot < 0.0)
-                    rot += 360.0f;
-                int bin = round(rot * factor);
-                if (bin == HISTO_LENGTH)
-                    bin = 0;
-                assert(bin >= 0 && bin < HISTO_LENGTH);
-                rotHist[bin].push_back(idx1);
-            }
         }
     }
 
@@ -193,17 +177,6 @@ int SuperPointMatcher::SearchForTriangulation(
                         pKF2->mvKeysUn_superpoint[bestIdx2];
                     vMatches12[idx1] = bestIdx2;
                     nmatches++;
-
-                    if (false) {
-                        float rot = kp1.angle - kp2.angle;
-                        if (rot < 0.0)
-                            rot += 360.0f;
-                        int bin = round(rot * factor);
-                        if (bin == HISTO_LENGTH)
-                            bin = 0;
-                        assert(bin >= 0 && bin < HISTO_LENGTH);
-                        rotHist[bin].push_back(idx1);
-                    }
                 }
             }
 
@@ -216,23 +189,6 @@ int SuperPointMatcher::SearchForTriangulation(
         }
     }
 #endif
-
-    if (false) {
-        int ind1 = -1;
-        int ind2 = -1;
-        int ind3 = -1;
-
-        ComputeThreeMaxima(rotHist, HISTO_LENGTH, ind1, ind2, ind3);
-
-        for (int i = 0; i < HISTO_LENGTH; i++) {
-            if (i == ind1 || i == ind2 || i == ind3)
-                continue;
-            for (size_t j = 0, jend = rotHist[i].size(); j < jend; j++) {
-                vMatches12[rotHist[i][j]] = -1;
-                nmatches--;
-            }
-        }
-    }
 
     vMatchedPairs.clear();
     vMatchedPairs.reserve(nmatches);
@@ -268,7 +224,6 @@ int SuperPointMatcher::SearchByBoW(
         rotHist[i].reserve(500);
 
     const float factor = 1.0f / HISTO_LENGTH;
-
     int nmatches = 0;
 
     DBoW2::FeatureVector::const_iterator f1it = vFeatVec1.begin();
@@ -323,18 +278,6 @@ int SuperPointMatcher::SearchByBoW(
                         mfNNratio * static_cast<float>(bestDist2)) {
                         vpMatches12[idx1] = vpMapPoints2[bestIdx2];
                         vbMatched2[bestIdx2] = true;
-
-                        if (false) {
-                            float rot =
-                                vKeysUn1[idx1].angle - vKeysUn2[bestIdx2].angle;
-                            if (rot < 0.0)
-                                rot += 360.0f;
-                            int bin = round(rot * factor);
-                            if (bin == HISTO_LENGTH)
-                                bin = 0;
-                            assert(bin >= 0 && bin < HISTO_LENGTH);
-                            rotHist[bin].push_back(idx1);
-                        }
                         nmatches++;
                     }
                 }
@@ -346,23 +289,6 @@ int SuperPointMatcher::SearchByBoW(
             f1it = vFeatVec1.lower_bound(f2it->first);
         } else {
             f2it = vFeatVec2.lower_bound(f1it->first);
-        }
-    }
-
-    if (false) {
-        int ind1 = -1;
-        int ind2 = -1;
-        int ind3 = -1;
-
-        ComputeThreeMaxima(rotHist, HISTO_LENGTH, ind1, ind2, ind3);
-
-        for (int i = 0; i < HISTO_LENGTH; i++) {
-            if (i == ind1 || i == ind2 || i == ind3)
-                continue;
-            for (size_t j = 0, jend = rotHist[i].size(); j < jend; j++) {
-                vpMatches12[rotHist[i][j]] = static_cast<MapPoint *>(NULL);
-                nmatches--;
-            }
         }
     }
 
@@ -454,37 +380,6 @@ int SuperPointMatcher::SearchByProjection(
                     pMP_superpoint->ComputeDistinctiveDescriptors(true);
                     pMP_superpoint->UpdateNormalAndDepth(true);
                     nmatches++;
-
-                    if (false) {
-                        float rot =
-                            LastKeyFrame.mvKeysUn_superpoint[i].angle -
-                            CurrentKeyFrame.mvKeysUn_superpoint[bestIdx2].angle;
-                        if (rot < 0.0)
-                            rot += 360.0f;
-                        int bin = round(rot * factor);
-                        if (bin == HISTO_LENGTH)
-                            bin = 0;
-                        assert(bin >= 0 && bin < HISTO_LENGTH);
-                        rotHist[bin].push_back(bestIdx2);
-                    }
-                }
-            }
-        }
-    }
-
-    if (false) {
-        int ind1 = -1;
-        int ind2 = -1;
-        int ind3 = -1;
-
-        // ComputeThreeMaxima(rotHist,HISTO_LENGTH,ind1,ind2,ind3);
-
-        for (int i = 0; i < HISTO_LENGTH; i++) {
-            if (i != ind1 && i != ind2 && i != ind3) {
-                for (size_t j = 0, jend = rotHist[i].size(); j < jend; j++) {
-                    CurrentKeyFrame.AddSuperpointMapPoint(
-                        static_cast<MapPoint *>(NULL), rotHist[i][j]);
-                    nmatches--;
                 }
             }
         }

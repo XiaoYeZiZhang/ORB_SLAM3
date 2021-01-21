@@ -1,7 +1,3 @@
-//
-// Created by zhangye on 2020/9/16.
-//
-
 #ifndef ORB_SLAM3_PARAMETERS_H
 #define ORB_SLAM3_PARAMETERS_H
 class Parameters {
@@ -40,10 +36,6 @@ public:
     }
 
 public:
-    int kObjectModelVersion;
-    int kObjectModelKFWidth;
-    int kObjectModelKFHeight;
-
     int kTrackerProjectSuccessNumTh;
     int kTrackerMatchPointsNumTh;
     int kTrackerPnPInliersGoodNumTh;

@@ -1,19 +1,12 @@
-//
-// Created by zhangye on 2020/9/16.
-//
-
 #ifndef ORB_SLAM3_DETECTORPOINTCLOUD_H
 #define ORB_SLAM3_DETECTORPOINTCLOUD_H
 
-#include "Struct/PointCloudObject.h"
-#include "Utility/RecognitionBase.h"
-#include "Struct/Object.h"
+#include "PointCloudObject.h"
+#include "RecognitionBase.h"
+#include "Object.h"
 #include "DetectorFrame.h"
-#include "PoseSolver/PoseSolver.h"
+#include "PoseSolver.h"
 namespace ObjRecognition {
-
-typedef long unsigned int KeyFrameIndex;
-
 class PointCloudObjDetector : public RecognitionBase {
 public:
     PointCloudObjDetector();
@@ -21,17 +14,15 @@ public:
 
     void SetPointCloudObj(const std::shared_ptr<Object> &pObj);
     void SetVoc(const std::shared_ptr<DBoW3::Vocabulary> &pVoc);
-    void Process(const std::shared_ptr<FrameData> &frm);
+    void Process(const std::shared_ptr<FrameForObjRecognition> &frm);
     void Reset();
     void Clear();
     bool Load(const long long &mem_size, const char *mem);
     bool Save(long long &mem_size, char **mem);
-    void SetInfo();
-    int GetInfo(std::string &info);
 
 private:
-    void PreProcess(const std::shared_ptr<ObjRecognition::FrameData> &frm);
-
+    void PreProcess(
+        const std::shared_ptr<ObjRecognition::FrameForObjRecognition> &frm);
     std::vector<PS::MatchSet2D> Find2DMatches(
         const std::vector<KeyFrame::Ptr> &allKFs,
         std::vector<KeyFrame::Ptr> &kf_mathceds);
@@ -39,7 +30,6 @@ private:
     PS::MatchSet3D
     Find3DMatchByConnection(const std::vector<KeyFrame::Ptr> &kf_mathceds);
 
-    void PoseOptimize(const std::vector<int> &inliers_3d);
     bool PoseSolver(
         const PS::MatchSet3D &matches_3d,
         const std::vector<PS::MatchSet2D> &matches_2d,
@@ -52,32 +42,39 @@ private:
     float ComputeAverageReProjError(const std::vector<int> &inliers_3d);
 
 private:
-    std::shared_ptr<Object> mObj;
+    std::shared_ptr<Object> m_obj;
     std::shared_ptr<DetectorFrame> m_frame_cur;
-    Eigen::Matrix3d Rcw_cur_;
-    Eigen::Vector3d tcw_cur_;
-    Eigen::Matrix3d Rwo_cur_;
+    Eigen::Matrix3d m_Rcw_cur;
+    Eigen::Vector3d m_tcw_cur;
+    Eigen::Matrix3d m_Rwo_cur;
+    Eigen::Vector3d m_two_cur;
 
-    Eigen::Vector3d two_cur_;
-    Eigen::Matrix3d Rco_cur_;
-    Eigen::Vector3d tco_cur_;
+    Eigen::Matrix3d m_Rco_cur;
+    Eigen::Vector3d m_tco_cur_scale;
+    Eigen::Vector3d m_tco_cur;
 
-    int knn_match_num_;
-    int pnp_inliers_num_;
-    int pnp_inliers_3d_num_;
-    int pnp_inliers_2d_num_;
-    bool pnp_solver_result_;
-    ObjRecogState detect_state_;
+    int m_knn_match_num;
+    int m_pnp_inliers_num;
+    int m_pnp_inliers_3d_num;
+    int m_pnp_inliers_2d_num;
+    bool m_pnp_solver_result;
+    ObjRecogState m_detect_state;
 
-    std::shared_ptr<DBoW3::Vocabulary> voc_;
+    std::shared_ptr<DBoW3::Vocabulary> m_voc;
 
-    std::string info_;
+    float m_reproj_error;
 
-    float reproj_error;
+    bool m_has_good_result;
 
-    bool has_good_result;
+    Eigen::Matrix3d m_last_detectionGood_R = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d m_last_detectionGood_t = Eigen::Vector3d::Zero();
 
-    std::vector<MapPoint::Ptr> associated_mappoints_vector;
+    Eigen::Matrix3d m_last_slam_R = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d m_last_slam_t = Eigen::Vector3d::Zero();
+
+    std::vector<MapPoint::Ptr> m_associated_mappoints_vector;
+    double m_scale;
+    size_t m_scale_num;
 };
 
 } // namespace ObjRecognition

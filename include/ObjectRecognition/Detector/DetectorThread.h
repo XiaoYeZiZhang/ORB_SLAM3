@@ -1,16 +1,12 @@
-//
-// Created by zhangye on 2020/9/16.
-//
-
 #ifndef ORB_SLAM3_DETECTORTHREAD_H
 #define ORB_SLAM3_DETECTORTHREAD_H
-#include "Utility/RecognitionBase.h"
-#include "Utility/ThreadBase.h"
-#include "Struct/Frame.h"
+#include "RecognitionBase.h"
+#include "ThreadBase.h"
+#include "Frame.h"
 
 namespace ObjRecognition {
 
-class DetectorThread : public ThreadBase<FrameData> {
+class DetectorThread : public ThreadBase<FrameForObjRecognition> {
 public:
     DetectorThread();
     ~DetectorThread();
@@ -21,11 +17,11 @@ protected:
     void Process();
     void Stop();
     void Reset();
-    void GetCurInputData();
+    void GetNewestData();
 
 protected:
-    std::shared_ptr<RecognitionBase> mDetector;
-    std::shared_ptr<FrameData> mCurData;
+    std::shared_ptr<RecognitionBase> m_detector;
+    std::shared_ptr<FrameForObjRecognition> m_curData;
 };
 
 } // namespace ObjRecognition

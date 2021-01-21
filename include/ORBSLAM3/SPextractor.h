@@ -1,7 +1,3 @@
-//
-// Created by root on 2020/10/21.
-//
-
 #ifndef ORB_SLAM3_SPEXTRACTOR_H
 #define ORB_SLAM3_SPEXTRACTOR_H
 #include <vector>
@@ -10,6 +6,7 @@
 #include <torch/torch.h>
 #include "ORBSLAM3/SuperPoint.h"
 #include <glog/logging.h>
+#include "mode.h"
 
 #ifdef EIGEN_MPL2_ONLY
 #undef EIGEN_MPL2_ONLY
@@ -34,8 +31,6 @@ public:
 
 class SPextractor {
 public:
-    enum { HARRIS_SCORE = 0, FAST_SCORE = 1 };
-
     SPextractor(
         int descriptor_len, int nfeatures, float scaleFactor, int nlevels,
         float iniThFAST, float minThFAST, bool is_use_cuda);
@@ -43,35 +38,32 @@ public:
     ~SPextractor() {
     }
 
-    // Compute the SP features and descriptors on an image.
-    // SP are dispersed on the image using an octree.
-    // Mask is ignored in the current implementation.
     void operator()(
         cv::InputArray image, const cv::Mat &mask,
         std::vector<cv::KeyPoint> &keypoints, cv::OutputArray descriptors);
 
     int inline GetLevels() {
-        return nlevels;
+        return m_levels;
     }
 
     float inline GetScaleFactor() {
-        return scaleFactor;
+        return m_scaleFactor;
     }
 
     std::vector<float> inline GetScaleFactors() {
-        return mvScaleFactor;
+        return m_scalefactor;
     }
 
     std::vector<float> inline GetInverseScaleFactors() {
-        return mvInvScaleFactor;
+        return m_invscalefactor;
     }
 
     std::vector<float> inline GetScaleSigmaSquares() {
-        return mvLevelSigma2;
+        return m_level_sigma2;
     }
 
     std::vector<float> inline GetInverseScaleSigmaSquares() {
-        return mvInvLevelSigma2;
+        return m_invlevel_sigma2;
     }
 
     std::vector<cv::Mat> mvImagePyramid;
@@ -88,28 +80,27 @@ protected:
         const int &maxX, const int &minY, const int &maxY, const int &nFeatures,
         const int &level);
 
-    // void ComputeKeyPointsOld(std::vector<std::vector<cv::KeyPoint> >&
-    // allKeypoints); std::vector<cv::Point> pattern;
-
-    int nfeatures;
-    double scaleFactor;
-    int nlevels;
-    float iniThFAST;
-    float minThFAST;
+    int m_features;
+    double m_scaleFactor;
+    int m_levels;
+    float m_iniTh_FAST;
+    float m_minTh_FAST;
     int m_descriptor_len;
 
-    std::vector<int> mnFeaturesPerLevel;
+    std::vector<int> m_features_perlevel;
 
-    std::vector<int> umax;
+    std::vector<float> m_scalefactor;
+    std::vector<float> m_invscalefactor;
+    std::vector<float> m_level_sigma2;
+    std::vector<float> m_invlevel_sigma2;
 
-    std::vector<float> mvScaleFactor;
-    std::vector<float> mvInvScaleFactor;
-    std::vector<float> mvLevelSigma2;
-    std::vector<float> mvInvLevelSigma2;
+    torch::jit::script::Module m_traced_module_480_640;
+    torch::jit::script::Module m_traced_module_400_533;
+    torch::jit::script::Module m_traced_module_333_444;
 
-    torch::jit::script::Module traced_module_480_640;
-    torch::jit::script::Module traced_module_400_533;
-    torch::jit::script::Module traced_module_333_444;
+    torch::jit::script::Module m_traced_module_384_512;
+    torch::jit::script::Module m_traced_module_320_427;
+    torch::jit::script::Module m_traced_module_267_356;
     bool is_use_cuda;
 };
 } // namespace ORB_SLAM3

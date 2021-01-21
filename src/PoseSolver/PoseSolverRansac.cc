@@ -1,5 +1,4 @@
 #include "PoseSolver.h"
-
 #include <cfloat>
 #include <random>
 #include <utility>
@@ -14,9 +13,6 @@ constexpr float kPureRotationTranslationTh = 0.05;
 constexpr bool kPureRotationReprojectionErrorScale = 5;
 
 namespace PS {
-/*
- * Returns: #inliers = #3d_inliers + #2d_innliers
- */
 int Evaluate(
     const float reproj_err, const MatchSet3D &M3D,
     const std::vector<MatchSet2D> &Ms2D, const Pose &T, std::vector<int> *I3D,
@@ -101,16 +97,9 @@ MakeHypoGenerator(const MatchData &match_data, const Options &options) {
     if (options.enable_2d_solver) {
         std::unique_ptr<ScaleFreeGenerator> scale_less_solver =
             MakeIfHasEnoughSupport<Essential5Generator>(match_data);
-
         if (scale_less_solver) {
             std::unique_ptr<ScaleOnlyGenerator> scale_solver =
                 MakeIfHasEnoughSupport<ScaleSolver3D>(match_data);
-            if (!scale_solver)
-                scale_solver =
-                    !options.prefer_pure_2d_solver
-                        ? std::unique_ptr<ScaleOnlyGenerator>(
-                              MakeIfHasEnoughSupport<ScaleSolver2D>(match_data))
-                        : MakeIfHasEnoughSupport<ScaleSolver3D>(match_data);
             if (scale_solver)
                 rrhypo->Add(
                     MakeIfHasEnoughSupport<HybridGenerator>(
@@ -139,10 +128,7 @@ bool Ransac(
     const Options &options, const MatchSet3D &matches_3d,
     const std::vector<MatchSet2D> &matches_2d, Pose *T,
     std::vector<int> *inliers_3d, std::vector<std::vector<int>> *inliers_2d) {
-    CHECK_NOTNULL(inliers_3d)->clear();
-    CHECK_NOTNULL(inliers_2d)->clear();
     inliers_2d->resize(matches_2d.size());
-
     const MatchData match_data(matches_2d, matches_3d);
     std::unique_ptr<HypoGenerator> hypo =
         MakeHypoGenerator(match_data, options);
@@ -190,7 +176,6 @@ bool Ransac(
         bool succ = hypo->RunOnce(&T_iter);
 
         if (!succ) {
-            VLOG(10) << "Hypothesis generation failed, continue.";
             continue;
         }
 
@@ -199,7 +184,6 @@ bool Ransac(
             &inliers_3d_iter, &inliers_2d_iter);
 
         if (nr_inliers_iter <= max_nr_inliers) {
-            VLOG(10) << "#inliers = " << nr_inliers_iter << ", reject.";
             continue;
         }
 
@@ -209,16 +193,13 @@ bool Ransac(
         std::swap(*inliers_2d, inliers_2d_iter);
 
         if (nr_inliers_iter == nr_observations) {
-            VLOG(10) << "#inlier_ratio = 100%, accept and break.";
             ++iter;
             break;
         }
 
         const int nr_inliers_3d = static_cast<int>(inliers_3d->size()),
                   nr_inliers_2d = max_nr_inliers - nr_inliers_3d;
-        const double inlier_ratio =
-                         static_cast<double>(max_nr_inliers) / nr_observations,
-                     inlier_ratio_3d = static_cast<double>(nr_inliers_3d) /
+        const double inlier_ratio_3d = static_cast<double>(nr_inliers_3d) /
                                        nr_observations_3d,
                      inlier_ratio_2d = static_cast<double>(nr_inliers_2d) /
                                        nr_observations_2d;
@@ -232,21 +213,9 @@ bool Ransac(
                           std::log(1.0 - options.ransac_confidence) /
                           std::log(1.0 - succ_prob))));
 
-        // In case of overflow.
         if (max_iter < 0)
             max_iter = options.ransac_iterations;
-
-        VLOG(10) << "total_#inliers = " << max_nr_inliers
-                 << ", total_inlier_ratio = " << inlier_ratio
-                 << ", #3D_inliers = " << nr_inliers_3d
-                 << ", 3D_inlier_ratio = " << inlier_ratio_3d
-                 << ", #2D_inliers = " << nr_inliers_2d
-                 << ", 2D_inlier_ratio = " << inlier_ratio_2d
-                 << ", succ_prob = " << succ_prob
-                 << ", adjust iteration count to " << max_iter;
     }
-
-    VLOG(5) << "Ransac runed " << iter << " iterations.";
 
     return iter < options.ransac_iterations;
 }

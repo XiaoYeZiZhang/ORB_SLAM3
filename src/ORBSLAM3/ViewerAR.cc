@@ -20,7 +20,7 @@
  */
 
 #include "Visualizer/GlobalImageViewer.h"
-#include "include/ORBSLAM3/ViewerAR.h"
+#include "ORBSLAM3/ViewerAR.h"
 #include <opencv2/highgui/highgui.hpp>
 #include <mutex>
 #include <cstdlib>
@@ -29,6 +29,7 @@
 #include "include/Tools.h"
 #include <glm/gtc/type_ptr.hpp>
 #include "mode.h"
+#include <opencv2/core/eigen.hpp>
 using namespace std;
 
 namespace ORB_SLAM3 {
@@ -55,48 +56,48 @@ ViewerAR::ViewerAR() {
     m_is_SfM_debug_mode = false;
     m_is_SfM_continue_LBA_mode = false;
     m_is_SfM_save_mpp_after_LBA_mode = false;
-    change_shape_unit = 0.02;
+    m_change_shape_unit = 0.02;
     m_is_stop = false;
     m_is_fix = false;
-    switch_window_flag = false;
+    m_switch_window_flag = false;
     RegistEvents();
 }
 
 void ViewerAR::decrease_shape() {
-    m_boundingbox_p.SetChangeShapeOffset(-change_shape_unit);
+    m_boundingbox_p.SetChangeShapeOffset(-m_change_shape_unit);
 }
 
 void ViewerAR::increase_shape() {
-    m_boundingbox_p.SetChangeShapeOffset(change_shape_unit);
+    m_boundingbox_p.SetChangeShapeOffset(m_change_shape_unit);
 }
 
 void ViewerAR::up_move() {
-    m_boundingbox_p.MoveObject(-change_shape_unit, 1);
+    m_boundingbox_p.MoveObject(-m_change_shape_unit, 1);
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::down_move() {
-    m_boundingbox_p.MoveObject(+change_shape_unit, 1);
+    m_boundingbox_p.MoveObject(+m_change_shape_unit, 1);
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::left_move() {
-    m_boundingbox_p.MoveObject(-change_shape_unit, 0);
+    m_boundingbox_p.MoveObject(-m_change_shape_unit, 0);
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::right_move() {
-    m_boundingbox_p.MoveObject(change_shape_unit, 0);
+    m_boundingbox_p.MoveObject(m_change_shape_unit, 0);
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::front_move() {
-    m_boundingbox_p.MoveObject(change_shape_unit, 2);
+    m_boundingbox_p.MoveObject(m_change_shape_unit, 2);
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
 void ViewerAR::back_move() {
-    m_boundingbox_p.MoveObject(-change_shape_unit, 2);
+    m_boundingbox_p.MoveObject(-m_change_shape_unit, 2);
     m_boundingbox_p.SetChangeShapeOffset(0.0);
 }
 
@@ -266,13 +267,13 @@ void ViewerAR::ProjectMapPointInImage(
 
 void ViewerAR::SwitchWindow() {
     std::cout << "switch flag" << std::endl;
-    if (switch_window_flag) {
+    if (m_switch_window_flag) {
         d_cam_scan.show = false;
         d_cam_SfM = pangolin::CreateDisplay()
                         .SetBounds(
                             0.0, 1.0f,
                             pangolin::Attach::Pix(m_scene.GetSceneBarWidth()),
-                            1.0, (float)im_scan.cols / im_scan.rows)
+                            1.0, (float)m_im_scan.cols / m_im_scan.rows)
                         .SetHandler(mp_SfM_handler3d.get());
         d_cam_SfM.show = true;
     } else {
@@ -281,43 +282,43 @@ void ViewerAR::SwitchWindow() {
             pangolin::CreateDisplay()
                 .SetBounds(
                     0, 1.0f, pangolin::Attach::Pix(m_scene.GetSceneBarWidth()),
-                    1.0f, (float)im_scan.cols / im_scan.rows)
+                    1.0f, (float)m_im_scan.cols / m_im_scan.rows)
                 .SetLock(pangolin::LockLeft, pangolin::LockTop)
                 .SetHandler(mp_scan_handler3d.get());
         d_cam_scan.show = true;
     }
-    switch_window_flag = !switch_window_flag;
+    m_switch_window_flag = !m_switch_window_flag;
 }
 
 void ViewerAR::DrawScanInit(int w, int h) {
     pangolin::CreatePanel("menu").SetBounds(
         0.0, 1.0, 0.0, pangolin::Attach::Pix(m_scene.GetSceneBarWidth()));
-    menu_clear = std::make_unique<pangolin::Var<bool>>(
+    m_menu_clear = std::make_unique<pangolin::Var<bool>>(
         "menu.Choose Another Plane", false, false);
-    menu_setboundingbox =
+    m_menu_setboundingbox =
         std::make_unique<pangolin::Var<bool>>("menu.Set a BBX", false, false);
-    menu_fixBBX =
+    m_menu_fixBBX =
         std::make_unique<pangolin::Var<bool>>("menu.Fix BBX", false, false);
-    menu_stop =
+    m_menu_stop =
         std::make_unique<pangolin::Var<bool>>("menu.Finish Scan", false, false);
 
-    menu_scan_debug =
+    m_menu_scan_debug =
         std::make_unique<pangolin::Var<bool>>("menu.Scan Debug", false, false);
     m_boundingbox_p.SetSize(0.05);
     // plane grid number
-    menu_ngrid =
+    m_menu_ngrid =
         std::make_unique<pangolin::Var<int>>("menu. Grid Elements", 3, 1, 10);
-    menu_drawTrackedpoints =
+    m_menu_drawTrackedpoints =
         std::make_unique<pangolin::Var<bool>>("menu.Draw Points", false, true);
-    menu_drawMappoints = std::make_unique<pangolin::Var<bool>>(
+    m_menu_drawMappoints = std::make_unique<pangolin::Var<bool>>(
         "menu.Draw Proj Mappoints", false, true);
-    menu_SfM_debug =
+    m_menu_SfM_debug =
         std::make_unique<pangolin::Var<bool>>("menu.SfM Debug", false, false);
-    menu_SfM_continue = std::make_unique<pangolin::Var<bool>>(
+    m_menu_SfM_continue = std::make_unique<pangolin::Var<bool>>(
         "menu.SfM Continue", false, false);
-    menu_SfM_continue_LBA = std::make_unique<pangolin::Var<bool>>(
+    m_menu_SfM_continue_LBA = std::make_unique<pangolin::Var<bool>>(
         "menu.SfM Continue LBA", false, false);
-    menu_SfM_savemmp_after_LBA = std::make_unique<pangolin::Var<bool>>(
+    m_menu_SfM_savemmp_after_LBA = std::make_unique<pangolin::Var<bool>>(
         "menu.SfM SaveMappoints", false, false);
     // handle keyboard event
     std::function<void(void)> decrease_shape_key_callback =
@@ -413,10 +414,13 @@ void ViewerAR::Pick3DPointCloud() {
     pangolin::OpenGlMatrix modelview_matrix = s_cam_SfM.GetModelViewMatrix();
     pangolin::OpenGlMatrix projection_matrix = s_cam_SfM.GetProjectionMatrix();
 
-#ifdef SUPERPOINT
-    int covisualize_keyframe_num = 4;
-#else
     int covisualize_keyframe_num = 0;
+#ifdef SUPERPOINT
+    covisualize_keyframe_num = 4;
+#endif
+
+#ifdef MONO
+    covisualize_keyframe_num = 4;
 #endif
     auto all_mappoints = mpMapDrawer->mpAtlas_superpoint->GetAllMapPoints(
         covisualize_keyframe_num);
@@ -428,7 +432,7 @@ void ViewerAR::Pick3DPointCloud() {
         if (DropInArea(
                 pose_array, modelview_matrix.m, projection_matrix.m, viewport,
                 m_region_left_down, m_region_right_top)) {
-            if (!mappoints_picked.count(mappoint)) {
+            if (!m_mappoints_picked.count(mappoint)) {
                 auto observations = mappoint->GetObservations();
                 for (auto observation : observations) {
                     auto keyframe = observation.first;
@@ -445,7 +449,7 @@ void ViewerAR::Pick3DPointCloud() {
                             std::to_string(keyframe_id) + ".png",
                         img);
                 }
-                mappoints_picked.insert(mappoint);
+                m_mappoints_picked.insert(mappoint);
             }
         }
     }
@@ -496,24 +500,26 @@ void ViewerAR::Draw(int w, int h) {
     vector<Plane *> vpPlane;
 
     while (true) {
-        m_is_scan_debug_mode = *menu_scan_debug;
-        m_is_SfM_debug_mode = *menu_SfM_debug;
-        m_is_SfM_continue_mode = *menu_SfM_continue;
-        m_is_SfM_continue_LBA_mode = *menu_SfM_continue_LBA;
-        m_is_SfM_save_mpp_after_LBA_mode = *menu_SfM_savemmp_after_LBA;
+        m_is_scan_debug_mode = *m_menu_scan_debug;
+        m_is_SfM_debug_mode = *m_menu_SfM_debug;
+        m_is_SfM_continue_mode = *m_menu_SfM_continue;
+        m_is_SfM_continue_LBA_mode = *m_menu_SfM_continue_LBA;
+        m_is_SfM_save_mpp_after_LBA_mode = *m_menu_SfM_savemmp_after_LBA;
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (!switch_window_flag) {
+        if (!m_switch_window_flag) {
             d_cam_scan.show = true;
             // Activate m_camera view
             d_cam_scan.Activate(s_cam_scan);
             glColor3f(1.0, 1.0, 1.0);
             // Get last image and its computed pose from SLAM
-            GetImagePose(im_scan, Tcw_scan, status_scan, vKeys_scan, vMPs_scan);
+            GetImagePose(
+                m_im_scan, m_Tcw_scan, m_status_scan, m_vKeys_scan,
+                m_vMPs_scan);
 
-            if (!Tcw_scan.empty()) {
-                cv::Mat Rwc = Tcw_scan.rowRange(0, 3).colRange(0, 3).t();
-                cv::Mat twc = -Rwc * Tcw_scan.rowRange(0, 3).col(3);
+            if (!m_Tcw_scan.empty()) {
+                cv::Mat Rwc = m_Tcw_scan.rowRange(0, 3).colRange(0, 3).t();
+                cv::Mat twc = -Rwc * m_Tcw_scan.rowRange(0, 3).col(3);
                 // set m_camera position
                 m_camera.SetCamPos(
                     twc.at<float>(0), twc.at<float>(1), twc.at<float>(2));
@@ -522,31 +528,32 @@ void ViewerAR::Draw(int w, int h) {
             // get mappoint num in boundingbox
             int current_mappoint_num_inbbx = 0;
             GetCurrentMapPointInBBX(
-                vpPlane, *menu_setboundingbox, current_mappoint_num_inbbx);
+                vpPlane, *m_menu_setboundingbox, current_mappoint_num_inbbx);
 
             // Add text to image
-            PrintStatus(status_scan, current_mappoint_num_inbbx, im_scan);
-            cv::cvtColor(im_scan, im_scan, CV_GRAY2RGB);
-            if (*menu_drawTrackedpoints)
-                DrawTrackedPoints(vKeys_scan, vMPs_scan, im_scan);
+            PrintStatus(m_status_scan, current_mappoint_num_inbbx, m_im_scan);
+            cv::cvtColor(m_im_scan, m_im_scan, CV_GRAY2RGB);
+            if (*m_menu_drawTrackedpoints)
+                DrawTrackedPoints(m_vKeys_scan, m_vMPs_scan, m_im_scan);
 
             // Draw image
-            if (*menu_drawMappoints) {
+            if (*m_menu_drawMappoints) {
                 // draw mappoints in and out the boundingbox
                 std::vector<cv::KeyPoint> keypoints_outbbx;
                 std::vector<cv::KeyPoint> keypoints_inbbx;
                 ProjectMapPointInImage(
-                    vpPlane, Tcw_scan, m_boundingbox_corner_p, keypoints_outbbx,
-                    keypoints_inbbx);
+                    vpPlane, m_Tcw_scan, m_boundingbox_corner_p,
+                    keypoints_outbbx, keypoints_inbbx);
                 cv::drawKeypoints(
-                    im_scan, keypoints_outbbx, im_scan,
+                    m_im_scan, keypoints_outbbx, m_im_scan,
                     cv::Scalar(255, 0, 255));
                 cv::drawKeypoints(
-                    im_scan, keypoints_inbbx, im_scan, cv::Scalar(0, 255, 255));
+                    m_im_scan, keypoints_inbbx, m_im_scan,
+                    cv::Scalar(0, 255, 255));
             }
-            DrawImageTexture(imageTexture, im_scan);
+            DrawImageTexture(imageTexture, m_im_scan);
 
-            ObjRecognition::GlobalOcvViewer::DrawAllView();
+            ObjRecognition::GlobalOcvViewer::Draw();
             glClear(GL_DEPTH_BUFFER_BIT);
 
             // Load m_camera projection
@@ -558,9 +565,9 @@ void ViewerAR::Draw(int w, int h) {
 
             // Load m_camera pose  set opengl coords, same as slam coords
             // view matrix Tcw
-            LoadCameraPose(Tcw_scan);
+            LoadCameraPose(m_Tcw_scan);
 
-            if (*menu_clear) {
+            if (*m_menu_clear) {
                 if (!vpPlane.empty()) {
                     for (size_t i = 0; i < vpPlane.size(); i++) {
                         delete vpPlane[i];
@@ -575,12 +582,12 @@ void ViewerAR::Draw(int w, int h) {
                     m_boundingbox_p.SetSize(0.05);
                     VLOG(0) << "ORBSLAM3: All cubes erased!";
                 }
-                *menu_clear = false;
+                *m_menu_clear = false;
             }
             // Draw virtual things
             // can only insert cube when slam state is fine
-            if (status_scan == 2) {
-                Plane *pPlane = DetectPlane(Tcw_scan, vMPs_scan, 50);
+            if (m_status_scan == 2) {
+                Plane *pPlane = DetectPlane(m_Tcw_scan, m_vMPs_scan, 50);
                 if (pPlane && vpPlane.empty()) {
                     VLOG(0) << "ORBSLAM3: New virtual plane is detected!";
                     vpPlane.push_back(pPlane);
@@ -604,7 +611,7 @@ void ViewerAR::Draw(int w, int h) {
 
                 Plane *pPlane = vpPlane[0];
                 if (pPlane) {
-                    if (*menu_fixBBX) {
+                    if (*m_menu_fixBBX) {
                         // get m_boundingbox_w
                         m_boundingbox_w = ComputeBoundingbox_W(pPlane->glTpw);
                         Eigen::Matrix4d Twp =
@@ -615,15 +622,15 @@ void ViewerAR::Draw(int w, int h) {
 #endif
 
                         m_is_fix = true;
-                        *menu_fixBBX = false;
+                        *m_menu_fixBBX = false;
                     }
-                    if (*menu_stop) {
+                    if (*m_menu_stop) {
                         m_is_stop = true;
-                        *menu_stop = false;
+                        *m_menu_stop = false;
 
 #ifdef SUPERPOINT
                         // change to sfm panglin dispaly
-                        switch_window_flag = !switch_window_flag;
+                        m_switch_window_flag = !m_switch_window_flag;
                         d_cam_scan.show = false;
                         d_cam_SfM =
                             pangolin::CreateDisplay()
@@ -631,7 +638,7 @@ void ViewerAR::Draw(int w, int h) {
                                     0.0, 1.0,
                                     pangolin::Attach::Pix(
                                         m_scene.GetSceneBarWidth()),
-                                    1.0, (float)im_scan.cols / im_scan.rows)
+                                    1.0, (float)m_im_scan.cols / m_im_scan.rows)
                                 .SetHandler(mp_SfM_handler3d.get());
                         d_cam_SfM.show = true;
 #else
@@ -650,12 +657,12 @@ void ViewerAR::Draw(int w, int h) {
                     pPlane->glTpw.Multiply();
 
                     // Draw cube
-                    if (*menu_setboundingbox) {
+                    if (*m_menu_setboundingbox) {
                         DrawBoundingbox();
                     }
 
                     // Draw grid plane
-                    DrawPlane(*menu_ngrid, 0.05);
+                    DrawPlane(*m_menu_ngrid, 0.05);
                     glPopMatrix();
                 }
             }
@@ -670,7 +677,7 @@ void ViewerAR::Draw(int w, int h) {
             DrawSelected2DRegion();
             Pick3DPointCloud();
             DrawMapPoints_SuperPoint(
-                m_boundingbox_corner_p, mappoints_picked, vpPlane);
+                m_boundingbox_corner_p, m_mappoints_picked, vpPlane);
             DrawBoundingboxForSfM(m_boundingbox_w);
 
             // Pick3DPointCloud();
@@ -693,12 +700,13 @@ void ViewerAR::Run() {
     int w, h;
 
     while (true) {
-        GetImagePose(im_scan, Tcw_scan, status_scan, vKeys_scan, vMPs_scan);
-        if (im_scan.empty())
+        GetImagePose(
+            m_im_scan, m_Tcw_scan, m_status_scan, m_vKeys_scan, m_vMPs_scan);
+        if (m_im_scan.empty())
             cv::waitKey(mT);
         else {
-            w = im_scan.cols;
-            h = im_scan.rows;
+            w = m_im_scan.cols;
+            h = m_im_scan.rows;
             break;
         }
     }

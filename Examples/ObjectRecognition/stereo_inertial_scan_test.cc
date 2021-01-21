@@ -1,12 +1,9 @@
-//
-// Created by root on 2020/10/13.
-//
 #include <ctime>
 #include <opencv2/core/core.hpp>
 #include <Eigen/Dense>
 #include <include/ORBSLAM3/SPextractor.h>
 #include "ORBSLAM3/System.h"
-#include "Utility/GlobalSummary.h"
+#include "include/ObjectRecognition/Utility/StatisticsResult/GlobalSummary.h"
 #include "Utility/FileIO.h"
 #include "Utility/Parameters.h"
 #include "ORBSLAM3/ImuTypes.h"
@@ -59,7 +56,6 @@ private:
         std::vector<cv::DMatch> &goodMatches);
     void ScanDebugMode();
     void SfMDebugMode();
-    std::string m_result_dir;
     vector<string> vstrImageLeft;
     vector<string> vstrImageRight;
     vector<double> vTimestampsCam;

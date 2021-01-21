@@ -1,0 +1,23 @@
+%YAML:1.0
+#mappoint_filename: "bag_version2_test_mono.bin"
+#mappoint_filename_superpoint: "bag_superpoint_64_test_mono.bin"
+
+#mappoint_filename_superpoint: "xingxing_superpoint_64_test_mono.bin"
+
+mappoint_filename_superpoint: "box_superpoint_64_test_mono.bin"
+
+saved_path: "/home/zhangye/data1/objectRecognition/saved"
+voc_path: "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/ORBvoc.txt"
+voc_path_superpoint: "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/Superpoint/superpoint_voc.yml.gz"
+
+#data_path_scan: "/home/zhangye/data1/objectRecognition/phone/bag_scan1"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/phone/bag_scan1"
+
+#data_path_scan: "/home/zhangye/data1/objectRecognition/phone/xingxing_scan"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/phone/xingxing_scan"
+
+data_path_scan: "/home/zhangye/data1/objectRecognition/phone/box_scan2"
+data_path_objRecognition: "/home/zhangye/data1/objectRecognition/phone/box_scan2"
+
+config_path: "/home/zhangye/data1/objectRecognition/phone/xiaomi_mono_params.yaml"
+dataset_name: "dataset_box"

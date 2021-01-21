@@ -1,7 +1,3 @@
-//
-// Created by root on 2020/12/2.
-//
-
 #ifndef TEST2_MODEL_H
 #define TEST2_MODEL_H
 #include <GL/glew.h>

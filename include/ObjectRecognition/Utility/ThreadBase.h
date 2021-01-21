@@ -1,6 +1,5 @@
 #ifndef ObjectRecognition_Utility_ThreadBase_H
 #define ObjectRecognition_Utility_ThreadBase_H
-
 #include <pthread.h>
 #include <thread>
 #include <memory>
@@ -15,14 +14,15 @@ public:
 
 public:
     ThreadBase() {
-        mbRequestReset = false;
-        mbRequestStop = false;
-        mbWaitEndStop = false;
-        mbWaitEndReset = false;
+        m_request_reset = false;
+        m_request_stop = false;
+        m_wait_end_stop = false;
+        m_wait_end_reset = false;
     }
     virtual ~ThreadBase() {
-        while (!mInputQueue.empty()) {
-            mInputQueue.pop();
+        while (!m_input_queue.empty()) {
+            m_input_queue.clear();
+            //            m_input_queue.pop();
         }
     }
 
@@ -33,8 +33,8 @@ public:
         if (ret != 0) {
             return false;
         } else {
-            std::lock_guard<std::mutex> lck(mWaitEndStopMutex);
-            mbWaitEndStop = false;
+            std::lock_guard<std::mutex> lck(m_wait_end_stop_Mutex);
+            m_wait_end_stop = false;
             return true;
         }
     }
@@ -46,33 +46,32 @@ public:
     }
 
     void PushData(const InputDataPtr &data) {
-        std::lock_guard<std::mutex> lck(mInputMutex);
-        mInputQueue.emplace(data);
+        std::lock_guard<std::mutex> lck(m_input_mutex);
+        m_input_queue.emplace_back(data);
     }
 
     void RequestStop() {
-        std::lock_guard<std::mutex> lck(mStateMutex);
-        mbRequestStop = true;
+        std::lock_guard<std::mutex> lck(m_state_mutex);
+        m_request_stop = true;
     }
 
     void RequestReset() {
-        std::lock_guard<std::mutex> lck(mStateMutex);
-        mbRequestReset = true;
+        std::lock_guard<std::mutex> lck(m_state_mutex);
+        m_request_reset = true;
     }
 
     void WaitEndStop() {
-        std::lock_guard<std::mutex> lck(mWaitEndStopMutex);
-        if (!mbWaitEndStop) {
+        std::lock_guard<std::mutex> lck(m_wait_end_stop_Mutex);
+        if (!m_wait_end_stop) {
             void *status;
             pthread_join(pid, &status);
-            mbWaitEndStop = true;
-            VLOG(5) << "child Thread id:" << pid << " stop";
+            m_wait_end_stop = true;
         }
     }
 
     bool IsReseting() {
-        std::lock_guard<std::mutex> lck(mWaitEndResetMutex);
-        return mbWaitEndReset;
+        std::lock_guard<std::mutex> lck(m_wait_end_reset_Mutex);
+        return m_wait_end_reset;
     }
 
     void WaitEndReset() {
@@ -83,25 +82,23 @@ public:
     }
 
     int Size() {
-        std::lock_guard<std::mutex> lck(mStateMutex);
-        return mInputQueue.size();
+        std::lock_guard<std::mutex> lck(m_state_mutex);
+        return m_input_queue.size();
     }
 
 protected:
     void Run() {
         while (true) {
-            GetCurInputData();
-
+            GetNewestData();
             Process();
-
             if (ProcessThreadState()) {
                 break;
             }
             {
                 int nInputSize = 0;
                 {
-                    std::lock_guard<std::mutex> lck(mInputMutex);
-                    nInputSize = mInputQueue.size();
+                    std::lock_guard<std::mutex> lck(m_input_mutex);
+                    nInputSize = m_input_queue.size();
                 }
                 if (nInputSize == 0) {
                     std::this_thread::sleep_for(
@@ -112,38 +109,36 @@ protected:
     }
 
     virtual void Process() = 0;
-    virtual void GetCurInputData() = 0;
-    // virtual void GetResult() = 0;
+    virtual void GetNewestData() = 0;
 
-    /// return true if thread Stoped
     bool ProcessThreadState() {
         bool bStop, bReset;
         {
-            std::lock_guard<std::mutex> lck(mStateMutex);
-            bStop = mbRequestStop;
-            bReset = mbRequestReset;
+            std::lock_guard<std::mutex> lck(m_state_mutex);
+            bStop = m_request_stop;
+            bReset = m_request_reset;
         }
         if (bStop) {
             Stop();
             {
-                std::lock_guard<std::mutex> lck(mStateMutex);
-                mbRequestStop = false;
+                std::lock_guard<std::mutex> lck(m_state_mutex);
+                m_request_stop = false;
             }
             return true;
         }
         if (bReset) {
             {
-                std::lock_guard<std::mutex> lck(mWaitEndResetMutex);
-                mbWaitEndReset = true;
+                std::lock_guard<std::mutex> lck(m_wait_end_reset_Mutex);
+                m_wait_end_reset = true;
             }
             Reset();
             {
-                std::lock_guard<std::mutex> lck(mWaitEndResetMutex);
-                mbWaitEndReset = false;
+                std::lock_guard<std::mutex> lck(m_wait_end_reset_Mutex);
+                m_wait_end_reset = false;
             }
             {
-                std::lock_guard<std::mutex> lck(mStateMutex);
-                mbRequestReset = false;
+                std::lock_guard<std::mutex> lck(m_state_mutex);
+                m_request_reset = false;
             }
         }
         return false;
@@ -156,16 +151,16 @@ public:
     pthread_t pid;
 
 protected:
-    std::mutex mInputMutex;
-    std::queue<InputDataPtr> mInputQueue;
+    std::mutex m_input_mutex;
+    std::vector<InputDataPtr> m_input_queue;
 
-    std::mutex mStateMutex;
-    std::mutex mWaitEndStopMutex;
-    std::mutex mWaitEndResetMutex;
-    bool mbRequestStop;
-    bool mbRequestReset;
-    bool mbWaitEndStop;
-    bool mbWaitEndReset;
+    std::mutex m_state_mutex;
+    std::mutex m_wait_end_stop_Mutex;
+    std::mutex m_wait_end_reset_Mutex;
+    bool m_request_stop;
+    bool m_request_reset;
+    bool m_wait_end_stop;
+    bool m_wait_end_reset;
 };
 } // namespace ObjRecognition
 

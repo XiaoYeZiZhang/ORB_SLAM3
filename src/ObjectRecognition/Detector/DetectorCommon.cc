@@ -1,13 +1,9 @@
-//
-// Created by zhangye on 2020/9/16.
-//
 #include <glog/logging.h>
 #include <Eigen/Dense>
 #include <cxcore.hpp>
 #include <cv.hpp>
-#include <include/ObjectRecognition/Utility/Statistics.h>
-#include "Utility/Timer.h"
-#include "Utility/Camera.h"
+#include "StatisticsResult/Statistics.h"
+#include "StatisticsResult/Timer.h"
 #include "Detector/DetectorCommon.h"
 
 namespace ObjRecognition {
@@ -43,7 +39,6 @@ cv::Mat GetPointCloudDespByConnection(
 
     cv::Mat ptDesp = associated_mappoints[0]->GetDescriptor();
     for (size_t i = 1; i < associated_mappoints.size(); i++) {
-        // combine the desp of mapPoint
         cv::hconcat(ptDesp, associated_mappoints[i]->GetDescriptor(), ptDesp);
     }
     return ptDesp.t();
@@ -102,13 +97,11 @@ void FindMatchByKNN_Homography(
     matcher.knnMatch(frmDesp, pcDesp, knnMatches, 2);
 
     VLOG(5) << "KNN Matches size: " << knnMatches.size();
-
     for (size_t i = 0; i < knnMatches.size(); i++) {
         cv::DMatch &bestMatch = knnMatches[i][0];
         cv::DMatch &betterMatch = knnMatches[i][1];
         const float distanceRatio = bestMatch.distance / betterMatch.distance;
         VLOG(50) << "distanceRatio = " << distanceRatio;
-        // the farest distance, the better result
         if (distanceRatio < ratio_threshold) {
             matches.push_back(bestMatch);
         }
@@ -259,95 +252,6 @@ void FindMatchByKNN_SuperPoint_Homography(
             inliers.push_back(goodMatches[i]);
     }
     goodMatches.swap(inliers);
-}
-
-std::vector<cv::Mat> ToDescriptorVector(const cv::Mat &Descriptors) {
-    std::vector<cv::Mat> vDesc;
-    vDesc.reserve(Descriptors.rows);
-    for (int j = 0; j < Descriptors.rows; j++)
-        vDesc.push_back(Descriptors.row(j));
-
-    return vDesc;
-}
-
-/*void FindMatchByBow(
-    const cv::Mat &pcDesp, const cv::Mat &frmDesp, DBoW3::Vocabulary *&voc,
-    std::map<int, MapPointIndex> &matches2dTo3d) {
-    // 得到当前帧的词袋
-    std::vector<cv::Mat> vCurrentDesc = ToDescriptorVector(frmDesp);
-    DBoW3::BowVector frameBowVec;
-    DBoW3::FeatureVector frameFeatVec;
-    voc->transform(vCurrentDesc, frameBowVec, frameFeatVec, 5);
-
-    // 得到地图点的词袋
-    std::vector<cv::Mat> mapPointDesc = ToDescriptorVector(pcDesp);
-    DBoW3::BowVector mapPointBowVec;
-    DBoW3::FeatureVector mapPointFeatVec;
-    voc->transform(mapPointDesc, mapPointBowVec, mapPointFeatVec, 5);
-
-    auto f1it = frameFeatVec.begin();
-    auto f2it = mapPointFeatVec.begin();
-    auto f1end = frameFeatVec.end();
-    auto f2end = mapPointFeatVec.end();
-
-    const double kDesDistanceThreshold = 100;
-    const double kRatioThreshold = 0.65;
-    while (f1it != f1end && f2it != f2end) {
-        if (f1it->first == f2it->first) {
-            for (size_t i1 = 0, iend1 = f1it->second.size(); i1 < iend1; i1++) {
-                size_t idx1 = f1it->second[i1];
-                cv::Mat d1;
-                if (matches2dTo3d.find(idx1) != matches2dTo3d.end()) {
-                    continue;
-                }
-                d1 = frmDesp.row(idx1);
-
-                int bestDist1 = INT_MAX;
-                int bestIdx2 = -1;
-                int bestDist2 = INT_MAX;
-
-                for (size_t i2 = 0, iend2 = f2it->second.size(); i2 < iend2;
-                     i2++) {
-                    size_t idx2 = f2it->second[i2];
-                    cv::Mat d2 = pcDesp.row(idx2);
-
-                    int dist = STSLAMCommon::DescriptorDistance(d1, d2);
-
-                    if (dist < bestDist1) {
-                        bestDist2 = bestDist1;
-                        bestDist1 = dist;
-                        bestIdx2 = idx2;
-                    } else if (dist < bestDist2) {
-                        bestDist2 = dist;
-                    }
-                }
-
-                VLOG(5) << "bowdist: " << bestDist1 << " " << bestDist2;
-                if (bestDist1 < kDesDistanceThreshold) {
-                    if (static_cast<float>(bestDist1) <
-                        kRatioThreshold * static_cast<float>(bestDist2)) {
-                        matches2dTo3d.insert(
-                            std::pair<int, MapPointIndex>(idx1, bestIdx2));
-                    }
-                }
-            }
-            f1it++;
-            f2it++;
-        } else if (f1it->first < f2it->first) {
-            f1it = frameFeatVec.lower_bound(f2it->first);
-        } else {
-            f2it = mapPointFeatVec.lower_bound(f1it->first);
-        }
-    }
-}
-*/
-
-Eigen::Isometry3f
-GetTMatrix(const Eigen::Matrix3d &R, const Eigen::Vector3d &t) {
-    Eigen::Isometry3f T;
-    T.rotate(R.cast<float>());
-    T.pretranslate(t.cast<float>());
-    return T;
 }
 
 void GetPointCloudBoundingBox(

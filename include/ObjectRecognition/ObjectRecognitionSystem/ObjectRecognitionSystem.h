@@ -1,24 +1,20 @@
-//
-// Created by zhangye on 2020/9/15.
-//
-
 #ifndef ORB_SLAM3_OBJECTRECOGNITIONSYSTEM_H
 #define ORB_SLAM3_OBJECTRECOGNITIONSYSTEM_H
-#include <include/ORBSLAM3/SPextractor.h>
-#include "Tracker/TrackerPointCloud.h"
-#include "Detector/DetectorPointCloud.h"
-#include "Struct/PointCloudObject.h"
-#include "Detector/DetectorThread.h"
-#include "Tracker/TrackerThread.h"
-#include "Utility/Thread/ThreadBase.h"
+#include "SPextractor.h"
+#include "TrackerPointCloud.h"
+#include "DetectorPointCloud.h"
+#include "PointCloudObject.h"
+#include "DetectorThread.h"
+#include "TrackerThread.h"
+#include "ThreadBase.h"
 namespace ObjRecognition {
 
-class ObjRecogThread : public Common::ThreadBase {
+class ObjRecogThread : public ThreadBase<CallbackFrame> {
 
 public:
     ObjRecogThread();
     ~ObjRecogThread() {
-        delete SPextractor;
+        delete m_SPextractor;
     }
 
     int Init();
@@ -26,41 +22,31 @@ public:
     int SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc);
     int SetModel(const std::shared_ptr<Object> &object);
 
-    void PushUnProcessedFrame(
-        const std::shared_ptr<ObjRecogFrameCallbackData> &frame);
-
     void GetResult(
         FrameIndex &frmIndex, double &timeStamp, ObjRecogState &state,
         Eigen::Matrix3d &R_cam, Eigen::Vector3d &t_cam, Eigen::Matrix3d &R_obj,
         Eigen::Vector3d &t_obj);
 
-    int GetInfo(std::string &info);
-
 protected:
-    enum { DATA_TYPE_UNPROCESSED_FRAME = 0 };
-    int Reset();
-    int Stop();
-    int Process();
-    void SetInfo();
+    void Reset();
+    void Stop();
+    void Process();
+    void GetNewestData();
 
 private:
-    std::shared_ptr<DBoW3::Vocabulary> voc_;
-    std::shared_ptr<ObjRecognition::Object> object_;
+    long int last_processed_frame = -1;
+    std::shared_ptr<CallbackFrame> m_curData;
+    std::shared_ptr<DBoW3::Vocabulary> m_voc;
+    std::shared_ptr<ObjRecognition::Object> m_object;
 
-    ObjRecognition::DetectorThread detector_thread_;
-    ObjRecognition::TrackerThread tracker_thread_;
+    ObjRecognition::DetectorThread m_detector_thread;
+    ObjRecognition::TrackerThread m_tracker_thread;
 
     std::shared_ptr<ObjRecognition::PointCloudObjDetector>
-        pointcloudobj_detector_;
+        m_pointcloudobj_detector;
     std::shared_ptr<ObjRecognition::PointCloudObjTracker>
-        pointcloudobj_tracker_;
-
-    std::string info_;
-
-    int frame_processed_num_ = 0;
-
-    std::mutex mMutexInfoBuffer;
-    ORB_SLAM3::SPextractor *SPextractor = NULL;
+        m_pointcloudobj_tracker;
+    ORB_SLAM3::SPextractor *m_SPextractor = NULL;
 };
 } // namespace ObjRecognition
 #endif // ORB_SLAM3_OBJECTRECOGNITIONSYSTEM_H

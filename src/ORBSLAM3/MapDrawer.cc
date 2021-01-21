@@ -19,9 +19,9 @@
  * ORB-SLAM3. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "include/ORBSLAM3/MapDrawer.h"
-#include "include/ORBSLAM3/MapPoint.h"
-#include "include/ORBSLAM3/KeyFrame.h"
+#include "ORBSLAM3/MapDrawer.h"
+#include "ORBSLAM3/MapPoint.h"
+#include "ORBSLAM3/KeyFrame.h"
 #include <pangolin/pangolin.h>
 #include <mutex>
 #include <cxeigen.hpp>
@@ -132,10 +132,13 @@ bool MapDrawer::ParseViewerParamFile(cv::FileStorage &fSettings) {
 void MapDrawer::DrawMapPoints_SuperPoint(
     const std::vector<double> &boundingbox_p_corner,
     const std::set<MapPoint *> &mappoint_picked, const Eigen::Matrix4d &Twp) {
-#ifdef SUPERPOINT
-    int covisualize_keyframe_num = 4;
-#else
     int covisualize_keyframe_num = 0;
+
+#ifdef SUPERPOINT
+    covisualize_keyframe_num = 4;
+#endif
+#ifdef MONO
+    covisualize_keyframe_num = 4;
 #endif
     const vector<MapPoint *> &vpMPs =
         mpAtlas_superpoint->GetAllMapPoints(covisualize_keyframe_num);

@@ -1,7 +1,3 @@
-//
-// Created by root on 2020/10/9.
-//
-
 #ifndef ORB_SLAM3_VIEWERCOMMON_H
 #define ORB_SLAM3_VIEWERCOMMON_H
 

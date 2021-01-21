@@ -1,6 +1,3 @@
-//
-// Created by root on 2020/10/21.
-//
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <vector>
@@ -9,6 +6,7 @@
 #include <glog/logging.h>
 #include <torch/script.h>
 #include <chrono>
+#include "mode.h"
 using namespace cv;
 using namespace std;
 using namespace std::chrono;
@@ -80,95 +78,109 @@ void ExtractorNode_sp::DivideNode(
 SPextractor::SPextractor(
     int descriptor_len, int _nfeatures, float _scaleFactor, int _nlevels,
     float _iniThFAST, float _minThFAST, bool _is_use_cuda)
-    : nfeatures(_nfeatures), scaleFactor(_scaleFactor), nlevels(_nlevels),
-      iniThFAST(_iniThFAST), minThFAST(_minThFAST), is_use_cuda(_is_use_cuda),
-      m_descriptor_len(descriptor_len) {
+    : m_features(_nfeatures), m_scaleFactor(_scaleFactor), m_levels(_nlevels),
+      m_iniTh_FAST(_iniThFAST), m_minTh_FAST(_minThFAST),
+      is_use_cuda(_is_use_cuda), m_descriptor_len(descriptor_len) {
     switch (m_descriptor_len) {
     case 256:
-        traced_module_480_640 = torch::jit::load(
+        m_traced_module_480_640 = torch::jit::load(
             "/home/zhangye/data1/256/traced_superpoint_model_480*640.pt");
-        traced_module_480_640.to(at::kCUDA);
+        m_traced_module_480_640.to(at::kCUDA);
 
-        traced_module_400_533 = torch::jit::load(
+        m_traced_module_400_533 = torch::jit::load(
             "/home/zhangye/data1/256/traced_superpoint_model_400*533.pt");
-        traced_module_400_533.to(at::kCUDA);
+        m_traced_module_400_533.to(at::kCUDA);
 
-        traced_module_333_444 = torch::jit::load(
+        m_traced_module_333_444 = torch::jit::load(
             "/home/zhangye/data1/256/traced_superpoint_model_333*444.pt");
-        traced_module_333_444.to(at::kCUDA);
+        m_traced_module_333_444.to(at::kCUDA);
         break;
     case 128:
-        traced_module_480_640 = torch::jit::load(
+        m_traced_module_480_640 = torch::jit::load(
             "/home/zhangye/data1/128/traced_superpoint_model_128_480*640.pt");
-        traced_module_480_640.to(at::kCUDA);
+        m_traced_module_480_640.to(at::kCUDA);
 
-        traced_module_400_533 = torch::jit::load(
+        m_traced_module_400_533 = torch::jit::load(
             "/home/zhangye/data1/128/traced_superpoint_model_128_400*533.pt");
-        traced_module_400_533.to(at::kCUDA);
+        m_traced_module_400_533.to(at::kCUDA);
 
-        traced_module_333_444 = torch::jit::load(
+        m_traced_module_333_444 = torch::jit::load(
             "/home/zhangye/data1/128/traced_superpoint_model_128_333*444.pt");
-        traced_module_333_444.to(at::kCUDA);
+        m_traced_module_333_444.to(at::kCUDA);
         break;
     case 64:
-        traced_module_480_640 = torch::jit::load(
+#ifdef MONO
+        m_traced_module_384_512 = torch::jit::load(
+            "/home/zhangye/data1/64/traced_superpoint_model_64_384*512.pt");
+        m_traced_module_384_512.to(at::kCUDA);
+
+        m_traced_module_320_427 = torch::jit::load(
+            "/home/zhangye/data1/64/traced_superpoint_model_64_320*427.pt");
+        m_traced_module_320_427.to(at::kCUDA);
+
+        m_traced_module_267_356 = torch::jit::load(
+            "/home/zhangye/data1/64/traced_superpoint_model_64_267*356.pt");
+        m_traced_module_267_356.to(at::kCUDA);
+#else
+        m_traced_module_480_640 = torch::jit::load(
             "/home/zhangye/data1/64/traced_superpoint_model_64_480*640.pt");
-        traced_module_480_640.to(at::kCUDA);
+        m_traced_module_480_640.to(at::kCUDA);
 
-        traced_module_400_533 = torch::jit::load(
+        m_traced_module_400_533 = torch::jit::load(
             "/home/zhangye/data1/64/traced_superpoint_model_64_400*533.pt");
-        traced_module_400_533.to(at::kCUDA);
+        m_traced_module_400_533.to(at::kCUDA);
 
-        traced_module_333_444 = torch::jit::load(
+        m_traced_module_333_444 = torch::jit::load(
             "/home/zhangye/data1/64/traced_superpoint_model_64_333*444.pt");
-        traced_module_333_444.to(at::kCUDA);
+        m_traced_module_333_444.to(at::kCUDA);
+#endif
         break;
     case 32:
-        traced_module_480_640 = torch::jit::load(
+        m_traced_module_480_640 = torch::jit::load(
             "/home/zhangye/data1/32/traced_superpoint_model_32_480*640.pt");
-        traced_module_480_640.to(at::kCUDA);
+        m_traced_module_480_640.to(at::kCUDA);
 
-        traced_module_400_533 = torch::jit::load(
+        m_traced_module_400_533 = torch::jit::load(
             "/home/zhangye/data1/32/traced_superpoint_model_32_400*533.pt");
-        traced_module_400_533.to(at::kCUDA);
+        m_traced_module_400_533.to(at::kCUDA);
 
-        traced_module_333_444 = torch::jit::load(
+        m_traced_module_333_444 = torch::jit::load(
             "/home/zhangye/data1/32/traced_superpoint_model_32_333*444.pt");
-        traced_module_333_444.to(at::kCUDA);
+        m_traced_module_333_444.to(at::kCUDA);
         break;
     }
 
-    mvScaleFactor.resize(nlevels);
-    mvLevelSigma2.resize(nlevels);
-    mvScaleFactor[0] = 1.0f;
-    mvLevelSigma2[0] = 1.0f;
-    for (int i = 1; i < nlevels; i++) {
-        mvScaleFactor[i] = mvScaleFactor[i - 1] * scaleFactor;
-        mvLevelSigma2[i] = mvScaleFactor[i] * mvScaleFactor[i];
+    m_scalefactor.resize(m_levels);
+    m_level_sigma2.resize(m_levels);
+    m_scalefactor[0] = 1.0f;
+    m_level_sigma2[0] = 1.0f;
+    for (int i = 1; i < m_levels; i++) {
+        m_scalefactor[i] = m_scalefactor[i - 1] * m_scaleFactor;
+        m_level_sigma2[i] = m_scalefactor[i] * m_scalefactor[i];
     }
 
-    mvInvScaleFactor.resize(nlevels);
-    mvInvLevelSigma2.resize(nlevels);
-    for (int i = 0; i < nlevels; i++) {
-        mvInvScaleFactor[i] = 1.0f / mvScaleFactor[i];
-        mvInvLevelSigma2[i] = 1.0f / mvLevelSigma2[i];
+    m_invscalefactor.resize(m_levels);
+    m_invlevel_sigma2.resize(m_levels);
+    for (int i = 0; i < m_levels; i++) {
+        m_invscalefactor[i] = 1.0f / m_scalefactor[i];
+        m_invlevel_sigma2[i] = 1.0f / m_level_sigma2[i];
     }
 
-    mvImagePyramid.resize(nlevels);
+    mvImagePyramid.resize(m_levels);
 
-    mnFeaturesPerLevel.resize(nlevels);
-    float factor = 1.0f / scaleFactor;
+    m_features_perlevel.resize(m_levels);
+    float factor = 1.0f / m_scaleFactor;
     float nDesiredFeaturesPerScale =
-        nfeatures * (1 - factor) /
-        (1 - (float)pow((double)factor, (double)nlevels));
+        m_features * (1 - factor) /
+        (1 - (float)pow((double)factor, (double)m_levels));
 
     int sumFeatures = 0;
-    for (int level = 0; level < nlevels - 1; level++) {
-        mnFeaturesPerLevel[level] = cvRound(nDesiredFeaturesPerScale);
-        sumFeatures += mnFeaturesPerLevel[level];
+    for (int level = 0; level < m_levels - 1; level++) {
+        m_features_perlevel[level] = cvRound(nDesiredFeaturesPerScale);
+        sumFeatures += m_features_perlevel[level];
         nDesiredFeaturesPerScale *= factor;
     }
-    mnFeaturesPerLevel[nlevels - 1] = std::max(nfeatures - sumFeatures, 0);
+    m_features_perlevel[m_levels - 1] = std::max(m_features - sumFeatures, 0);
 }
 
 vector<cv::KeyPoint> SPextractor::DistributeOctTree(
@@ -356,7 +368,7 @@ vector<cv::KeyPoint> SPextractor::DistributeOctTree(
 
     // Retain the best point in each node
     vector<cv::KeyPoint> vResultKeys;
-    vResultKeys.reserve(nfeatures);
+    vResultKeys.reserve(m_features);
     for (list<ExtractorNode_sp>::iterator lit = lNodes.begin();
          lit != lNodes.end(); lit++) {
         vector<cv::KeyPoint> &vNodeKeys = lit->vKeys;
@@ -408,16 +420,22 @@ void KeyPointsFilterByPixelsMask(
 void SPextractor::ComputeKeyPointsWithMask(
     vector<vector<KeyPoint>> &allKeypoints, cv::Mat &_desc,
     const cv::Mat &mask) {
-    allKeypoints.resize(nlevels);
+    allKeypoints.resize(m_levels);
 
     vector<cv::Mat> vDesc;
 
     const float W = 30;
 
-    for (int level = 0; level < nlevels; ++level) {
+    for (int level = 0; level < m_levels; ++level) {
+#ifdef MONO
         SPDetector detector(
-            traced_module_480_640, traced_module_400_533,
-            traced_module_333_444);
+            m_traced_module_384_512, m_traced_module_320_427,
+            m_traced_module_267_356, true);
+#else
+        SPDetector detector(
+            m_traced_module_480_640, m_traced_module_400_533,
+            m_traced_module_333_444);
+#endif
 
         detector.detect(mvImagePyramid[level], level, is_use_cuda);
 
@@ -429,7 +447,7 @@ void SPextractor::ComputeKeyPointsWithMask(
             mvImagePyramid[level].rows - 0; // EDGE_THRESHOLD + 3;
 
         vector<cv::KeyPoint> vToDistributeKeys;
-        vToDistributeKeys.reserve(nfeatures * 10);
+        vToDistributeKeys.reserve(m_features * 10);
 
         const float width = (maxBorderX - minBorderX);
         const float height = (maxBorderY - minBorderY);
@@ -443,12 +461,12 @@ void SPextractor::ComputeKeyPointsWithMask(
         vector<cv::KeyPoint> vKeysCell;
 
         detector.getKeyPoints(
-            iniThFAST, minBorderX, maxBorderX, minBorderY, maxBorderY,
+            m_iniTh_FAST, minBorderX, maxBorderX, minBorderY, maxBorderY,
             vKeysCell, true);
 
         if (vKeysCell.empty()) {
             detector.getKeyPoints(
-                minThFAST, minBorderX, maxBorderX, minBorderY, maxBorderY,
+                m_minTh_FAST, minBorderX, maxBorderX, minBorderY, maxBorderY,
                 vKeysCell, true);
         }
 
@@ -468,13 +486,13 @@ void SPextractor::ComputeKeyPointsWithMask(
 
         start = high_resolution_clock::now();
         vector<KeyPoint> &keypoints = allKeypoints[level];
-        keypoints.reserve(nfeatures);
+        keypoints.reserve(m_features);
 
         KeyPointsFilterByPixelsMask(
             vToDistributeKeys, mask, minBorderX, minBorderY,
-            mvScaleFactor[level]);
+            m_scalefactor[level]);
         keypoints = vToDistributeKeys;
-        KeyPointsFilter::retainBest(keypoints, mnFeaturesPerLevel[level]);
+        KeyPointsFilter::retainBest(keypoints, m_features_perlevel[level]);
 
         VLOG(5) << "time for distribute oct tree: "
                 << (duration_cast<microseconds>(
@@ -483,7 +501,7 @@ void SPextractor::ComputeKeyPointsWithMask(
                        1000.0
                 << " ms" << std::endl;
 
-        const int scaledPatchSize = PATCH_SIZE * mvScaleFactor[level];
+        const int scaledPatchSize = PATCH_SIZE * m_scalefactor[level];
         // Add border to coordinates and scale information
         const int nkps = keypoints.size();
         for (int i = 0; i < nkps; i++) {
@@ -511,14 +529,20 @@ void SPextractor::ComputeKeyPointsWithMask(
 
 void SPextractor::ComputeKeyPointsOctTree(
     vector<vector<KeyPoint>> &allKeypoints, cv::Mat &_desc) {
-    allKeypoints.resize(nlevels);
+    allKeypoints.resize(m_levels);
     vector<cv::Mat> vDesc;
     const float W = 30;
 
-    for (int level = 0; level < nlevels; ++level) {
+    for (int level = 0; level < m_levels; ++level) {
+#ifdef MONO
         SPDetector detector(
-            traced_module_480_640, traced_module_400_533,
-            traced_module_333_444);
+            m_traced_module_384_512, m_traced_module_320_427,
+            m_traced_module_267_356, true);
+#else
+        SPDetector detector(
+            m_traced_module_480_640, m_traced_module_400_533,
+            m_traced_module_333_444, false);
+#endif
         detector.detect(mvImagePyramid[level], level, is_use_cuda);
 
         const int minBorderX = 0; // EDGE_THRESHOLD - 3;
@@ -529,7 +553,7 @@ void SPextractor::ComputeKeyPointsOctTree(
             mvImagePyramid[level].rows - 0; // EDGE_THRESHOLD + 3;
 
         vector<cv::KeyPoint> vToDistributeKeys;
-        vToDistributeKeys.reserve(nfeatures * 10);
+        vToDistributeKeys.reserve(m_features * 10);
 
         const float width = (maxBorderX - minBorderX);
         const float height = (maxBorderY - minBorderY);
@@ -540,12 +564,12 @@ void SPextractor::ComputeKeyPointsOctTree(
         vector<cv::KeyPoint> vKeysCell;
 
         detector.getKeyPoints(
-            iniThFAST, minBorderX, maxBorderX, minBorderY, maxBorderY,
+            m_iniTh_FAST, minBorderX, maxBorderX, minBorderY, maxBorderY,
             vKeysCell, true);
 
         if (vKeysCell.empty()) {
             detector.getKeyPoints(
-                minThFAST, minBorderX, maxBorderX, minBorderY, maxBorderY,
+                m_minTh_FAST, minBorderX, maxBorderX, minBorderY, maxBorderY,
                 vKeysCell, true);
         }
 
@@ -567,7 +591,7 @@ void SPextractor::ComputeKeyPointsOctTree(
         vector<KeyPoint> &keypoints = allKeypoints[level];
         keypoints = DistributeOctTree(
             vToDistributeKeys, minBorderX, maxBorderX, minBorderY, maxBorderY,
-            mnFeaturesPerLevel[level], level);
+            m_features_perlevel[level], level);
 
         VLOG(5) << "time for distribute oct tree: "
                 << (duration_cast<microseconds>(
@@ -576,7 +600,7 @@ void SPextractor::ComputeKeyPointsOctTree(
                        1000.0
                 << " ms" << std::endl;
 
-        const int scaledPatchSize = PATCH_SIZE * mvScaleFactor[level];
+        const int scaledPatchSize = PATCH_SIZE * m_scalefactor[level];
         // Add border to coordinates and scale information
         const int nkps = keypoints.size();
         for (int i = 0; i < nkps; i++) {
@@ -632,7 +656,7 @@ void SPextractor::operator()(
     }
 
     int nkeypoints = 0;
-    for (int level = 0; level < nlevels; ++level)
+    for (int level = 0; level < m_levels; ++level)
         nkeypoints += (int)allKeypoints[level].size();
     if (nkeypoints == 0)
         _descriptors.release();
@@ -645,7 +669,7 @@ void SPextractor::operator()(
     _keypoints.reserve(nkeypoints);
 
     int offset = 0;
-    for (int level = 0; level < nlevels; ++level) {
+    for (int level = 0; level < m_levels; ++level) {
         vector<KeyPoint> &keypoints = allKeypoints[level];
         int nkeypointsLevel = (int)keypoints.size();
 
@@ -665,7 +689,7 @@ void SPextractor::operator()(
 
         // Scale keypoint coordinates
         if (level != 0) {
-            float scale = mvScaleFactor[level]; // getScale(level, firstLevel,
+            float scale = m_scalefactor[level]; // getScale(level, firstLevel,
                                                 // scaleFactor);
             for (vector<KeyPoint>::iterator keypoint = keypoints.begin(),
                                             keypointEnd = keypoints.end();
@@ -678,8 +702,8 @@ void SPextractor::operator()(
 }
 
 void SPextractor::ComputePyramid(cv::Mat image) {
-    for (int level = 0; level < nlevels; ++level) {
-        float scale = mvInvScaleFactor[level];
+    for (int level = 0; level < m_levels; ++level) {
+        float scale = m_invscalefactor[level];
         Size sz(
             cvRound((float)image.cols * scale),
             cvRound((float)image.rows * scale));
@@ -689,6 +713,8 @@ void SPextractor::ComputePyramid(cv::Mat image) {
         mvImagePyramid[level] =
             temp(Rect(EDGE_THRESHOLD, EDGE_THRESHOLD, sz.width, sz.height));
 
+        //        VLOG(0) << "level: " << level << mvImagePyramid[level].cols <<
+        //        " " << mvImagePyramid[level].rows;
         // Compute the resized image
         if (level != 0) {
             resize(

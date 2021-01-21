@@ -19,20 +19,20 @@
  * ORB-SLAM3. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "include/ORBSLAM3/Tracking.h"
+#include "ORBSLAM3/Tracking.h"
 #include <opencv2/core/core.hpp>
-#include "include/ORBSLAM3/ORBmatcher.h"
-#include "include/ORBSLAM3/FrameDrawer.h"
-#include "include/ORBSLAM3/Converter.h"
-#include "include/ORBSLAM3/Initializer.h"
-#include "include/ORBSLAM3/G2oTypes.h"
-#include "include/ORBSLAM3/Optimizer.h"
+#include "ORBSLAM3/ORBmatcher.h"
+#include "ORBSLAM3/FrameDrawer.h"
+#include "ORBSLAM3/Converter.h"
+#include "ORBSLAM3/Initializer.h"
+#include "ORBSLAM3/G2oTypes.h"
+#include "ORBSLAM3/Optimizer.h"
 #include <iostream>
 #include <mutex>
 #include <chrono>
-#include <include/CameraModels/Pinhole.h>
-#include <include/CameraModels/KannalaBrandt8.h>
-#include <include/ORBSLAM3/MLPnPsolver.h>
+#include <CameraModels/Pinhole.h>
+#include <CameraModels/KannalaBrandt8.h>
+#include <ORBSLAM3/MLPnPsolver.h>
 #include "mode.h"
 
 using namespace std;
@@ -2635,7 +2635,76 @@ bool Tracking::NeedNewKeyFrame() {
     }
 
 #ifdef SCANNER
-    return mCurrentFrame.mnId >= mnLastKeyFrameId + mMaxFrames - 28;
+    // Condition 1a: More than "MaxFrames" have passed from last keyframe
+    // insertion
+    //    const bool c1a = mCurrentFrame.mnId>=mnLastKeyFrameId+mMaxFrames;
+    //    // Condition 1b: More than "MinFrames" have passed and Local Mapping
+    //    is idle const bool c1b =
+    //    ((mCurrentFrame.mnId>=mnLastKeyFrameId+mMinFrames) &&
+    //    bLocalMappingIdle);
+    //    //Condition 1c: tracking is weak
+    //    const bool c1c = mSensor!=System::MONOCULAR &&
+    //    mSensor!=System::IMU_MONOCULAR && mSensor!=System::IMU_STEREO &&
+    //    (mnMatchesInliers<nRefMatches*0.25 || bNeedToInsertClose) ;
+    //    // Condition 2: Few tracked points compared to reference keyframe.
+    //    Lots of visual odometry compared to map matches. const bool c2 =
+    //    (((mnMatchesInliers<nRefMatches*thRefRatio || bNeedToInsertClose)) &&
+    //    mnMatchesInliers>15);
+    //
+    //    // Temporal condition for Inertial cases
+    //    bool c3 = false;
+    //    if(mpLastKeyFrame)
+    //    {
+    //        if (mSensor==System::IMU_MONOCULAR)
+    //        {
+    //            if
+    //            ((mCurrentFrame.mTimeStamp-mpLastKeyFrame->mTimeStamp)>=0.5)
+    //                c3 = true;
+    //        }
+    //        else if (mSensor==System::IMU_STEREO)
+    //        {
+    //            if
+    //            ((mCurrentFrame.mTimeStamp-mpLastKeyFrame->mTimeStamp)>=0.5)
+    //                c3 = true;
+    //        }
+    //    }
+    //
+    //    bool c4 = false;
+    //    if ((((mnMatchesInliers<75) && (mnMatchesInliers>15)) ||
+    //    mState==RECENTLY_LOST) && ((mSensor == System::IMU_MONOCULAR))) //
+    //    MODIFICATION_2, originally ((((mnMatchesInliers<75) &&
+    //    (mnMatchesInliers>15)) || mState==RECENTLY_LOST) && ((mSensor ==
+    //    System::IMU_MONOCULAR)))
+    //        c4=true;
+    //    else
+    //        c4=false;
+    //
+    //    if(((c1a||c1b||c1c) && c2)||c3 ||c4)
+    //    {
+    //        // If the mapping accepts keyframes, insert keyframe.
+    //        // Otherwise send a signal to interrupt BA
+    //        if(bLocalMappingIdle)
+    //        {
+    //            return true;
+    //        }
+    //        else
+    //        {
+    //            mpLocalMapper->InterruptBA();
+    //            if(mSensor!=System::MONOCULAR  &&
+    //            mSensor!=System::IMU_MONOCULAR)
+    //            {
+    //                if(mpLocalMapper->KeyframesInQueue()<3)
+    //                    return true;
+    //                else
+    //                    return false;
+    //            }
+    //            else
+    //                return false;
+    //        }
+    //    }
+    //    else
+    //        return false;
+    return mCurrentFrame.mnId >= mnLastKeyFrameId + mMaxFrames - 26;
 #else
 
     return mCurrentFrame.mnId >= mnLastKeyFrameId + mMaxFrames - 27;

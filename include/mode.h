@@ -1,7 +1,3 @@
-//
-// Created by zhangye on 2020/9/21.
-//
-
 #ifndef ORB_SLAM3_MODE_H
 #define ORB_SLAM3_MODE_H
 
@@ -28,5 +24,5 @@
 //#define OBJECT_BAG
 //#define OBJECT_TOY
 
-//#define TEST_COLOR_IMAGE
+//#define MONO
 #endif // ORB_SLAM3_MODE_H

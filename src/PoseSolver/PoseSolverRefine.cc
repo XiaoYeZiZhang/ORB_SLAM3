@@ -107,15 +107,10 @@ int REFINE_MAX_ITERATIONS = 100;
 float REFINE_MIN_DEPTH = 1.0e-3f;
 float REFINE_STD_FEATURE = 1.0f;
 float REFINE_STD_FEATURE_ROTATION = 10.0f;
-// float REFINE_STD_GRAVITY = 1.0e-3f;
 float REFINE_STD_GRAVITY = 1.0f;
-// float REFINE_CONVERGE_ROTATION = 0.0f;
-// float REFINE_CONVERGE_TRANSLATION = 0.0f;
 float REFINE_CONVERGE_ROTATION = 1.0e-2f;
 float REFINE_CONVERGE_TRANSLATION = 1.0e-3f;
 float REFINE_MIN_INLIER_RATIO = 0.8f;
-
-// int REFINE_DL_MAX_ITERATIONS = 0;
 int REFINE_DL_MAX_ITERATIONS = 10;
 float REFINE_DL_RADIUS_INITIAL = 1.0f; // 1.0^2
 float REFINE_DL_RADIUS_MIN = 1.0e-10f; // 0.00001^2
@@ -167,7 +162,6 @@ bool Refine(
             const Eigen::Vector3f RX = T->m_R * M.m_X;
             const Eigen::Vector3f TX = RX + T->m_t;
             if (TX.z() < REFINE_MIN_DEPTH) {
-                // if (fabsf(TX.z()) < FLT_EPSILON) {
                 ws3D[i] = 0.0f;
                 continue;
             }
@@ -196,8 +190,6 @@ bool Refine(
             ++SN;
 #endif
         }
-// A *= 100;
-// b *= 100;
 #ifdef CFG_VERBOSE
         printf("%d: %f", iIter, SN == 0 ? 0 : sqrtf(Se2 / SN) * f);
 #endif
@@ -335,8 +327,6 @@ bool Refine(
             }
         }
         xGN = Eigen::Vector6f(A.ldlt().solve(-b));
-        // xGN = Eigen::Vector6f(A.inverse() * (-b));
-        // const Eigen::Vector6f Ax = Eigen::Vector6f(A * xGN);
         if (REFINE_DL_MAX_ITERATIONS > 0) {
             x2GN = xGN.squaredNorm();
             x2GD = -1.0f;

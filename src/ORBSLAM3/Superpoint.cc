@@ -1,11 +1,9 @@
-//
-// Created by root on 2020/10/21.
-//
 #include "ORBSLAM3/SuperPoint.h"
 #include <glog/logging.h>
 #include <Eigen/Core>
 #include <chrono>
 #include <utility>
+#include "mode.h"
 using namespace std::chrono;
 
 namespace ORB_SLAM3 {
@@ -17,15 +15,24 @@ void NMS2(
     int border, int dist_thresh, int img_width, int img_height);
 
 SPDetector::SPDetector(
-    torch::jit::script::Module _traced_module_480_640,
-    torch::jit::script::Module _traced_module_400_533,
-    torch::jit::script::Module _traced_module_333_444)
-    : traced_module_480_640(_traced_module_480_640),
-      traced_module_400_533(_traced_module_400_533),
-      traced_module_333_444(_traced_module_333_444) {
-    traced_module_480_640.to(torch::Device(torch::kCUDA));
-    traced_module_400_533.to(torch::Device(torch::kCUDA));
-    traced_module_333_444.to(torch::Device(torch::kCUDA));
+    torch::jit::script::Module level1_module,
+    torch::jit::script::Module level2_module,
+    torch::jit::script::Module level3_module, bool is_mono) {
+    if (is_mono) {
+        m_traced_module_384_512 = level1_module;
+        m_traced_module_320_427 = level2_module;
+        m_traced_module_267_356 = level3_module;
+        m_traced_module_384_512.to(torch::Device(torch::kCUDA));
+        m_traced_module_320_427.to(torch::Device(torch::kCUDA));
+        m_traced_module_267_356.to(torch::Device(torch::kCUDA));
+    } else {
+        m_traced_module_480_640 = level1_module;
+        m_traced_module_400_533 = level2_module;
+        m_traced_module_333_444 = level3_module;
+        m_traced_module_480_640.to(torch::Device(torch::kCUDA));
+        m_traced_module_400_533.to(torch::Device(torch::kCUDA));
+        m_traced_module_333_444.to(torch::Device(torch::kCUDA));
+    }
 }
 
 // get network output
@@ -45,17 +52,29 @@ void SPDetector::detect(cv::Mat &img, int level, bool cuda) {
 
     torch::Tensor semi;
     if (level == 0) {
-        auto out_test = traced_module_480_640.forward(inputs).toGenericDict();
+#ifdef MONO
+        auto out_test = m_traced_module_384_512.forward(inputs).toGenericDict();
+#else
+        auto out_test = m_traced_module_480_640.forward(inputs).toGenericDict();
+#endif
         semi = out_test.at("semi").toTensor();
-        mDesc = out_test.at("desc").toTensor();
+        m_desc = out_test.at("desc").toTensor();
     } else if (level == 1) {
-        auto out_test = traced_module_400_533.forward(inputs).toGenericDict();
+#ifdef MONO
+        auto out_test = m_traced_module_320_427.forward(inputs).toGenericDict();
+#else
+        auto out_test = m_traced_module_400_533.forward(inputs).toGenericDict();
+#endif
         semi = out_test.at("semi").toTensor();
-        mDesc = out_test.at("desc").toTensor();
+        m_desc = out_test.at("desc").toTensor();
     } else if (level == 2) {
-        auto out_test = traced_module_333_444.forward(inputs).toGenericDict();
+#ifdef MONO
+        auto out_test = m_traced_module_267_356.forward(inputs).toGenericDict();
+#else
+        auto out_test = m_traced_module_333_444.forward(inputs).toGenericDict();
+#endif
         semi = out_test.at("semi").toTensor();
-        mDesc = out_test.at("desc").toTensor();
+        m_desc = out_test.at("desc").toTensor();
     }
 
     VLOG(5) << "Time taken by get network output: "
@@ -67,7 +86,7 @@ void SPDetector::detect(cv::Mat &img, int level, bool cuda) {
     // pose process
     semi = semi.squeeze(0).squeeze(0);
     start = high_resolution_clock::now();
-    mProb_cpu = semi.to(torch::kCPU);
+    m_prob_cpu = semi.to(torch::kCPU);
     VLOG(5) << "Time taken by move from GPU to CPU: "
             << (duration_cast<microseconds>(
                     high_resolution_clock::now() - start))
@@ -87,10 +106,10 @@ void SPDetector::getKeyPoints(
     float threshold, int iniX, int maxX, int iniY, int maxY,
     std::vector<cv::KeyPoint> &keypoints, bool nms) {
     auto start = high_resolution_clock::now();
-    cv::Mat resultImg(mProb_cpu.size(0), mProb_cpu.size(1), CV_32F);
+    cv::Mat resultImg(m_prob_cpu.size(0), m_prob_cpu.size(1), CV_32F);
     std::memcpy(
-        (void *)resultImg.data, mProb_cpu.data_ptr(),
-        sizeof(float) * mProb_cpu.numel());
+        (void *)resultImg.data, m_prob_cpu.data_ptr(),
+        sizeof(float) * m_prob_cpu.numel());
     VLOG(5) << "time of cv::Mat: "
             << (duration_cast<microseconds>(
                     high_resolution_clock::now() - start))
@@ -162,15 +181,15 @@ void SPDetector::computeDescriptors(
     auto grid =
         torch::zeros({1, 1, fkpts.size(0), 2}); // [1, 1, n_keypoints, 2]
     grid[0][0].slice(1, 0, 1) =
-        2.0 * fkpts.slice(1, 1, 2) / mProb_cpu.size(1) - 1; // x
+        2.0 * fkpts.slice(1, 1, 2) / m_prob_cpu.size(1) - 1; // x
     grid[0][0].slice(1, 1, 2) =
-        2.0 * fkpts.slice(1, 0, 1) / mProb_cpu.size(0) - 1; // y
+        2.0 * fkpts.slice(1, 0, 1) / m_prob_cpu.size(0) - 1; // y
     if (cuda) {
         grid = grid.to(torch::kCUDA);
     }
 
     auto desc = torch::grid_sampler(
-        mDesc, grid, 0, 0, true);      // [1, 256, 1, n_keypoints]
+        m_desc, grid, 0, 0, true);     // [1, 256, 1, n_keypoints]
     desc = desc.squeeze(0).squeeze(1); // [256, n_keypoints]
 
     // normalize to 1

@@ -1,21 +1,30 @@
 %YAML:1.0
-mappoint_filename: "box_version_test_monocular_inertial.bin"
-#mappoint_filename: "box_version2.bin"
+mappoint_filename: "box_version2.bin"
 mappoint_filename_superpoint: "box_superpoint_64.bin"
 
-#mappoint_filename: "bag_version2.bin"
-#mappoint_filename_superpoint: "experiment_bag_superpoint_64.bin"
+#mappoint_filename: "box_version2_difficult.bin"
+#mappoint_filename: "box_version1_difficult.bin"
+#mappoint_filename_superpoint: "box_superpoint_64_difficult.bin"
+
+
+#mappoint_filename: "bag_version1.bin"
+#mappoint_filename_superpoint: "bag_superpoint_64.bin"
 
 #mappoint_filename: "toy_version2.bin"
-#mappoint_filename_superpoint: "experiment_toy_superpoint_64.bin"
+#mappoint_filename_superpoint: "toy_superpoint_64.bin"
 
 
 saved_path: "/home/zhangye/data1/objectRecognition/saved"
 voc_path: "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/ORBvoc.txt"
 voc_path_superpoint: "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/Superpoint/superpoint_voc.yml.gz"
 
-#data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/box_test/scan/1606798025"
-#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/box_test/data1/1606797615"
+# data box
+#data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/box_difficult/scan"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/box_difficult/occlu1"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/box_difficult/similar_object"
+
+#data_path_scan: "/home/zhangye/data1/objectrecognition/scan_realsense/box_test/scan/1606798025"
+#data_path_objrecognition: "/home/zhangye/data1/objectrecognition/scan_realsense/box_test/data1/1606797615"
 
 #data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/box_test_move/scan/1606831972"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/box_test_move/data2/1606832210"
@@ -24,21 +33,24 @@ voc_path_superpoint: "/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabula
 
 data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606023509_scan"
 data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606025836_norm1"
+
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606027319_norm3"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606026237_occu1"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606026304_quickmove1"
-#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/test_color/1606784622"
 
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/tianmao_box/1606026237_occu1"
 
+# data bag
 #data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/bag_test/scan/1606798194"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/bag_test/data1/1606798633"
 
 #data_path_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/bag/1606100612_scan"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/bag/1606100752_norm1"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/bag/1606100801_norm2"
+#data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/bag/1606100944_quickmove"
 
 
-
+# data toy
 #data_pathm_scan: "/home/zhangye/data1/objectRecognition/scan_realsense/toy_test/scan/1606798890"
 #data_path_objRecognition: "/home/zhangye/data1/objectRecognition/scan_realsense/toy_test/data1/1606799403"
 

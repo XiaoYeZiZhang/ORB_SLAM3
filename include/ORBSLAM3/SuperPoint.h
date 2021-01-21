@@ -1,12 +1,9 @@
-//
-// Created by root on 2020/10/21.
-//
-
 #ifndef ORB_SLAM3_SUPERPOINT_H
 #define ORB_SLAM3_SUPERPOINT_H
 #include <torch/torch.h>
 #include <opencv2/opencv.hpp>
 #include <vector>
+#include "mode.h"
 #ifdef EIGEN_MPL2_ONLY
 #undef EIGEN_MPL2_ONLY
 #endif
@@ -20,9 +17,9 @@ struct SuperPoint : torch::nn::Module {
 class SPDetector {
 public:
     SPDetector(
-        torch::jit::script::Module _traced_module_480_640,
-        torch::jit::script::Module _traced_module_400_533,
-        torch::jit::script::Module _traced_module_333_444);
+        torch::jit::script::Module level1_module,
+        torch::jit::script::Module level2_module,
+        torch::jit::script::Module level3_module, bool is_mono = false);
 
     SPDetector() {
     }
@@ -36,11 +33,14 @@ public:
         bool cuda);
 
 private:
-    torch::jit::script::Module traced_module_480_640;
-    torch::jit::script::Module traced_module_400_533;
-    torch::jit::script::Module traced_module_333_444;
-    torch::Tensor mDesc;
-    torch::Tensor mProb_cpu;
+    torch::jit::script::Module m_traced_module_480_640;
+    torch::jit::script::Module m_traced_module_400_533;
+    torch::jit::script::Module m_traced_module_333_444;
+    torch::jit::script::Module m_traced_module_384_512;
+    torch::jit::script::Module m_traced_module_320_427;
+    torch::jit::script::Module m_traced_module_267_356;
+    torch::Tensor m_desc;
+    torch::Tensor m_prob_cpu;
 };
 
 } // namespace ORB_SLAM3

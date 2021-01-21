@@ -1,8 +1,4 @@
-//
-// Created by root on 2020/9/27.
-//
 #include <GL/gl.h>
-#include <iostream>
 #include <utility>
 #include "ORBSLAM3/ScannerStruct/Struct.h"
 void Triangle::SetVertex(

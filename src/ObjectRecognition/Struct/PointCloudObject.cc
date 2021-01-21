@@ -1,6 +1,3 @@
-//
-// Created by zhangye on 2020/9/16.
-//
 #include <glog/logging.h>
 #include "ORBSLAM3/Converter.h"
 #include "Utility/Camera.h"
@@ -18,7 +15,7 @@ void GetDataFromMem(
 
 bool MapPoint::Load(
     const int &descriptor_len, long long &mem_pos, const char *mem) {
-    GetDataFromMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
+    GetDataFromMem(&m_Id, mem + mem_pos, sizeof(m_Id), mem_pos);
     Eigen::Vector3d posTmp;
     VLOG(5) << "mappoint 0: " << mem_pos;
     // (Tco) SLAM Coords
@@ -26,30 +23,23 @@ bool MapPoint::Load(
     GetDataFromMem(&posTmp(1), ((mem) + mem_pos), sizeof(double), mem_pos);
     GetDataFromMem(&posTmp(2), ((mem) + mem_pos), sizeof(double), mem_pos);
 
-    mWorldPos(0) = posTmp(0);
-    mWorldPos(1) = posTmp(1);
-    mWorldPos(2) = posTmp(2);
+    m_world_pos(0) = posTmp(0);
+    m_world_pos(1) = posTmp(1);
+    m_world_pos(2) = posTmp(2);
     int desps_size;
     GetDataFromMem(&desps_size, ((mem) + mem_pos), sizeof(int), mem_pos);
-
-    for (int i = 0; i < desps_size; i++) {
-        FrameIndex index;
-        GetDataFromMem(&index, ((mem) + mem_pos), sizeof(FrameIndex), mem_pos);
-
-        VLOG(5) << "mappoint read 0:" << mem_pos;
+    FrameIndex index;
+    GetDataFromMem(&index, ((mem) + mem_pos), sizeof(FrameIndex), mem_pos);
 #ifdef SUPERPOINT
-        cv::Mat desp = cv::Mat::zeros(descriptor_len, 1, CV_32FC1);
-        GetDataFromMem(
-            desp.data, ((mem) + mem_pos), descriptor_len * sizeof(float),
-            mem_pos);
+    cv::Mat desp = cv::Mat::zeros(descriptor_len, 1, CV_32FC1);
+    GetDataFromMem(
+        desp.data, ((mem) + mem_pos), descriptor_len * sizeof(float), mem_pos);
 #else
-        cv::Mat desp = cv::Mat::zeros(descriptor_len, 1, CV_8U);
-        GetDataFromMem(
-            desp.data, ((mem) + mem_pos), descriptor_len * sizeof(uchar),
-            mem_pos);
+    cv::Mat desp = cv::Mat::zeros(descriptor_len, 1, CV_8U);
+    GetDataFromMem(
+        desp.data, ((mem) + mem_pos), descriptor_len * sizeof(uchar), mem_pos);
 #endif
-        m_multi_desps.push_back({index, desp});
-    }
+    m_desps = {index, desp};
     VLOG(5) << "mappoint read 1: " << mem_pos;
 
     unsigned int ref_kfs_id_size;
@@ -65,11 +55,10 @@ bool MapPoint::Load(
         m_observations.emplace_back(std::pair<FrameIndex, int>(kf_id, index));
     }
 
-    GetDataFromMem(&mnVisible, ((mem) + mem_pos), sizeof(mnVisible), mem_pos);
-    GetDataFromMem(&mnFound, ((mem) + mem_pos), sizeof(mnFound), mem_pos);
-    VLOG(20) << "MapPoint Data: " << mnId << ", " << m_multi_desps.size()
-             << ", " << m_observations.size() << ", " << mnVisible << ", "
-             << mnFound;
+    int visible;
+    int found;
+    GetDataFromMem(&visible, ((mem) + mem_pos), sizeof(visible), mem_pos);
+    GetDataFromMem(&found, ((mem) + mem_pos), sizeof(found), mem_pos);
     return true;
 }
 
@@ -78,17 +67,8 @@ bool MapPoint::Save(int &mem_size, char **mem) {
     return true;
 }
 
-bool MapPoint::IsBad() {
-    VLOG(30) << "MapPoint::IsBad";
-    return false;
-}
-
 cv::Mat &MapPoint::GetDescriptor() {
-    return m_multi_desps.at(0).second;
-}
-
-std::vector<std::pair<FrameIndex, cv::Mat>> &MapPoint::GetMultiDescriptor() {
-    return m_multi_desps;
+    return m_desps.second;
 }
 
 std::vector<std::pair<FrameIndex, int>> &MapPoint::GetObservations() {
@@ -96,24 +76,17 @@ std::vector<std::pair<FrameIndex, int>> &MapPoint::GetObservations() {
 }
 
 Eigen::Vector3d &MapPoint::GetPose() {
-    std::unique_lock<std::mutex> lock(mMutexPos);
-    return mWorldPos;
+    std::unique_lock<std::mutex> lock(m_pose_mutex);
+    return m_world_pos;
 }
 
 void MapPoint::SetPose(const Eigen::Vector3d &pose) {
-    std::unique_lock<std::mutex> lock(mMutexPos);
-    mWorldPos = pose;
+    std::unique_lock<std::mutex> lock(m_pose_mutex);
+    m_world_pos = pose;
 }
 
 MapPointIndex &MapPoint::GetIndex() {
-    return mnId;
-}
-
-const std::string MapPoint::GetInfo() {
-    std::string info;
-    info += "MapPoint id: " + std::to_string(mnId);
-    info += " Observation num: " + std::to_string(m_observations.size());
-    return info;
+    return m_Id;
 }
 
 template <class T1, class T2>
@@ -171,7 +144,6 @@ void UnPackCamCWFromMem(
     PutDataToMem(&(QR.y()), mem + mem_pos, sizeof(double), mem_pos);
     PutDataToMem(&(QR.z()), mem + mem_pos, sizeof(double), mem_pos);
     Rcw = QR;
-    VLOG(10) << "pose: " << QR.z();
 }
 
 void KeyFrame::ReadFromMemory(
@@ -179,36 +151,31 @@ void KeyFrame::ReadFromMemory(
     PutDataToMem(&mnId, mem + mem_pos, sizeof(mnId), mem_pos);
 #ifdef SAVE_CONNECT_FOR_DETECTOR
     PutDataToMem(
-        &connect_kfs_num, mem + mem_pos, sizeof(connect_kfs_num), mem_pos);
-    // VLOG(0) << "keyframe connected keyframe: " << connect_kfs_num;
-    for (auto i = 0; i < connect_kfs_num; i++) {
+        &m_connect_kfs_num, mem + mem_pos, sizeof(m_connect_kfs_num), mem_pos);
+    // VLOG(0) << "keyframe connected keyframe: " << m_connect_kfs_num;
+    for (auto i = 0; i < m_connect_kfs_num; i++) {
         long unsigned int connect_kf_id;
         PutDataToMem(
             &connect_kf_id, mem + mem_pos, sizeof(connect_kf_id), mem_pos);
-        connect_kfs.emplace_back(connect_kf_id);
+        m_connect_kfs.emplace_back(connect_kf_id);
     }
 
     PutDataToMem(
-        &connect_mappoints_num, mem + mem_pos, sizeof(connect_mappoints_num),
-        mem_pos);
-    // VLOG(0) << "keyframe obs mappoint num: " << connect_mappoints_num;
-    for (auto i = 0; i < connect_mappoints_num; i++) {
+        &m_connect_mappoints_num, mem + mem_pos,
+        sizeof(m_connect_mappoints_num), mem_pos);
+    // VLOG(0) << "keyframe obs mappoint num: " << m_connect_mappoints_num;
+    for (auto i = 0; i < m_connect_mappoints_num; i++) {
         long unsigned int connect_mappoint_id;
         PutDataToMem(
             &connect_mappoint_id, mem + mem_pos, sizeof(connect_mappoint_id),
             mem_pos);
-        connect_mappoints.emplace_back(connect_mappoint_id);
+        m_connect_mappoints.emplace_back(connect_mappoint_id);
     }
 #endif
 
-    VLOG(10) << "keyframe id: " << mnId;
-    VLOG(5) << "keyframe read0:" << mem_pos;
     std::tie(mvKeypoints, mDescriptors) =
         UnpackFeatures(descriptor_len, mem_pos, mem);
-    UnPackCamCWFromMem(mem_pos, mem, mtcw, mRcw);
-    VLOG(10) << "size: "
-             << ObjRecognition::CameraIntrinsic::GetInstance().Width() << " "
-             << ObjRecognition::CameraIntrinsic::GetInstance().Height();
+    UnPackCamCWFromMem(mem_pos, mem, m_tcw, m_Rcw);
     {
         int imgWidth = ObjRecognition::CameraIntrinsic::GetInstance().Width();
         int imgHeight = ObjRecognition::CameraIntrinsic::GetInstance().Height();
@@ -220,7 +187,7 @@ void KeyFrame::ReadFromMemory(
 
 void KeyFrame::SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc) {
     CHECK_NOTNULL(voc.get());
-    voc_ = voc;
+    m_voc = voc;
 }
 
 cv::Mat &KeyFrame::GetRawImage() {
@@ -228,8 +195,8 @@ cv::Mat &KeyFrame::GetRawImage() {
 }
 
 void KeyFrame::GetPose(Eigen::Matrix3d &Rcw, Eigen::Vector3d &tcw) {
-    Rcw = mRcw;
-    tcw = mtcw;
+    Rcw = m_Rcw;
+    tcw = m_tcw;
 }
 
 cv::Mat &KeyFrame::GetDesciriptor() {
@@ -246,7 +213,7 @@ bool KeyFrame::ComputeBowFeatures() {
         for (int i = 0; i < mDescriptors.rows; ++i) {
             mvDesp.push_back(mDescriptors.row(i));
         }
-        voc_->transform(mvDesp, mBowVec, mFeatVec, mvNodeIds, 4);
+        m_voc->transform(mvDesp, mBowVec, mFeatVec, mvNodeIds, 4);
         VLOG(5) << "KeyFrame::ComputeBowFeatures: mvDesp.size = "
                 << mvDesp.size() << " , NodeIds.size = " << mvNodeIds.size();
         mbBowValid = true;
@@ -278,9 +245,9 @@ bool Object::LoadPointCloud(const long long &mem_size, const char *mem) {
     unsigned int mapPointNum;
     long long mem_pos = 0;
     int kf_img_width, kf_img_height;
-    descriptor_len = -1;
+    m_descriptor_len = -1;
     GetDataFromMem(
-        &descriptor_len, mem + mem_pos, sizeof(descriptor_len), mem_pos);
+        &m_descriptor_len, mem + mem_pos, sizeof(m_descriptor_len), mem_pos);
     GetDataFromMem(&kf_img_width, mem + mem_pos, sizeof(kf_img_width), mem_pos);
     GetDataFromMem(
         &kf_img_height, mem + mem_pos, sizeof(kf_img_height), mem_pos);
@@ -294,7 +261,7 @@ bool Object::LoadPointCloud(const long long &mem_size, const char *mem) {
     double bounding_box[24];
     GetDataFromMem(bounding_box, mem + mem_pos, 24 * sizeof(double), mem_pos);
     for (size_t index = 0; index < 8; index++) {
-        mvBoundingBox.emplace_back(
+        m_boundingbox.emplace_back(
             bounding_box[index * 3], bounding_box[index * 3 + 1],
             bounding_box[index * 3 + 2]);
     }
@@ -309,7 +276,7 @@ bool Object::LoadPointCloud(const long long &mem_size, const char *mem) {
 
     for (int i = 0; i < mapPointNum; i++) {
         std::shared_ptr<MapPoint> mapPoint = std::make_shared<MapPoint>();
-        if (mapPoint->Load(descriptor_len, mem_pos, mem)) {
+        if (mapPoint->Load(m_descriptor_len, mem_pos, mem)) {
             m_pointclouds.push_back(mapPoint);
             m_pointclouds_map[mapPoint->GetID()] = mapPoint;
         } else {
@@ -324,7 +291,7 @@ bool Object::LoadPointCloud(const long long &mem_size, const char *mem) {
     m_keyframes.reserve(keyFrameNum);
     for (int i = 0; i < keyFrameNum; i++) {
         std::shared_ptr<KeyFrame> pKF = std::make_shared<KeyFrame>();
-        pKF->ReadFromMemory(descriptor_len, mem_pos, mem);
+        pKF->ReadFromMemory(m_descriptor_len, mem_pos, mem);
         m_keyframes.push_back(pKF);
     }
     VLOG(5) << "readmemsize3" << mem_pos;
@@ -373,18 +340,12 @@ std::shared_ptr<KeyFrame> Object::GetMatchFrameFromMap(
     const DBoW3::QueryResults &dbowRet, const int &retIndex) {
     std::shared_ptr<KeyFrame> pMostMatchFrame;
     if (dbowRet.size() <= retIndex) {
-        VLOG(10) << "2DMatch DBoW query results, ret.size = " << dbowRet.size()
-                 << ", index = " << retIndex;
     } else {
         int entry_id = dbowRet[retIndex].Id;
         ObjRecognition::FrameIndex KFId = GetKeyFrameIndexByEntryId(entry_id);
         pMostMatchFrame = GetKeyFrameByIndex(KFId);
         if (pMostMatchFrame) {
-            VLOG(10) << "2DMatch get match KF from the map, succeed to get id: "
-                     << KFId;
         } else {
-            VLOG(10) << "2DMatch get match KF from the map, fail to get id: "
-                     << KFId;
         }
     }
     return pMostMatchFrame;
@@ -425,17 +386,12 @@ void Object::SetVocabulary(const std::shared_ptr<DBoW3::Vocabulary> &voc) {
     m_voc = voc;
 }
 
-std::shared_ptr<DBoW3::Vocabulary> &Object::GetVocabulary() {
-    return m_voc;
-}
-
 bool Object::Save(long long &mem_size, char **mem) {
     VLOG(3) << "PointCloudObject::Save";
     return true;
 }
 
 std::vector<MapPoint::Ptr> &Object::GetPointClouds() {
-    // VLOG(0) << "mappoint size: " << m_pointclouds.size();
     return m_pointclouds;
 }
 
@@ -464,9 +420,4 @@ void Object::SetAssociatedKeyFrames(
 size_t Object::GetPointCloudsNum() {
     return m_pointclouds.size();
 }
-
-size_t Object::GetKeyFramesNum() {
-    return m_keyframes.size();
-}
-
 } // namespace ObjRecognition

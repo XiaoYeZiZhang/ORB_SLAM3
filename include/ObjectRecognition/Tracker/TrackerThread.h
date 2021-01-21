@@ -1,18 +1,14 @@
-//
-// Created by zhangye on 2020/9/16.
-//
-
 #ifndef ORB_SLAM3_TRACKERTHREAD_H
 #define ORB_SLAM3_TRACKERTHREAD_H
 #include <memory>
 #include <glog/logging.h>
-#include "Utility/RecognitionBase.h"
+#include "Common/RecognitionBase.h"
 #include "Utility/ThreadBase.h"
 #include "Struct/Frame.h"
 
 namespace ObjRecognition {
 
-class TrackerThread : public ThreadBase<FrameData> {
+class TrackerThread : public ThreadBase<FrameForObjRecognition> {
 public:
     TrackerThread();
     ~TrackerThread();
@@ -23,11 +19,11 @@ protected:
     void Process();
     void Stop();
     void Reset();
-    void GetCurInputData();
+    void GetNewestData();
 
 protected:
-    std::shared_ptr<RecognitionBase> mTracker;
-    std::shared_ptr<FrameData> mCurData;
+    std::shared_ptr<RecognitionBase> m_tracker;
+    std::shared_ptr<FrameForObjRecognition> m_curData;
 };
 } // namespace ObjRecognition
 #endif // ORB_SLAM3_TRACKERTHREAD_H

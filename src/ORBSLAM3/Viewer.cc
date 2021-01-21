@@ -25,9 +25,10 @@
 #include "Visualizer/GlobalImageViewer.h"
 #include "ORBSLAM3/Viewer.h"
 #include "ORBSLAM3/ViewerCommon.h"
-#include "include/Tools.h"
+#include "Tools.h"
 #include "mode.h"
-#include <src/ORBSLAM3/GLModel/model.h>
+#include "src/ORBSLAM3/GLModel/model.h"
+#include <opencv2/core/eigen.hpp>
 
 namespace ORB_SLAM3 {
 
@@ -58,23 +59,28 @@ Viewer::Viewer(
     }
 
     mbStopTrack = false;
-    switch_window_flag = 0;
-    is_stop = false;
-    image_width = ObjRecognition::CameraIntrinsic::GetInstance().Width();
-    image_height = ObjRecognition::CameraIntrinsic::GetInstance().Height();
-    imageTexture = pangolin::GlTexture();
+    m_switch_window_flag = 0;
+    m_is_stop = false;
+    m_image_width = ObjRecognition::CameraIntrinsic::GetInstance().Width();
+    m_image_height = ObjRecognition::CameraIntrinsic::GetInstance().Height();
+    m_image_texture = pangolin::GlTexture();
 }
 
 std::pair<Eigen::Matrix3d, Eigen::Vector3d>
 cal_trans(std::vector<Eigen::Vector3d> boundingbox) {
     Eigen::Matrix3d rot;
     Eigen::Vector3d x, y, z, offset;
+#ifdef OBJECT_TOY
+    z = boundingbox[1] - boundingbox[0];
+    x = boundingbox[4] - boundingbox[0];
+#endif
+#ifdef OBJECT_BAG
+    z = boundingbox[1] - boundingbox[0];
+    x = -boundingbox[4] - boundingbox[0];
+#endif
 #ifdef OBJECT_BOX
     x = boundingbox[1] - boundingbox[0];
     z = boundingbox[4] - boundingbox[0];
-#else
-    z = boundingbox[1] - boundingbox[0];
-    x = boundingbox[4] - boundingbox[0];
 #endif
     y = boundingbox[2] - boundingbox[0];
     rot.block<3, 1>(0, 0) = x;
@@ -166,15 +172,16 @@ void Viewer::SetObjectRecognitionPose(
 
 void Viewer::DrawObjRecognitionInit() {
     // define projection and initial movelview matrix: default
-    s_cam_objRecognition = pangolin::OpenGlRenderState();
-    imageTexture = pangolin::GlTexture(
-        image_width, image_height, GL_RGB, false, 0, GL_RGB, GL_UNSIGNED_BYTE);
+    m_s_cam_objRecognition = pangolin::OpenGlRenderState();
+    m_image_texture = pangolin::GlTexture(
+        m_image_width, m_image_height, GL_RGB, false, 0, GL_RGB,
+        GL_UNSIGNED_BYTE);
 }
 
 void Viewer::DrawDetectorInit() {
     // define projection and initial movelview matrix: default
     // Define Camera Render Object (for view / scene browsing)
-    s_cam_detector = pangolin::OpenGlRenderState(
+    m_s_cam_detector = pangolin::OpenGlRenderState(
         pangolin::ProjectionMatrix(
             1024, 768, mViewpointF, mViewpointF, 512, 389, 0.01, 10000),
         pangolin::ModelViewLookAt(
@@ -184,47 +191,49 @@ void Viewer::DrawDetectorInit() {
 void Viewer::DrawSLAMInit() {
     pangolin::CreatePanel("menu").SetBounds(
         0.0, 1.0, 0.0, pangolin::Attach::Pix(200));
-    menuFollowCamera = std::make_unique<pangolin::Var<bool>>(
+    m_menu_follow_camera = std::make_unique<pangolin::Var<bool>>(
         "menu.Follow Camera", false, true);
-    menuCamView =
+    m_menu_cam_view =
         std::make_unique<pangolin::Var<bool>>("menu.Camera View", false, false);
-    menuTopView =
+    m_menu_top_view =
         std::make_unique<pangolin::Var<bool>>("menu.Top View", false, false);
     // pangolin::Var<bool> menuSideView("menu.Side View",false,false);
-    menuShowPoints =
+    m_menu_show_points =
         std::make_unique<pangolin::Var<bool>>("menu.Show Points", true, true);
-    menuShowKeyFrames = std::make_unique<pangolin::Var<bool>>(
+    m_menu_show_keyframes = std::make_unique<pangolin::Var<bool>>(
         "menu.Show KeyFrames", true, true);
-    menuShowGraph =
+    m_menu_show_graph =
         std::make_unique<pangolin::Var<bool>>("menu.Show Graph", false, true);
-    menuShowCameraTrajectory = std::make_unique<pangolin::Var<bool>>(
+    m_menu_show_camera_trajectory = std::make_unique<pangolin::Var<bool>>(
         "menu.Show Camera trajectory", true, true);
-    menuShow3DObject =
+    m_menu_show_3DObject =
         std::make_unique<pangolin::Var<bool>>("menu.Show 3DObject", true, true);
-    menuShowMatched3DObject = std::make_unique<pangolin::Var<bool>>(
+    m_menu_show_matched_3DObject = std::make_unique<pangolin::Var<bool>>(
         "menu.Show Matched 3DObject", true, true);
-    menuShowInertialGraph = std::make_unique<pangolin::Var<bool>>(
+    m_menu_show_inertial_graph = std::make_unique<pangolin::Var<bool>>(
         "menu.Show Inertial Graph", true, true);
-    menuReset =
+    m_menu_reset =
         std::make_unique<pangolin::Var<bool>>("menu.Reset", false, false);
-    menuStepByStep = std::make_unique<pangolin::Var<bool>>(
+    m_menu_stepbystep = std::make_unique<pangolin::Var<bool>>(
         "menu.Step By Step", false, true); // false, true
-    menuStep = std::make_unique<pangolin::Var<bool>>("menu.Step", false, false);
-    menuStop = std::make_unique<pangolin::Var<bool>>("menu.Stop", false, false);
+    m_menu_step =
+        std::make_unique<pangolin::Var<bool>>("menu.Step", false, false);
+    m_menu_stop =
+        std::make_unique<pangolin::Var<bool>>("menu.Stop", false, false);
 
     // Define Camera Render Object (for view / scene browsing)
-    s_cam_slam = pangolin::OpenGlRenderState(
+    m_s_cam_slam = pangolin::OpenGlRenderState(
         pangolin::ProjectionMatrix(
             1024, 768, mViewpointF, mViewpointF, 512, 389, 0.1, 1000),
         pangolin::ModelViewLookAt(
             mViewpointX, mViewpointY, mViewpointZ, 0, 0, 0, 0.0, -1.0, 0.0));
 
     // Add named OpenGL viewport to window and provide 3D Handler
-    d_cam_slam =
+    m_d_cam_slam =
         pangolin::CreateDisplay()
             .SetBounds(
                 0.0, 1.0, pangolin::Attach::Pix(200), 1.0, -1024.0f / 768.0f)
-            .SetHandler(new pangolin::Handler3D(s_cam_slam));
+            .SetHandler(new pangolin::Handler3D(m_s_cam_slam));
 }
 
 void Viewer::Draw3dText() {
@@ -309,30 +318,6 @@ void Viewer::DrawPointCloudInImage(
     glBegin(GL_POINTS);
     for (auto pos : pointcloud_pos) {
         glVertex3f(pos.x(), pos.y(), pos.z());
-    }
-    glEnd();
-}
-
-void Viewer::DrawMatchedMappoints() {
-    std::vector<ObjRecognition::MapPointIndex> matchedMapPoint;
-    std::vector<ObjRecognition::MapPoint::Ptr> &pointClouds =
-        m_pointCloud_model->GetPointClouds();
-    std::vector<Eigen::Vector3f> matchedMapPointCoords;
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glPointSize(9.0);
-    glBegin(GL_POINTS);
-
-    Eigen::Isometry3f T = Eigen::Isometry3f::Identity();
-    T.rotate(m_Row.cast<float>());
-    T.pretranslate(m_tow.cast<float>());
-    ObjRecognition::GlobalPointCloudMatchViewer::GetMatchedMapPoint(
-        matchedMapPoint);
-    ObjRecognition::GlobalPointCloudMatchViewer::DrawMatchedMapPoint(
-        pointClouds, T, matchedMapPoint, matchedMapPointCoords);
-    for (int i = 0; i < matchedMapPointCoords.size(); i++) {
-        glVertex3f(
-            matchedMapPointCoords[i].x(), matchedMapPointCoords[i].y(),
-            matchedMapPointCoords[i].z());
     }
     glEnd();
 }
@@ -434,13 +419,13 @@ void Viewer::Draw() {
     if (mpTracker->mSensor == mpSystem->MONOCULAR ||
         mpTracker->mSensor == mpSystem->STEREO ||
         mpTracker->mSensor == mpSystem->RGBD) {
-        *menuShowGraph = true;
+        *m_menu_show_graph = true;
     }
 
     if (mpTracker->m_objRecognition_mode_) {
-        *menuShow3DObject = true;
-        *menuShowCameraTrajectory = true;
-        *menuShowMatched3DObject = true;
+        *m_menu_show_3DObject = true;
+        *m_menu_show_camera_trajectory = true;
+        *m_menu_show_matched_3DObject = true;
     }
 
 #ifdef OBJECTRECOGNITION
@@ -451,7 +436,7 @@ void Viewer::Draw() {
     float cy = ObjRecognition::CameraIntrinsic::GetInstance().CY();
 
     pangolin::OpenGlMatrixSpec P = pangolin::ProjectionMatrixRDF_TopLeft(
-        image_width, image_height, fx, fy, cx, cy, 0.001, 1000);
+        m_image_width, m_image_height, fx, fy, cx, cy, 0.001, 1000);
 
 #endif
     cv::Mat im;
@@ -459,101 +444,103 @@ void Viewer::Draw() {
     int image_num = 0;
     while (true) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        if (*menuStepByStep && !bStepByStep) {
+        if (*m_menu_stepbystep && !bStepByStep) {
             mpTracker->SetStepByStep(true);
             bStepByStep = true;
-        } else if (!(*menuStepByStep) && bStepByStep) {
+        } else if (!(*m_menu_stepbystep) && bStepByStep) {
             mpTracker->SetStepByStep(false);
             bStepByStep = false;
         }
 
-        if (*menuStep) {
+        if (*m_menu_step) {
             mpTracker->mbStep = true;
-            *menuStep = false;
+            *m_menu_step = false;
         }
 
         GetSLAMInfo(im, slam_status, image_num);
 
-        if (switch_window_flag == 0) {
-            d_cam_slam.show = true;
+        if (m_switch_window_flag == 0) {
+            m_d_cam_slam.show = true;
             mpMapDrawer->GetCurrentOpenGLCameraMatrix(Twc, Ow, Twwp);
             if (mbStopTrack) {
-                *menuStepByStep = true;
+                *m_menu_stepbystep = true;
                 mbStopTrack = false;
             }
 
             Tools::DrawTxt("IMAGE: " + std::to_string(image_num), 220, 10);
-            if (!(*menuFollowCamera)) {
+            if (!(*m_menu_follow_camera)) {
                 cv::Mat cam_pos;
                 mpMapDrawer->GetCurrentCameraPos(cam_pos);
                 m_trajectory.push_back(cam_pos);
             }
 
-            if (*menuFollowCamera && bFollow) {
+            if (*m_menu_follow_camera && bFollow) {
                 if (bCameraView)
-                    s_cam_slam.Follow(Twc);
+                    m_s_cam_slam.Follow(Twc);
                 else
-                    s_cam_slam.Follow(Ow);
-            } else if (*menuFollowCamera && !bFollow) {
+                    m_s_cam_slam.Follow(Ow);
+            } else if (*m_menu_follow_camera && !bFollow) {
                 if (bCameraView) {
-                    s_cam_slam.SetProjectionMatrix(pangolin::ProjectionMatrix(
+                    m_s_cam_slam.SetProjectionMatrix(pangolin::ProjectionMatrix(
                         1024, 768, mViewpointF, mViewpointF, 512, 389, 0.1,
                         1000));
-                    s_cam_slam.SetModelViewMatrix(pangolin::ModelViewLookAt(
+                    m_s_cam_slam.SetModelViewMatrix(pangolin::ModelViewLookAt(
                         mViewpointX, mViewpointY, mViewpointZ, 0, 0, 0, 0.0,
                         -1.0, 0.0));
-                    s_cam_slam.Follow(Twc);
+                    m_s_cam_slam.Follow(Twc);
                 } else {
-                    s_cam_slam.SetProjectionMatrix(pangolin::ProjectionMatrix(
+                    m_s_cam_slam.SetProjectionMatrix(pangolin::ProjectionMatrix(
                         1024, 768, 3000, 3000, 512, 389, 0.1, 1000));
-                    s_cam_slam.SetModelViewMatrix(pangolin::ModelViewLookAt(
+                    m_s_cam_slam.SetModelViewMatrix(pangolin::ModelViewLookAt(
                         0, 0.01, 10, 0, 0, 0, 0.0, 0.0, 1.0));
-                    s_cam_slam.Follow(Ow);
+                    m_s_cam_slam.Follow(Ow);
                 }
                 bFollow = true;
-            } else if (!(*menuFollowCamera) && bFollow) {
+            } else if (!(*m_menu_follow_camera) && bFollow) {
                 bFollow = false;
             }
 
-            if (*menuCamView) {
-                *menuCamView = false;
+            if (*m_menu_cam_view) {
+                *m_menu_cam_view = false;
                 bCameraView = true;
-                s_cam_slam.SetProjectionMatrix(pangolin::ProjectionMatrix(
+                m_s_cam_slam.SetProjectionMatrix(pangolin::ProjectionMatrix(
                     1024, 768, mViewpointF, mViewpointF, 512, 389, 0.1, 10000));
-                s_cam_slam.SetModelViewMatrix(pangolin::ModelViewLookAt(
+                m_s_cam_slam.SetModelViewMatrix(pangolin::ModelViewLookAt(
                     mViewpointX, mViewpointY, mViewpointZ, 0, 0, 0, 0.0, -1.0,
                     0.0));
-                s_cam_slam.Follow(Twc);
+                m_s_cam_slam.Follow(Twc);
             }
 
-            if (*menuTopView && mpMapDrawer->mpAtlas->isImuInitialized()) {
-                *menuTopView = false;
+            if (*m_menu_top_view && mpMapDrawer->mpAtlas->isImuInitialized()) {
+                *m_menu_top_view = false;
                 bCameraView = false;
-                s_cam_slam.SetProjectionMatrix(pangolin::ProjectionMatrix(
+                m_s_cam_slam.SetProjectionMatrix(pangolin::ProjectionMatrix(
                     1024, 768, 3000, 3000, 512, 389, 0.1, 10000));
-                s_cam_slam.SetModelViewMatrix(pangolin::ModelViewLookAt(
+                m_s_cam_slam.SetModelViewMatrix(pangolin::ModelViewLookAt(
                     0, 0.01, 50, 0, 0, 0, 0.0, 0.0, 1.0));
-                s_cam_slam.Follow(Ow);
+                m_s_cam_slam.Follow(Ow);
             }
 
-            d_cam_slam.Activate(s_cam_slam);
+            m_d_cam_slam.Activate(m_s_cam_slam);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             // pangolin::glDrawAxis(0.6f);
             // glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
             // pangolin::glDraw_z0(0.5f, 100);
 
             // mpMapDrawer->DrawCurrentCamera(Twc);
-            if (*menuShowKeyFrames || *menuShowGraph || *menuShowInertialGraph)
+            if (*m_menu_show_keyframes || *m_menu_show_graph ||
+                *m_menu_show_inertial_graph)
                 mpMapDrawer->DrawKeyFrames(
-                    *menuShowKeyFrames, *menuShowGraph, *menuShowInertialGraph);
-            if (*menuShowPoints)
+                    *m_menu_show_keyframes, *m_menu_show_graph,
+                    *m_menu_show_inertial_graph);
+            if (*m_menu_show_points)
                 mpMapDrawer->DrawMapPoints();
 
-            if (*menuShowCameraTrajectory) {
+            if (*m_menu_show_camera_trajectory) {
                 mpMapDrawer->DrawCameraTrajectory(m_trajectory);
             }
 
-            if (*menuShow3DObject) {
+            if (*m_menu_show_3DObject) {
                 typedef std::shared_ptr<ObjRecognition::MapPoint> MPPtr;
                 glColor3f(0.0f, 1.0f, 0.0f);
                 glPointSize(4.0);
@@ -574,48 +561,43 @@ void Viewer::Draw() {
                     }
                 }
                 glEnd();
-                if (*menuShowMatched3DObject) {
-                    // DrawMatchedMappoints();
+                if (*m_menu_show_matched_3DObject) {
                 }
             }
 
-            if (*menuStop) {
-                is_stop = true;
+            if (*m_menu_stop) {
+                m_is_stop = true;
                 break;
             }
 
-            if (*menuReset) {
-                *menuShowGraph = true;
-                *menuShowInertialGraph = true;
-                *menuShowKeyFrames = true;
-                *menuShowPoints = true;
+            if (*m_menu_reset) {
+                *m_menu_show_graph = true;
+                *m_menu_show_inertial_graph = true;
+                *m_menu_show_keyframes = true;
+                *m_menu_show_points = true;
                 bFollow = true;
-                *menuFollowCamera = false;
-                *menuShow3DObject = true;
-                *menuShowMatched3DObject = true;
-                *menuShowCameraTrajectory = true;
+                *m_menu_follow_camera = false;
+                *m_menu_show_3DObject = true;
+                *m_menu_show_matched_3DObject = true;
+                *m_menu_show_camera_trajectory = true;
                 // mpSystem->Reset();
                 mpSystem->ResetActiveMap();
-                *menuReset = false;
-                *menuStop = false;
+                *m_menu_reset = false;
+                *m_menu_stop = false;
             }
-        } else if (switch_window_flag == 1) {
+        } else if (m_switch_window_flag == 1) {
 #ifdef OBJECTRECOGNITION
-            d_cam_objRecognition.show = true;
+            m_d_cam_objRecognition.show = true;
             glColor3f(1.0, 1.0, 1.0);
             cv::Mat Tcw;
 
             if (!im.empty()) {
-                Tcw = Tcw_;
-#ifdef TEST_COLOR_IMAGE
-                cv::cvtColor(im, im, CV_BGR2RGB);
-#else
+                Tcw = m_cam_pos;
                 cv::cvtColor(im, im, CV_GRAY2RGB);
-#endif
                 PrintSLAMStatusForViewer(slam_status, image_num, im);
-                DrawImageTexture(imageTexture, im);
+                DrawImageTexture(m_image_texture, im);
 
-                d_cam_objRecognition.Activate(s_cam_objRecognition);
+                m_d_cam_objRecognition.Activate(m_s_cam_objRecognition);
                 // draw boundingbox:
                 ObjRecognition::ObjRecogResult result =
                     ObjRecognitionExd::ObjRecongManager::Instance()
@@ -634,7 +616,7 @@ void Viewer::Draw() {
                     Rwo(2, 2), two(2), 0, 0, 0, 1;
 
                 cv::Mat Two_cv;
-                eigen2cv(Two, Two_cv);
+                cv::eigen2cv(Two, Two_cv);
                 pangolin::OpenGlMatrix glTwo;
                 Tools::ChangeCV44ToGLMatrixDouble(Two_cv, glTwo);
                 std::vector<Eigen::Vector3d> boundingbox;
@@ -668,15 +650,15 @@ void Viewer::Draw() {
                     glPushMatrix();
                     glTwo.Multiply();
                     DrawBoundingboxInImage(boundingbox);
-                    // Draw3dText();
+                    //                    Draw3dText();
                     DrawPointCloudInImage(result.pointCloud_pos);
                     glPopMatrix();
                 }
             }
 #endif
-        } else if (switch_window_flag == 2) {
-            //            d_cam_detector.show = true;
-            d_cam_detector.Activate(s_cam_detector);
+        } else if (m_switch_window_flag == 2) {
+            //            m_d_cam_detector.show = true;
+            m_d_cam_detector.Activate(m_s_cam_detector);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             // pangolin::glDrawAxis(0.6f);
             // glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
@@ -686,7 +668,7 @@ void Viewer::Draw() {
         }
 
         mpFrameDrawer->DrawFrame(true);
-        ObjRecognition::GlobalOcvViewer::DrawAllView();
+        ObjRecognition::GlobalOcvViewer::Draw();
         pangolin::FinishFrame();
 
         if (Stop()) {
@@ -705,59 +687,59 @@ void Viewer::Draw() {
 void Viewer::SetSLAMInfo(
     const cv::Mat &img, const int &slam_state, const int &image_num,
     const cv::Mat &camPos) {
-    unique_lock<mutex> lock(mMutexPoseImage);
-    img_from_objRecognition = img.clone();
-    slam_state_from_objRecognition = slam_state;
-    img_num = image_num;
-    Tcw_ = camPos;
+    unique_lock<mutex> lock(m_pose_image_mutex);
+    m_img_from_objRecognition = img.clone();
+    m_slam_state_from_objRecognition = slam_state;
+    m_img_num = image_num;
+    m_cam_pos = camPos;
 }
 
 void Viewer::GetSLAMInfo(cv::Mat &img, int &state, int &image_num) {
-    unique_lock<mutex> lock(mMutexPoseImage);
-    img = img_from_objRecognition.clone();
-    state = slam_state_from_objRecognition;
-    image_num = img_num;
+    unique_lock<mutex> lock(m_pose_image_mutex);
+    img = m_img_from_objRecognition.clone();
+    state = m_slam_state_from_objRecognition;
+    image_num = m_img_num;
 }
 
 void Viewer::SwitchWindow() {
-    switch_window_flag = (switch_window_flag + 1) % 3;
-    if (switch_window_flag == 0) {
-        d_cam_objRecognition.show = false;
-        d_cam_detector.show = false;
-        d_cam_slam = pangolin::CreateDisplay()
-                         .SetBounds(
-                             0.0, 1.0, pangolin::Attach::Pix(200), 1.0,
-                             -1024.0f / 768.0f)
-                         .SetHandler(new pangolin::Handler3D(s_cam_slam));
-        d_cam_slam.show = true;
-    } else if (switch_window_flag == 1) {
-        d_cam_slam.show = false;
-        d_cam_detector.show = false;
-        d_cam_objRecognition =
+    m_switch_window_flag = (m_switch_window_flag + 1) % 3;
+    if (m_switch_window_flag == 0) {
+        m_d_cam_objRecognition.show = false;
+        m_d_cam_detector.show = false;
+        m_d_cam_slam = pangolin::CreateDisplay()
+                           .SetBounds(
+                               0.0, 1.0, pangolin::Attach::Pix(200), 1.0,
+                               -1024.0f / 768.0f)
+                           .SetHandler(new pangolin::Handler3D(m_s_cam_slam));
+        m_d_cam_slam.show = true;
+    } else if (m_switch_window_flag == 1) {
+        m_d_cam_slam.show = false;
+        m_d_cam_detector.show = false;
+        m_d_cam_objRecognition =
             pangolin::CreateDisplay()
                 .SetBounds(
                     0, 1.0f, pangolin::Attach::Pix(200), 1.0f,
-                    (float)image_width / image_height)
+                    (float)m_image_width / m_image_height)
                 .SetLock(pangolin::LockLeft, pangolin::LockTop);
-        //.SetHandler(new pangolin::Handler3D(s_cam_objRecognition));
-        d_cam_objRecognition.show = true;
-    } else if (switch_window_flag == 2) {
-        d_cam_slam.show = false;
-        d_cam_objRecognition.show = false;
-        d_cam_detector =
+        //.SetHandler(new pangolin::Handler3D(m_s_cam_objRecognition));
+        m_d_cam_objRecognition.show = true;
+    } else if (m_switch_window_flag == 2) {
+        m_d_cam_slam.show = false;
+        m_d_cam_objRecognition.show = false;
+        m_d_cam_detector =
             pangolin::CreateDisplay()
                 .SetBounds(
                     0, 1.0f, pangolin::Attach::Pix(200), 1.0f,
                     -1024.0f / 768.0f)
                 //.SetLock(pangolin::LockLeft, pangolin::LockTop)
-                .SetHandler(new pangolin::Handler3D(s_cam_detector));
-        d_cam_detector.show = true;
+                .SetHandler(new pangolin::Handler3D(m_s_cam_detector));
+        m_d_cam_detector.show = true;
     }
 }
 
 void Viewer::Run() {
     pangolin::CreateWindowAndBind(
-        "ORB-SLAM3: Map Viewer", image_width + 200, image_height);
+        "ORB-SLAM3: Map Viewer", m_image_width + 200, m_image_height);
     // pangolin::CreateWindowAndBind("Viewer", w + 200, h);
     // 3D Mouse handler requires depth testing to be enabled
     glEnable(GL_DEPTH_TEST);
@@ -843,9 +825,4 @@ void Viewer::Release() {
     unique_lock<mutex> lock(mMutexStop);
     mbStopped = false;
 }
-
-void Viewer::SetTrackingPause() {
-    mbStopTrack = true;
-}
-
 } // namespace ORB_SLAM3

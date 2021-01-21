@@ -1,50 +1,40 @@
-//
-// Created by zhangye on 2020/9/16.
-//
-
 #ifndef ORB_SLAM3_FRAME_H
 #define ORB_SLAM3_FRAME_H
 #include <Eigen/Core>
 #include <opencv2/core/mat.hpp>
 namespace ObjRecognition {
-
-class FrameData {
+// for detector and tracker
+class FrameForObjRecognition {
 public:
-    long unsigned int mFrmIndex;
-    double mTimeStamp;
-
-    Eigen::Matrix3d mRcw;
-    Eigen::Vector3d mTcw;
-
-    cv::Mat img;
-    std::vector<cv::KeyPoint> mKpts;
-    cv::Mat mDesp;
+    long unsigned int m_frmIndex;
+    Eigen::Matrix3d m_Rcw;
+    Eigen::Vector3d m_tcw;
+    cv::Mat m_img;
+    std::vector<cv::KeyPoint> m_kpts;
+    cv::Mat m_desp;
 };
 
-typedef struct ObjRecogImageCallbackData {
-    unsigned char *data; /// can be read during callback
-    int type;            /// same as cv::Mat type(). e.g. CV_8UC1 or CV_16UC1
+class CallbackImage {
+public:
+    unsigned char *data;
     int width;
     int height;
-    int stride; /// same as cv::Mat step
-} ObjRecogImageCallbackData;
+};
 
-typedef struct ObjRecogFrameCallbackData {
-    long unsigned int id; /// frame index
-    int flag;             /// frame state
-    double timestamp;     /// frame timestamp
-
-    bool has_image;                /// rgb is valid
-    ObjRecogImageCallbackData img; /// img data
-
-    /// camera pose, Rcw, tcw
+class CallbackFrame {
+public:
+    CallbackFrame() {
+        width = 0;
+        height = 0;
+        id = 0;
+    }
+    long unsigned int id;
+    unsigned char *data;
+    int width;
+    int height;
     double R[3][3];
     double t[3];
-
-    /// kpts and descriptor
-    int feature_mem_size;
-    char *feature_mem;
-} ObjRecogFrameCallbackData;
+};
 
 } // namespace ObjRecognition
 

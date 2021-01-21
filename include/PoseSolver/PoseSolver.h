@@ -82,9 +82,7 @@ public:
 };
 
 struct IterationSummary {
-    // Iterations has runed
     int nr_iterations = 0;
-    // Current best estimations.
     const Pose *C_T_W = nullptr;
     const MatchSet3D *matches_3d = nullptr;
     const std::vector<MatchSet2D> *matches_2d = nullptr;
@@ -151,38 +149,15 @@ private:
 
 struct Options {
     float focal_length = -1;
-    // max reprojection error (in normalized plane) for a match to be inlier.
     float max_reproj_err = -1;
-
-    // Max ransac iterations.
     int ransac_iterations = 100;
-    // ransac confidence
     double ransac_confidence = 0.99;
-
-    // NOTE: Assume gravity direciotn in world frame is [0, 0, 1].
-    // Default value [0, 0, 0] implies unknown gravity direction.
     Eigen::Vector3f gravity_dir = Eigen::Vector3f::Zero();
-    // 180 degree will essentially disable the gravity direction check.
-    float gravity_dir_max_err_deg = 180;
-
-    // PnP based pose solver.
     bool enable_3d_solver = true;
-    // Essential matrix based solver.
     bool enable_2d_solver = true;
-    // When use 2d solver, we first compute scaleless pose via essential matrix,
-    // then we can either sample a 3D match or a 2D match to solve the scale. If
-    // prefer_pure_2d_solver, sampleing over 2D matches will be prefered.
     bool prefer_pure_2d_solver = true;
-    // Use gravity direction as a constraint to solve the pose, this will reduce
-    // the problem by 2DOF. Enable it if your gravity_dir is accurate enough,
-    // else the gravity direciton check will be enabled when the gravity
-    // direction is valid.
     bool enable_gravity_solver = false;
-
-    // If only have 2D inlier matches, try solve translation (with rotation
-    // fixed) by DLT before running optimization.
     bool try_refine_translation_before_optimization_for_2d_only_matches = false;
-
     std::vector<IterationCallback> callbacks;
 
     void CheckValidity() const {
@@ -210,12 +185,6 @@ bool RansacAndRefine(
     const Options &options, const MatchSet3D &matches_3d,
     const std::vector<MatchSet2D> &matches_2d, Pose *C_T_W,
     std::vector<int> *inliers_3d, std::vector<std::vector<int>> *inliers_2d);
-
-bool RansacAndRefineSuppressFatalError(
-    const Options &options, const MatchSet3D &matches_3d,
-    const std::vector<MatchSet2D> &matches_2d, Pose *C_T_W,
-    std::vector<int> *inliers_3d, std::vector<std::vector<int>> *inliers_2d);
-
 } // namespace PS
 
 namespace Eigen {

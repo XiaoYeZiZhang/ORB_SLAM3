@@ -1,24 +1,18 @@
-//
-// Created by root on 2020/11/9.
-//
 #include "glog/logging.h"
 #include <iostream>
 #include <pangolin/gl/gldraw.h>
 #include <GL/glu.h>
-#include "Struct/PointCloudObject.h"
-#include "ORBSLAM3/ViewerAR.h"
-#include "Utility/FileIO.h"
+#include "PointCloudObject.h"
+#include "ViewerAR.h"
+#include "FileIO.h"
 #include "mode.h"
 
 using std::cout;
 using std::endl;
 
-typedef double M3DVector2d[2]; // 2D representations sometimes... (x,y) order
-typedef double M3DVector3d[3]; // Vector of three doubles (x, y, z)
-typedef double
-    M3DVector4d[4]; // Yes, occasionaly we do need a trailing w component
-typedef double
-    M3DMatrix44d[16]; // A 4 x 4 matrix, column major (doubles) - OpenGL style
+typedef double M3DVector2d[2];
+typedef double M3DVector3d[3];
+typedef double M3DMatrix44d[16];
 
 struct MapHandler3D_ShowMapPoint : public pangolin::Handler3D {
     MapHandler3D_ShowMapPoint(
@@ -121,26 +115,14 @@ public:
     void Init();
 
     void DrawInit(const int w, const int h);
-
     void Draw(const int w, const int h);
-
-    void DrawPointCloud();
-
     void DrawModelKeyFrame();
-
     void DrawBoundingBox();
-
     void DrawMapPoints_SuperPoint(
         const std::set<ObjRecognition::MapPoint::Ptr> mappoint_picked);
-
-    void DrawAxis();
-
     void Select2DRegion();
-
     void DrawSelected2DRegion(const int w, const int h);
-
     void Pick3DPointCloud();
-
     void DrawPointCloudPicked();
 
 public:
@@ -150,21 +132,15 @@ public:
     }
 
 private:
-    std::shared_ptr<pangolin::Var<bool>> show_boundingbox_;
-    std::shared_ptr<pangolin::Var<bool>> show_pointcloud_;
     std::shared_ptr<pangolin::Var<bool>> m_show_keyframe;
-
     std::set<ObjRecognition::MapPoint::Ptr> m_pointClouds_picked;
     Eigen::Vector2d m_region_right_top = Eigen::Vector2d::Zero();
     Eigen::Vector2d m_region_left_bottom = Eigen::Vector2d::Zero();
     bool m_select_area_flag = false;
-
     pangolin::OpenGlRenderState s_cam_ShowMappoint;
     pangolin::View d_cam_ShowMappoint;
     std::unique_ptr<MapHandler3D_ShowMapPoint> mp_ShowMappoint_handler3d;
-
     std::unique_ptr<pangolin::Var<bool>> menu_stop;
-
     int pangolin_side_bar = 100;
 };
 
@@ -190,24 +166,19 @@ bool DropInArea(
     M3DVector2d win_coord;
 
     Project3DXYZToUV(win_coord, model_view, proj, viewport, x);
-
     if ((win_coord[0] < left_bottom[0] && win_coord[0] < right_top[0]) ||
         (win_coord[0] > left_bottom[0] && win_coord[0] > right_top[0]))
         return false;
-
     if ((win_coord[1] < left_bottom[1] && win_coord[1] < right_top[1]) ||
         (win_coord[1] > left_bottom[1] && win_coord[1] > right_top[1]))
         return false;
-
     return true;
 }
 
 void PointCloudModelViewer::Pick3DPointCloud() {
     if (!m_select_area_flag)
         return;
-
     m_select_area_flag = false;
-
     GLint viewport[4];
     glPushMatrix();
     glGetIntegerv(GL_VIEWPORT, viewport);
@@ -252,7 +223,6 @@ void PointCloudModelViewer::Pick3DPointCloud() {
                     }
                 }
                 m_pointClouds_picked.insert(it);
-                VLOG(0) << it->GetInfo();
             }
         }
     }
@@ -288,13 +258,10 @@ void PointCloudModelViewer::Draw(const int w, const int h) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         d_cam_ShowMappoint.Activate(s_cam_ShowMappoint);
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        // pangolin::glDrawAxis(0.6f);
         DrawSelected2DRegion(w, h);
         Pick3DPointCloud();
         DrawMapPoints_SuperPoint(m_pointClouds_picked);
-
         DrawBoundingBox();
-
         pangolin::FinishFrame();
         usleep(1000);
     }
@@ -325,27 +292,10 @@ void PointCloudModelViewer::DrawInit(const int w, const int h) {
     d_cam_ShowMappoint.show = true;
 }
 
-void PointCloudModelViewer::DrawPointCloud() {
-
-    typedef std::shared_ptr<ObjRecognition::MapPoint> MPPtr;
-    std::vector<MPPtr> &pointClouds = point_cloud_object_->GetPointClouds();
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glPointSize(4.0);
-
-    glBegin(GL_POINTS);
-    for (int i = 0; i < pointClouds.size(); i++) {
-        Eigen::Vector3f p = pointClouds[i]->GetPose().cast<float>();
-        glVertex3f(p.x(), p.y(), p.z());
-    }
-
-    glEnd();
-}
-
 void DrawKeyFrame(
     const Eigen::Vector3f &p, const Eigen::Quaternionf &q,
     Eigen::Vector3f color = Eigen::Vector3f(0.0f, 1.0f, 1.0f),
     float cam_size = 0.1f) {
-    // const Pose& pose = mp_map->GetCamera(m_current_frame_index).GetPose();
     Eigen::Vector3f center = p;
 
     const float length = cam_size;
@@ -357,7 +307,6 @@ void DrawKeyFrame(
 
     for (int i = 0; i < 5; ++i)
         m_cam[i] = q * m_cam[i] + center;
-    // [0;0;0], [X;Y;Z], [X;-Y;Z], [-X;Y;Z], [-X;-Y;Z]
     glColor3fv(&color(0));
     glBegin(GL_LINE_LOOP);
     glVertex3fv(m_cam[0].data());
@@ -398,14 +347,6 @@ void PointCloudModelViewer::DrawModelKeyFrame() {
         Eigen::Quaterniond Qwc(Rwc);
         DrawKeyFrame(twc.cast<float>(), Qwc.cast<float>());
     }
-}
-
-void PointCloudModelViewer::DrawAxis() {
-    glEnable(GL_BLEND);
-    pangolin::glDrawAxis(0.5f);
-    glColor4f(1.0f, 1.0f, 1.0f, 0.3f);
-    pangolin::glDraw_z0(0.5f, 10);
-    glDisable(GL_BLEND);
 }
 
 void PointCloudModelViewer::DrawBoundingBox() {
@@ -469,8 +410,6 @@ void PointCloudModelViewer::Select2DRegion() {
     Eigen::Vector2d region_right_top;
     m_select_area_flag = mp_ShowMappoint_handler3d->GetSelected2DRegion(
         m_region_left_bottom, m_region_right_top);
-    VLOG(10) << "ctrl + s " << m_region_left_bottom.transpose() << " "
-             << m_region_right_top.transpose();
 }
 
 void PointCloudModelViewer::DrawSelected2DRegion(const int w, const int h) {
@@ -509,14 +448,12 @@ void PointCloudModelViewer::DrawPointCloudPicked() {
 
     glColor3f(1.0f, (51.0 / 255.0), (51.0 / 255.0));
     glPointSize(10.0);
-
     glBegin(GL_POINTS);
     for (const auto &MP : m_pointClouds_picked) {
         Eigen::Vector3f p = MP->GetPose().cast<float>();
         glVertex3f(p.x(), p.y(), p.z());
     }
     glEnd();
-    //    m_pointClouds_picked.clear();
 }
 
 int main(int argc, char **argv) {

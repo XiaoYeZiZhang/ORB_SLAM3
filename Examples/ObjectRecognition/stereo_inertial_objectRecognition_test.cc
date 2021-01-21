@@ -1,17 +1,14 @@
-//
-// Created by root on 2020/10/13.
-//
 #include <iostream>
 #include <algorithm>
 #include <chrono>
 #include <opencv2/core/core.hpp>
 #include <Eigen/Dense>
-#include <include/ObjectRecognition/Utility/GlobalSummary.h>
+#include <include/ObjectRecognition/Utility/StatisticsResult/GlobalSummary.h>
 #include "ORBSLAM3/System.h"
 #include "Utility/FileIO.h"
 #include "ORBSLAM3/ImuTypes.h"
 #include "Utility/Camera.h"
-#include "Utility/Statistics.h"
+#include "include/ObjectRecognition/Utility/StatisticsResult/Statistics.h"
 #include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
 #include "ORBSLAM3/FrameObjectProcess.h"
 #include "mode.h"
@@ -52,13 +49,10 @@ private:
         const string &strPathLeft, const string &strPathRight,
         const string &strPathTimes, vector<string> &vstrImageLeft,
         vector<string> &vstrImageRight, vector<double> &vTimeStamps);
-    bool SaveResultInit();
     void ObjectResultParse(const ObjRecognition::ObjRecogResult &result);
-    void SaveObjRecogResult();
 
     vector<cv::Point3f> vAcc, vGyro;
     vector<double> vTimestampsImu;
-    std::string m_result_dir;
     vector<string> vstrImageLeft;
     vector<string> vstrImageRight;
     vector<double> vTimestampsCam;
@@ -72,14 +66,9 @@ private:
     // 3d object
     std::shared_ptr<ObjRecognition::Object> m_pointCloud =
         std::make_shared<ObjRecognition::Object>(0);
-    std::string camera_pose_result_file_;
-    std::string object_pose_result_file_;
-    std::ofstream camera_pose_result_stream_;
-    std::ofstream object_pose_result_stream_;
     ObjRecognition::ObjRecogResult m_objrecog_result;
     Eigen::Matrix<double, 3, 3> m_Row = Eigen::Matrix<double, 3, 3>::Identity();
     Eigen::Matrix<double, 3, 1> m_tow = Eigen::Matrix<double, 3, 1>::Zero();
-    std::string objrecog_info_str;
 };
 
 void TestViewer::LoadIMU(
@@ -117,45 +106,9 @@ void TestViewer::LoadIMU(
     }
 }
 
-bool TestViewer::SaveResultInit() {
-    // STObjRecognition::GlobalSummary::SetDatasetPath(m_dataset_dir);
-    m_result_dir = slam_saved_path + "/" + GetTimeStampString();
-    if (!CreateFolder(m_result_dir)) {
-        LOG(INFO) << "can't create the result dir" << m_result_dir;
-    }
-
-    camera_pose_result_file_ = m_result_dir + "/camera_pose_result.txt";
-    object_pose_result_file_ = m_result_dir + "/object_pose_result.txt";
-
-    camera_pose_result_stream_.open(camera_pose_result_file_);
-    object_pose_result_stream_.open(object_pose_result_file_);
-
-    if (!camera_pose_result_stream_.is_open()) {
-        LOG(WARNING) << "camera pose result can't open "
-                     << camera_pose_result_file_;
-        return false;
-    }
-
-    if (!object_pose_result_stream_.is_open()) {
-        LOG(WARNING) << "object pose result can't open "
-                     << object_pose_result_file_;
-        return false;
-    }
-    return true;
-}
-
 bool TestViewer::InitObjectRecognition() {
     ObjRecognitionExd::ObjRecongManager::Instance().CreateWithConfig();
-
     // set slam data callback
-
-    // char *voc_buf = nullptr;
-    // unsigned int voc_buf_size = 0;
-    // LoadVoc("/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/voc.dat.zip",
-    // &voc_buf, voc_buf_size);
-    // ObjRecognitionExd::ObjRecongManager::Instance().LoadDic(voc_buf,
-    // voc_buf_size);
-
 #ifdef SUPERPOINT
     std::string cloud_point_model_dir =
         slam_saved_path + "/" + mappoint_filename_superpoint;
@@ -200,7 +153,6 @@ bool TestViewer::InitObjectRecognition() {
     delete[] cloud_point_model_buffer;
     SLAM->SetPointCloudModel(m_pointCloud);
     SLAM->mpViewer->SetPointCloudModel(m_pointCloud);
-    //    SaveResultInit();
     return true;
 }
 
@@ -342,49 +294,16 @@ bool TestViewer::InitSLAM() {
     return true;
 }
 
-void TestViewer::SaveObjRecogResult() {
-    Eigen::Matrix3f R_obj;
-    Eigen::Matrix3f R_camera =
-        ObjRecognition::TypeConverter::Mat3Array2Mat3Eigen(
-            m_objrecog_result.R_camera);
-    Eigen::Vector3f t_camera =
-        Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
-    Eigen::Vector3f t_obj =
-        Eigen::Vector3f::Map(m_objrecog_result.t_obj_buffer, 3);
-
-    R_obj.row(0) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[0], 3);
-    R_obj.row(1) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[3], 3);
-    R_obj.row(2) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[6], 3);
-
-    Eigen::Quaternionf q_camera(R_camera);
-    Eigen::Quaternionf q_obj(R_obj);
-
-    if (m_objrecog_result.frame_index <= 0) {
-        VLOG(10) << "result frame index: " << m_objrecog_result.frame_index;
-        return;
-    }
-
-    camera_pose_result_stream_
-        << std::to_string(m_objrecog_result.time_stamp) << ","
-        << std::setprecision(7) << t_camera(0) << "," << t_camera(1) << ","
-        << t_camera(2) << "," << q_camera.w() << "," << q_camera.x() << ","
-        << q_camera.y() << "," << q_camera.z() << std::endl;
-
-    if (m_objrecog_result.num) {
-        object_pose_result_stream_
-            << std::to_string(m_objrecog_result.time_stamp) << ","
-            << std::setprecision(7) << t_obj(0) << "," << t_obj(1) << ","
-            << t_obj(2) << "," << q_obj.w() << "," << q_obj.x() << ","
-            << q_obj.y() << "," << q_obj.z() << std::endl;
-    }
-}
-
 void TestViewer::ObjectResultParse(
     const ObjRecognition::ObjRecogResult &result) {
     m_objrecog_result = result;
-    Eigen::Matrix<float, 3, 3> Rcw =
-        ObjRecognition::TypeConverter::Mat3Array2Mat3Eigen(
-            m_objrecog_result.R_camera);
+    Eigen::Matrix<float, 3, 3> Rcw;
+    Rcw.row(0) =
+        Eigen::Matrix<float, 3, 1>::Map(m_objrecog_result.R_camera[0], 3);
+    Rcw.row(1) =
+        Eigen::Matrix<float, 3, 1>::Map(m_objrecog_result.R_camera[1], 3);
+    Rcw.row(2) =
+        Eigen::Matrix<float, 3, 1>::Map(m_objrecog_result.R_camera[2], 3);
     Eigen::Vector3f tcw = Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
     Eigen::Matrix<float, 3, 3> Rwo;
     Rwo.col(0) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[0], 3);
@@ -395,12 +314,6 @@ void TestViewer::ObjectResultParse(
 
     Eigen::Matrix3f Rco = Eigen::Matrix3f::Identity();
     Rco = Rcw * Rwo;
-
-    Eigen::Matrix3f Rslam2gl = Eigen::Matrix3f::Zero();
-    Rslam2gl(0, 0) = 1;
-    Rslam2gl(1, 2) = -1;
-    Rslam2gl(2, 1) = 1;
-    Rco = Rco; // * Rslam2gl.transpose();
     Rwo = Rcw.transpose() * Rco;
     Eigen::Matrix3f Row = Eigen::Matrix3f::Identity();
     Eigen::Vector3f tow = Eigen::Vector3f::Zero();
@@ -416,11 +329,6 @@ void TestViewer::ObjectResultParse(
     }
 
     SLAM->mpViewer->SetObjectRecognitionPose(m_Row, m_tow);
-    int info_size = m_objrecog_result.info_length;
-    const char *info_char = m_objrecog_result.info;
-    objrecog_info_str = std::string(info_char);
-    SaveObjRecogResult();
-    // ObjectResultTransmitMultiTabs();
 }
 
 bool TestViewer::RunObjectRecognition() {
@@ -517,7 +425,6 @@ bool TestViewer::RunObjectRecognition() {
             usleep((T - ttrack) * 1e6); // 1e6
     }
 #ifdef OBJECTRECOGNITION
-    //    ObjRecognition::GlobalSummary::SaveAllPoses(m_result_dir);
 
     std::string statics_result_filename;
 #ifdef SUPERPOINT
@@ -528,9 +435,6 @@ bool TestViewer::RunObjectRecognition() {
     ObjRecognition::GlobalSummary::SaveStatics(
         slam_saved_path, STATISTICS_UTILITY::Statistics::Print(),
         statics_result_filename);
-
-    /*ObjRecognition::GlobalSummary::SaveTimer(
-        m_result_dir, STSLAMCommon::Timing::Print());*/
 
     ObjRecognitionExd::ObjRecongManager::Instance().Destroy();
 #endif

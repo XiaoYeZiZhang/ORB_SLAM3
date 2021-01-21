@@ -6,22 +6,6 @@
 #include <opencv2/imgproc.hpp>
 
 namespace SLAMCommon {
-
-typedef enum {
-    AUTO_OPTIMIZATION = 0,   ///< 自动选择
-    NORMAL_OPTIMIZATION = 1, ///< ORB原始版本
-#if defined(ANDROID) || defined(__ANDOIRD__)
-    HPC_MOBILE_OPTIMIZATION, ///< HPC优化的版本
-    HEXAGON_DSP_OPTIMIZATION ///< 高通dsp版本
-#endif
-} orb_optimization_mode_t;
-
-///< 工厂方法, 根据优化模式构建实际的特征提取派生类
-class ORBExtractor;
-std::shared_ptr<ORBExtractor> MakeORBExtractor(
-    orb_optimization_mode_t mode, int nfeatures, float scaleFactor, int nlevels,
-    int iniThFAST, int minThFAST);
-
 class ORBExtractor {
 public:
     static const float factorPI;
@@ -41,18 +25,6 @@ public:
         return mvScaleFactor;
     }
 
-    const std::vector<float> &InverseScaleFactor() const {
-        return mvInvScaleFactor;
-    }
-
-    const std::vector<float> &ScaleSigmaSquares() const {
-        return mvLevelSigma2;
-    }
-
-    const std::vector<float> &InverseScaleSigmaSquares() const {
-        return mvInvLevelSigma2;
-    }
-
     virtual int DetectKeyPoints(
         const cv::Mat &image, std::vector<cv::KeyPoint> &outKeyPoints,
         const cv::Mat &mask = cv::Mat());
@@ -61,15 +33,7 @@ public:
         const cv::Mat &image, std::vector<cv::KeyPoint> &keyPoints,
         cv::Mat &outDescriptors);
 
-    virtual int DetectAndCompute(
-        const cv::Mat &image, std::vector<cv::KeyPoint> &outKeyPoints,
-        cv::Mat &outDescriptors, const cv::Mat &mask = cv::Mat());
-
     virtual int ComputeDescriptorsWithoutScale(
-        const cv::Mat &image, std::vector<cv::KeyPoint> &keyPoints,
-        cv::Mat &outDescriptors);
-
-    virtual int ComputeDescriptorsAndAnglesWithoutScale(
         const cv::Mat &image, std::vector<cv::KeyPoint> &keyPoints,
         cv::Mat &outDescriptors);
 

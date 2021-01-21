@@ -1,7 +1,3 @@
-//
-// Created by zhangye on 2020/9/15.
-//
-
 #ifndef OBJECTRECOGNITION_ORBSLAM3_CAMERA_H
 #define OBJECTRECOGNITION_ORBSLAM3_CAMERA_H
 #include <opencv2/opencv.hpp>
@@ -20,61 +16,61 @@ public:
     void SetParameters(
         const double &_fx, const double &_fy, const double &_cx,
         const double &_cy, const int &_width, const double &_height) {
-        mFX = _fx;
-        mFY = _fy;
-        mCX = _cx;
-        mCY = _cy;
-        mWidth = _width;
-        mHeight = _height;
-        mCVK = cv::Mat::zeros(cv::Size(3, 3), CV_64FC1);
-        mCVK.at<double>(0, 0) = mFX;
-        mCVK.at<double>(1, 1) = mFY;
-        mCVK.at<double>(0, 2) = mCX;
-        mCVK.at<double>(1, 2) = mCY;
-        mCVK.at<double>(2, 2) = 1;
-        mEigenK << mFX, 0, mCX, 0, mFY, mCY, 0, 0, 1;
+        m_fx = _fx;
+        m_fy = _fy;
+        m_cx = _cx;
+        m_cy = _cy;
+        m_width = _width;
+        m_height = _height;
+        m_CV_K = cv::Mat::zeros(cv::Size(3, 3), CV_64FC1);
+        m_CV_K.at<double>(0, 0) = m_fx;
+        m_CV_K.at<double>(1, 1) = m_fy;
+        m_CV_K.at<double>(0, 2) = m_cx;
+        m_CV_K.at<double>(1, 2) = m_cy;
+        m_CV_K.at<double>(2, 2) = 1;
+        m_Eigen_K << m_fx, 0, m_cx, 0, m_fy, m_cy, 0, 0, 1;
     }
 
     const cv::Mat &GetCVK() {
-        return mCVK;
+        return m_CV_K;
     }
 
     const Eigen::Matrix3d &GetEigenK() {
-        return mEigenK;
+        return m_Eigen_K;
     }
 
     const int &Width() const {
-        return mWidth;
+        return m_width;
     }
 
     const int &Height() const {
-        return mHeight;
+        return m_height;
     }
 
     const double &FX() const {
-        return mFX;
+        return m_fx;
     }
     const double &FY() const {
-        return mFY;
+        return m_fy;
     }
     const double &CX() const {
-        return mCX;
+        return m_cx;
     }
     const double &CY() const {
-        return mCY;
+        return m_cy;
     }
 
 private:
     CameraIntrinsic() {
     }
-    cv::Mat mCVK;
-    Eigen::Matrix3d mEigenK;
-    double mFX;
-    double mFY;
-    double mCX;
-    double mCY;
-    int mWidth;
-    int mHeight;
+    cv::Mat m_CV_K;
+    Eigen::Matrix3d m_Eigen_K;
+    double m_fx;
+    double m_fy;
+    double m_cx;
+    double m_cy;
+    int m_width;
+    int m_height;
 };
 
 } // namespace ObjRecognition

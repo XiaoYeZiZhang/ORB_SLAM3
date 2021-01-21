@@ -1,7 +1,3 @@
-//
-// Created by root on 2020/11/9.
-//
-
 #ifndef ORB_SLAM3_FSUPERPOINT_H
 #define ORB_SLAM3_FSUPERPOINT_H
 

@@ -955,7 +955,6 @@ bool System::PackAtlasToMemoryFor3DObject_SuperPoint(
         keyframes_for_SfM);
     buffer_out_len = mpAtlas_superpoint->GetMemSizeFor3DObject(
         start_sfm_keyframe_id, descriptor_len, true);
-    VLOG(0) << "GetMemSize Done";
     bool ret = false;
     VLOG(0) << "buffer_out_len" << buffer_out_len;
     if (buffer_out_len > 0) {

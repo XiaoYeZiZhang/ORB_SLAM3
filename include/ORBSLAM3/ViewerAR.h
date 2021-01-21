@@ -165,7 +165,7 @@ public:
         return m_is_scan_debug_mode;
     }
     void SetSfMDebugReverse() {
-        *menu_SfM_debug = !(*menu_SfM_debug);
+        *m_menu_SfM_debug = !(*m_menu_SfM_debug);
     }
     bool GetSfMDebugFlag() {
         return m_is_SfM_debug_mode;
@@ -183,7 +183,7 @@ public:
         return m_is_stop;
     }
     bool SetStopFlag() {
-        *menu_stop = true;
+        *m_menu_stop = true;
     }
     bool GetFixFlag() {
         return m_is_fix;
@@ -298,31 +298,32 @@ private:
     std::vector<MapPoint *> mvMPs;
 
     // show another pangolin window for sfm
-    bool switch_window_flag;
     void SwitchWindow();
     void Draw(int w, int h);
     void DrawScanInit(int w, int h);
     void DrawSfMInit(int w, int h);
-    std::unique_ptr<pangolin::Var<bool>> menu_setboundingbox;
-    std::unique_ptr<pangolin::Var<bool>> menu_fixBBX;
-    std::unique_ptr<pangolin::Var<bool>> menu_stop;
-    std::unique_ptr<pangolin::Var<bool>> menu_clear;
-    std::unique_ptr<pangolin::Var<bool>> menu_scan_debug;
-    std::unique_ptr<pangolin::Var<float>> menu_cubesize;
-    std::unique_ptr<pangolin::Var<bool>> menu_drawgrid;
-    std::unique_ptr<pangolin::Var<int>> menu_ngrid;
-    std::unique_ptr<pangolin::Var<float>> menu_sizegrid;
-    std::unique_ptr<pangolin::Var<bool>> menu_drawTrackedpoints;
-    std::unique_ptr<pangolin::Var<bool>> menu_drawMappoints;
-    std::unique_ptr<pangolin::Var<bool>> menu_SfM_debug;
-    std::unique_ptr<pangolin::Var<bool>> menu_SfM_continue;
-    std::unique_ptr<pangolin::Var<bool>> menu_SfM_continue_LBA;
-    std::unique_ptr<pangolin::Var<bool>> menu_SfM_savemmp_after_LBA;
 
-    cv::Mat im_scan, Tcw_scan;
-    int status_scan;
-    vector<cv::KeyPoint> vKeys_scan;
-    vector<MapPoint *> vMPs_scan;
+    bool m_switch_window_flag;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_setboundingbox;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_fixBBX;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_stop;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_clear;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_scan_debug;
+    std::unique_ptr<pangolin::Var<float>> m_menu_cubesize;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_drawgrid;
+    std::unique_ptr<pangolin::Var<int>> m_menu_ngrid;
+    std::unique_ptr<pangolin::Var<float>> m_menu_sizegrid;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_drawTrackedpoints;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_drawMappoints;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_SfM_debug;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_SfM_continue;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_SfM_continue_LBA;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_SfM_savemmp_after_LBA;
+
+    cv::Mat m_im_scan, m_Tcw_scan;
+    int m_status_scan;
+    vector<cv::KeyPoint> m_vKeys_scan;
+    vector<MapPoint *> m_vMPs_scan;
 
     void DrawMapPoints_SuperPoint(
         const std::vector<double> &boundingbox_p_corner,
@@ -354,9 +355,9 @@ private:
     bool m_select_area_flag = false;
     Eigen::Vector2d m_region_right_top = Eigen::Vector2d::Zero();
     Eigen::Vector2d m_region_left_down = Eigen::Vector2d::Zero();
-    std::set<MapPoint *> mappoints_picked;
+    std::set<MapPoint *> m_mappoints_picked;
 
-    float change_shape_unit;
+    float m_change_shape_unit;
 };
 } // namespace ORB_SLAM3
 

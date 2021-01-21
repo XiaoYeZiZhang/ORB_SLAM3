@@ -1,12 +1,8 @@
-//
-// Created by zhangye on 2020/9/16.
-//
-
 #ifndef ORB_SLAM3_TRACKERPOINTCLOUD_H
 #define ORB_SLAM3_TRACKERPOINTCLOUD_H
 #include "Struct/PointCloudObject.h"
 #include "PoseSolver/PoseSolver.h"
-#include "Utility/RecognitionBase.h"
+#include "Common/RecognitionBase.h"
 #include "Tracker/TrackerFrame.h"
 namespace ObjRecognition {
 
@@ -16,16 +12,14 @@ public:
     ~PointCloudObjTracker();
 
     void SetPointCloudObj(const std::shared_ptr<Object> &pointCloudPtr);
-    void Process(const std::shared_ptr<FrameData> &frm);
+    void Process(const std::shared_ptr<FrameForObjRecognition> &frm);
     void Reset();
     void Clear();
     bool Load(const long long &mem_size, const char *mem);
     bool Save(long long &mem_size, char **mem);
-    void SetInfo();
-    int GetInfo(std::string &info);
 
 private:
-    void PreProcess(const std::shared_ptr<FrameData> &frm);
+    void PreProcess(const std::shared_ptr<FrameForObjRecognition> &frm);
 
     PS::MatchSet3D FindProjection3DMatch();
     void PnPResultHandle();
@@ -37,9 +31,6 @@ private:
         const std::vector<PS::MatchSet2D> &matches_2d,
         std::vector<int> &inliers_3d);
     void ProcessPoseSolverInliers(const std::vector<int> &inliers_3d);
-    void ShowProjectedPointsAndMatchingKeyPoints(
-        std::vector<Eigen::Vector2d> &projectPoints,
-        std::vector<bool> &matchKeyPointsState);
     void OpticalFlowRejectWithF(
         std::vector<cv::Point2d> &ptsPre,
         std::vector<MapPointIndex> &mapPointIndexes);
@@ -58,7 +49,6 @@ private:
     std::shared_ptr<TrackerFrame> m_frame_Pre;
     bool m_pnp_solver_result = false;
     int m_project_success_mappoint_num = 0;
-    int m_match_points_num = 0;
     int m_match_points_projection_num = 0;
     int m_match_points_opticalFlow_num = 0;
     int m_pnp_inliers_num = 0;
@@ -66,23 +56,24 @@ private:
     int m_pnp_inliers_opticalFlow_num = 0;
     ObjRecogState m_tracker_state;
 
-    Eigen::Matrix3d Rcw_cur_;
-    Eigen::Vector3d tcw_cur_;
-    Eigen::Matrix3d Rwo_cur_;
-    Eigen::Vector3d two_cur_;
-    Eigen::Matrix3d Rco_cur_;
-    Eigen::Vector3d tco_cur_;
+    Eigen::Matrix3d m_Rcw_cur;
+    Eigen::Vector3d m_tcw_cur;
+    Eigen::Matrix3d m_Rwo_cur;
+    Eigen::Vector3d m_two_cur;
+    Eigen::Matrix3d m_Rco_cur;
+    Eigen::Vector3d m_tco_cur;
 
     std::map<int, MapPointIndex> m_projection_matches2dTo3d_cur;
     std::vector<cv::Point2d> m_projection_points2d_cur;
     std::map<int, MapPointIndex> m_projection_matches2dTo3d_inlier;
     std::map<int, MapPointIndex> m_opticalFlow_matches2dTo3d_inlier;
 
-    std::string m_info;
     bool m_first_detection_good;
 
-    float reproj_error;
-    std::vector<cv::Point2d> opticalflow_point2ds_tmp;
+    float m_reproj_error;
+    std::vector<cv::Point2d> m_opticalflow_point2ds_tmp;
+
+    double m_scale;
 };
 } // namespace ObjRecognition
 #endif // ORB_SLAM3_TRACKERPOINTCLOUD_H

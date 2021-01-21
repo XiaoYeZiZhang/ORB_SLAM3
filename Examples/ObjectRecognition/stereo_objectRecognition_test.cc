@@ -1,20 +1,16 @@
-//
-// Created by zhangye on 2020-09-14.
-//
 #include <iostream>
 #include <algorithm>
 #include <chrono>
 #include <glog/logging.h>
 #include <opencv2/core/core.hpp>
 #include <Eigen/Dense>
-#include <chrono>
-#include <include/ObjectRecognition/Utility/GlobalSummary.h>
-#include "ORBSLAM3/System.h"
-#include "Utility/FileIO.h"
-#include "Utility/Camera.h"
-#include "Utility/Statistics.h"
-#include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
-#include "ORBSLAM3/FrameObjectProcess.h"
+#include "GlobalSummary.h"
+#include "System.h"
+#include "FileIO.h"
+#include "Camera.h"
+#include "Statistics.h"
+#include "ObjectRecognitionManager.h"
+#include "FrameObjectProcess.h"
 #include "mode.h"
 
 using namespace std;
@@ -50,11 +46,8 @@ private:
         vector<string> &vstrImageRight, vector<string> &vstrImageColor,
         vector<double> &vTimeStamps);
 
-    bool SaveResultInit();
     void ObjectResultParse(const ObjRecognition::ObjRecogResult &result);
-    void SaveObjRecogResult();
 
-    std::string m_result_dir;
     vector<string> vstrImageLeft;
     vector<string> vstrImageRight;
     vector<string> vstrImageColor;
@@ -66,55 +59,14 @@ private:
     // 3d object
     std::shared_ptr<ObjRecognition::Object> m_pointCloud =
         std::make_shared<ObjRecognition::Object>(0);
-    std::string camera_pose_result_file_;
-    std::string object_pose_result_file_;
-    std::ofstream camera_pose_result_stream_;
-    std::ofstream object_pose_result_stream_;
     ObjRecognition::ObjRecogResult m_objrecog_result;
     Eigen::Matrix<double, 3, 3> m_Row = Eigen::Matrix<double, 3, 3>::Identity();
     Eigen::Matrix<double, 3, 1> m_tow = Eigen::Matrix<double, 3, 1>::Zero();
-    std::string objrecog_info_str;
 };
-
-bool TestViewer::SaveResultInit() {
-    // STObjRecognition::GlobalSummary::SetDatasetPath(m_dataset_dir);
-    m_result_dir = slam_saved_path + "/" + GetTimeStampString();
-    if (!CreateFolder(m_result_dir)) {
-        LOG(INFO) << "can't create the result dir" << m_result_dir;
-    }
-
-    camera_pose_result_file_ = m_result_dir + "/camera_pose_result.txt";
-    object_pose_result_file_ = m_result_dir + "/object_pose_result.txt";
-
-    camera_pose_result_stream_.open(camera_pose_result_file_);
-    object_pose_result_stream_.open(object_pose_result_file_);
-
-    if (!camera_pose_result_stream_.is_open()) {
-        LOG(WARNING) << "camera pose result can't open "
-                     << camera_pose_result_file_;
-        return false;
-    }
-
-    if (!object_pose_result_stream_.is_open()) {
-        LOG(WARNING) << "object pose result can't open "
-                     << object_pose_result_file_;
-        return false;
-    }
-    return true;
-}
 
 bool TestViewer::InitObjectRecognition() {
     ObjRecognitionExd::ObjRecongManager::Instance().CreateWithConfig();
-
     // set slam data callback
-
-    // char *voc_buf = nullptr;
-    // unsigned int voc_buf_size = 0;
-    // LoadVoc("/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/voc.dat.zip",
-    // &voc_buf, voc_buf_size);
-    // ObjRecognitionExd::ObjRecongManager::Instance().LoadDic(voc_buf,
-    // voc_buf_size);
-
 #ifdef SUPERPOINT
     std::string cloud_point_model_dir =
         slam_saved_path + "/" + mappoint_filename_superpoint;
@@ -159,7 +111,6 @@ bool TestViewer::InitObjectRecognition() {
     delete[] cloud_point_model_buffer;
     SLAM->SetPointCloudModel(m_pointCloud);
     SLAM->mpViewer->SetPointCloudModel(m_pointCloud);
-    //    SaveResultInit();
     return true;
 }
 
@@ -175,15 +126,6 @@ void TestViewer::LoadImages(
     if (!fTimes.is_open()) {
         LOG(FATAL) << "error open timestamp.txt";
     }
-
-#ifdef TEST_COLOR_IMAGE
-    ifstream fTimes_colorimage;
-    fTimes_colorimage.open(strPathTimes_color.c_str());
-    if (!fTimes_colorimage.is_open()) {
-        LOG(FATAL) << "error open timestamp_colorimage.txt";
-    }
-    vstrImageColor.reserve(5000);
-#endif
 
     vTimeStamps.reserve(5000);
     vstrImageLeft.reserve(5000);
@@ -202,20 +144,6 @@ void TestViewer::LoadImages(
             vTimeStamps.push_back(t / 1e9);
         }
     }
-
-#ifdef TEST_COLOR_IMAGE
-    while (!fTimes_colorimage.eof()) {
-        string s;
-        getline(fTimes_colorimage, s);
-        if (!s.empty()) {
-            stringstream ss;
-            ss << s;
-            vstrImageColor.push_back(strPathColor + "/" + ss.str());
-            double t;
-            ss >> t;
-        }
-    }
-#endif
 }
 
 bool TestViewer::InitSLAM() {
@@ -268,12 +196,6 @@ bool TestViewer::InitSLAM() {
         K_r, D_r, R_r, P_r.rowRange(0, 3).colRange(0, 3),
         cv::Size(cols_r, rows_r), CV_32F, M1r, M2r);
 
-#ifdef TEST_COLOR_IMAGE
-    cv::initUndistortRectifyMap(
-        K_l, D_r, R_r, P_r.rowRange(0, 3).colRange(0, 3),
-        cv::Size(cols_r, rows_r), CV_32F, M1C, M2C);
-#endif
-
     double fx = fsSettings["Camera.fx"];
     double fy = fsSettings["Camera.fy"];
     double cx = fsSettings["Camera.cx"];
@@ -320,49 +242,16 @@ bool TestViewer::InitSLAM() {
     return true;
 }
 
-void TestViewer::SaveObjRecogResult() {
-    Eigen::Matrix3f R_obj;
-    Eigen::Matrix3f R_camera =
-        ObjRecognition::TypeConverter::Mat3Array2Mat3Eigen(
-            m_objrecog_result.R_camera);
-    Eigen::Vector3f t_camera =
-        Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
-    Eigen::Vector3f t_obj =
-        Eigen::Vector3f::Map(m_objrecog_result.t_obj_buffer, 3);
-
-    R_obj.row(0) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[0], 3);
-    R_obj.row(1) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[3], 3);
-    R_obj.row(2) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[6], 3);
-
-    Eigen::Quaternionf q_camera(R_camera);
-    Eigen::Quaternionf q_obj(R_obj);
-
-    if (m_objrecog_result.frame_index <= 0) {
-        VLOG(10) << "result frame index: " << m_objrecog_result.frame_index;
-        return;
-    }
-
-    camera_pose_result_stream_
-        << std::to_string(m_objrecog_result.time_stamp) << ","
-        << std::setprecision(7) << t_camera(0) << "," << t_camera(1) << ","
-        << t_camera(2) << "," << q_camera.w() << "," << q_camera.x() << ","
-        << q_camera.y() << "," << q_camera.z() << std::endl;
-
-    if (m_objrecog_result.num) {
-        object_pose_result_stream_
-            << std::to_string(m_objrecog_result.time_stamp) << ","
-            << std::setprecision(7) << t_obj(0) << "," << t_obj(1) << ","
-            << t_obj(2) << "," << q_obj.w() << "," << q_obj.x() << ","
-            << q_obj.y() << "," << q_obj.z() << std::endl;
-    }
-}
-
 void TestViewer::ObjectResultParse(
     const ObjRecognition::ObjRecogResult &result) {
     m_objrecog_result = result;
-    Eigen::Matrix<float, 3, 3> Rcw =
-        ObjRecognition::TypeConverter::Mat3Array2Mat3Eigen(
-            m_objrecog_result.R_camera);
+    Eigen::Matrix<float, 3, 3> Rcw;
+    Rcw.row(0) =
+        Eigen::Matrix<float, 3, 1>::Map(m_objrecog_result.R_camera[0], 3);
+    Rcw.row(1) =
+        Eigen::Matrix<float, 3, 1>::Map(m_objrecog_result.R_camera[1], 3);
+    Rcw.row(2) =
+        Eigen::Matrix<float, 3, 1>::Map(m_objrecog_result.R_camera[2], 3);
     Eigen::Vector3f tcw = Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
     Eigen::Matrix<float, 3, 3> Rwo;
     Rwo.col(0) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[0], 3);
@@ -373,12 +262,6 @@ void TestViewer::ObjectResultParse(
 
     Eigen::Matrix3f Rco = Eigen::Matrix3f::Identity();
     Rco = Rcw * Rwo;
-
-    Eigen::Matrix3f Rslam2gl = Eigen::Matrix3f::Zero();
-    Rslam2gl(0, 0) = 1;
-    Rslam2gl(1, 2) = -1;
-    Rslam2gl(2, 1) = 1;
-    Rco = Rco; // * Rslam2gl.transpose();
     Rwo = Rcw.transpose() * Rco;
     Eigen::Matrix3f Row = Eigen::Matrix3f::Identity();
     Eigen::Vector3f tow = Eigen::Vector3f::Zero();
@@ -386,7 +269,7 @@ void TestViewer::ObjectResultParse(
     tow = -Row * two;
 
     if (result.num == 1) {
-        m_Row = Row.cast<double>(); // world -> obj
+        m_Row = Row.cast<double>();
         m_tow = tow.cast<double>();
     } else {
         m_Row = Eigen::Matrix3d::Identity();
@@ -394,10 +277,6 @@ void TestViewer::ObjectResultParse(
     }
 
     SLAM->mpViewer->SetObjectRecognitionPose(m_Row, m_tow);
-    int info_size = m_objrecog_result.info_length;
-    const char *info_char = m_objrecog_result.info;
-    objrecog_info_str = std::string(info_char);
-    SaveObjRecogResult();
 }
 
 bool TestViewer::RunObjectRecognition() {
@@ -415,15 +294,6 @@ bool TestViewer::RunObjectRecognition() {
         imLeft = cv::imread(vstrImageLeft[ni], cv::IMREAD_UNCHANGED);
         imRight = cv::imread(vstrImageRight[ni], cv::IMREAD_UNCHANGED);
 
-#ifdef TEST_COLOR_IMAGE
-        imColor = cv::imread(vstrImageColor[ni], cv::IMREAD_UNCHANGED);
-        if (imColor.empty()) {
-            cerr << endl
-                 << "Failed to load image at: " << string(vstrImageColor[ni])
-                 << endl;
-            return 1;
-        }
-#endif
         if (imLeft.empty()) {
             cerr << endl
                  << "Failed to load image at: " << string(vstrImageLeft[ni])
@@ -440,11 +310,6 @@ bool TestViewer::RunObjectRecognition() {
 
         cv::remap(imLeft, imLeftRect, M1l, M2l, cv::INTER_LINEAR);
         cv::remap(imRight, imRightRect, M1r, M2r, cv::INTER_LINEAR);
-
-#ifdef TEST_COLOR_IMAGE
-        imColorRect = imColor;
-        // cv::remap(imColor, imColorRect, M1C, M2C, cv::INTER_LINEAR);
-#endif
 
         double tframe = vTimestampsCam[ni];
 
@@ -463,12 +328,7 @@ bool TestViewer::RunObjectRecognition() {
         cv::Mat im_clone_left = imLeftRect.clone();
         int slam_state = SLAM->GetTrackingState();
 
-#ifdef TEST_COLOR_IMAGE
-        cv::Mat im_clone_color = imColorRect.clone();
-        SLAM->mpViewer->SetSLAMInfo(im_clone_color, slam_state, ni, camPos);
-#else
         SLAM->mpViewer->SetSLAMInfo(im_clone_left, slam_state, ni, camPos);
-#endif
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 =
@@ -532,7 +392,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    // vlog setting
     FLAGS_alsologtostderr = 1;
     google::InitGoogleLogging(argv[0]);
     google::ParseCommandLineFlags(&argc, &argv, true);

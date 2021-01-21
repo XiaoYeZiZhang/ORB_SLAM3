@@ -51,8 +51,8 @@ public:
     void SetLoopCloser(LoopClosing *pLoopCloser);
 
     void SetTracker(Tracking *pTracker);
-    void SetObjRecogCallback(
-        void (*callback)(ObjRecognition::ObjRecogFrameCallbackData *&)) {
+    void
+    SetObjRecogCallback(void (*callback)(ObjRecognition::CallbackFrame *&)) {
         cb_ = callback;
     }
 
@@ -196,7 +196,7 @@ protected:
     // DEBUG
     ofstream f_lm;
 
-    void (*cb_)(ObjRecognition::ObjRecogFrameCallbackData *&);
+    void (*cb_)(ObjRecognition::CallbackFrame *&);
 
     // SfM
     Atlas *mpAtlas_superpoint;

@@ -1,6 +1,3 @@
-//
-// Created by zhangye on 2020/9/16.
-//
 #include <opencv2/imgproc.hpp>
 #include <cv.hpp>
 #include <glog/logging.h>
@@ -9,8 +6,8 @@
 #include "Tracker/TrackerPointCloud.h"
 #include "Utility/Parameters.h"
 #include "Utility/Camera.h"
-#include "Utility/Statistics.h"
-#include "Utility/Timer.h"
+#include "StatisticsResult/Statistics.h"
+#include "StatisticsResult/Timer.h"
 #include "Tracker/TrackerCommon.h"
 #include "mode.h"
 
@@ -34,34 +31,6 @@ static PS::Point2D NormalizePoint2D(
     p2d(0) = (pt.x - cx) / fx;
     p2d(1) = (pt.y - cy) / fy;
     return std::move(p2d);
-}
-
-void PointCloudObjTracker::ShowProjectedPointsAndMatchingKeyPoints(
-    std::vector<Eigen::Vector2d> &projectPoints,
-    std::vector<bool> &matchKeyPointsState) {
-
-    cv::Mat showProjectedKeyPoints;
-    cv::Mat imageCur = m_frame_cur->m_raw_image;
-    cv::cvtColor(imageCur, showProjectedKeyPoints, cv::COLOR_GRAY2BGR);
-    // pink points keypoints
-    for (auto iter = m_projection_matches2dTo3d_cur.begin();
-         iter != m_projection_matches2dTo3d_cur.end(); iter++) {
-        cv::drawMarker(
-            showProjectedKeyPoints, m_frame_cur->m_kpts[iter->first].pt,
-            cv::Scalar(255, 0, 255));
-    }
-
-    //  blue points projected points
-    for (int i = 0; i < projectPoints.size(); i++) {
-        if (matchKeyPointsState[i])
-            cv::drawMarker(
-                showProjectedKeyPoints,
-                cv::Point2d(projectPoints[i](0), projectPoints[i](1)),
-                cv::Scalar(255, 0, 70));
-    }
-
-    // GlobalOcvViewer::UpdateView(
-    //"projected cloud and matching keypoints", showProjectedKeyPoints);
 }
 
 PS::MatchSet3D Generate3DMatch(
@@ -95,23 +64,21 @@ PS::MatchSet3D Generate3DMatch(
 }
 
 void PointCloudObjTracker::PreProcess(
-    const std::shared_ptr<ObjRecognition::FrameData> &frm) {
+    const std::shared_ptr<ObjRecognition::FrameForObjRecognition> &frm) {
 
     m_frame_cur = std::make_shared<TrackerFrame>();
-    m_frame_cur->m_time_stamp = frm->mTimeStamp;
-    m_frame_cur->m_frame_index = frm->mFrmIndex;
-    m_frame_cur->m_raw_image = frm->img.clone();
-    m_frame_cur->m_desp = frm->mDesp.clone();
-    m_frame_cur->m_kpts = frm->mKpts;
-    m_frame_cur->SetCameraPose(frm->mRcw, frm->mTcw);
+    m_frame_cur->m_frame_index = frm->m_frmIndex;
+    m_frame_cur->m_raw_image = frm->m_img.clone();
+    m_frame_cur->m_desp = frm->m_desp.clone();
+    m_frame_cur->m_kpts = frm->m_kpts;
 
-    Rcw_cur_ = frm->mRcw;
-    tcw_cur_ = frm->mTcw;
+    m_Rcw_cur = frm->m_Rcw;
+    m_tcw_cur = frm->m_tcw;
 }
 
 PS::MatchSet3D OpticalFlowGenerate3DMatch(
     const std::shared_ptr<TrackerFrame> &frame,
-    const std::vector<Eigen::Vector3d> &pointClouds3dObj) {
+    const std::vector<Eigen::Vector3d> pointClouds3dObj) {
     PS::MatchSet3D matchset_3d;
     const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
     auto fx = static_cast<float>(Kcv.at<double>(0, 0));
@@ -188,7 +155,7 @@ void PointCloudObjTracker::ShowOpticalFlowpoints(
     }
 
     cv::drawMatches(imagePre, opPre, imageCur, opCur, matches, img_match);
-    GlobalOcvViewer::UpdateView("optical match", img_match);
+    GlobalOcvViewer::AddView("optical match", img_match);
 }
 
 void PointCloudObjTracker::RemoveOpticalFlow3dMatchOutliers(
@@ -254,13 +221,13 @@ PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
     ObjRecogState state;
     Eigen::Matrix3d Rcw;
     Eigen::Vector3d tcw;
-    mObj->GetPose(frmIndex, timeStamp, state, Rcw, tcw, Rwo_cur_, two_cur_);
+    mObj->GetPose(frmIndex, timeStamp, state, Rcw, tcw, m_Rwo_cur, m_two_cur);
     const Eigen::Matrix3d K = CameraIntrinsic::GetInstance().GetEigenK();
 
     std::vector<Eigen::Vector3d> mapPointsObj;
     std::vector<Eigen::Vector3d> mapPointsWorld;
     ObjTrackerCommon::GetMapPointPositions(
-        pointClouds, Rwo_cur_, two_cur_, mapPointsObj, mapPointsWorld);
+        pointClouds, m_Rwo_cur, m_two_cur, mapPointsObj, mapPointsWorld);
 
     // opticalflow 2d point position of previous frame
     std::vector<cv::Point2f> opticalFlowKeyPointsPreFloat;
@@ -340,12 +307,12 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
     ObjRecogState state;
     Eigen::Matrix3d Rcw;
     Eigen::Vector3d tcw;
-    mObj->GetPose(frmIndex, timeStamp, state, Rcw, tcw, Rwo_cur_, two_cur_);
+    mObj->GetPose(frmIndex, timeStamp, state, Rcw, tcw, m_Rwo_cur, m_two_cur);
 
     std::vector<Eigen::Vector3d> mapPointsObj;
     std::vector<Eigen::Vector3d> mapPointsWorld;
     ObjTrackerCommon::GetMapPointPositions(
-        pointClouds, Rwo_cur_, two_cur_, mapPointsObj, mapPointsWorld);
+        pointClouds, m_Rwo_cur, m_two_cur, mapPointsObj, mapPointsWorld);
 
     const std::vector<cv::KeyPoint> keyPointsOrigin = m_frame_cur->m_kpts;
     const cv::Mat descriptors = m_frame_cur->m_desp;
@@ -360,7 +327,7 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
     projectPoints.reserve(mapPointsWorld.size());
     TIMER_UTILITY::Timer timer;
     ObjTrackerCommon::ProjectSearch(
-        mapPointsWorld, Rcw_cur_, tcw_cur_, projectFailState, projectPoints,
+        mapPointsWorld, m_Rcw_cur, m_tcw_cur, projectFailState, projectPoints,
         false);
     m_project_success_mappoint_num = projectPoints.size();
 
@@ -395,9 +362,6 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
     tracker_projection_match.AddSample(timer.Stop());
 
     m_match_points_projection_num = m_projection_matches2dTo3d_cur.size();
-    m_match_points_num =
-        m_match_points_projection_num + m_match_points_opticalFlow_num;
-
     STATISTICS_UTILITY::StatsCollector stats_projection_match(
         "tracker projection 2D-3D match num");
     stats_projection_match.AddSample(m_projection_matches2dTo3d_cur.size());
@@ -405,9 +369,6 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
     matchset_3d = Generate3DMatch(
         m_frame_cur, m_projection_matches2dTo3d_cur, m_projection_points2d_cur,
         mapPointsObj);
-
-    // ShowProjectedPointsAndMatchingKeyPoints(projectPoints,
-    // matchKeyPointsState);
 
     return matchset_3d;
 }
@@ -459,12 +420,23 @@ bool PointCloudObjTracker::PoseSolver(
     Eigen::Matrix3d Rco = T.m_R.cast<double>();
     Eigen::Vector3d tco = T.m_t.cast<double>();
 
-    Eigen::Matrix3d Row = Rco.transpose() * (Rcw_cur_);
-    Eigen::Vector3d tow = Rco.transpose() * (tcw_cur_ - tco);
-    Rwo_cur_ = Row.transpose();
-    two_cur_ = -Rwo_cur_ * tow;
-    Rco_cur_ = Rco;
-    tco_cur_ = tco;
+#ifdef MONO
+    Eigen::Vector3d tco_slam_scale;
+    if (mObj->GetScale() <= 1e-5) {
+        tco_slam_scale = tco;
+    } else {
+        tco_slam_scale = tco / mObj->GetScale();
+    }
+#else
+    Eigen::Vector3d tco_slam_scale = tco;
+#endif
+
+    Eigen::Matrix3d Row = Rco.transpose() * (m_Rcw_cur);
+    Eigen::Vector3d tow = Rco.transpose() * (m_tcw_cur - tco_slam_scale);
+    m_Rwo_cur = Row.transpose();
+    m_two_cur = -m_Rwo_cur * tow;
+    m_Rco_cur = Rco;
+    m_tco_cur = tco_slam_scale;
 
     m_pnp_inliers_num = inliers_3d.size();
     STATISTICS_UTILITY::StatsCollector stats_collector_pnp(
@@ -486,8 +458,8 @@ void PointCloudObjTracker::PnPResultHandle() {
         frame_index, time_stamp, state, Rcw_old, Tcw_old, Rwo_old, Two_old);
 #ifdef USE_NO_METHOD_FOR_FUSE
 #else
-    Rwo_cur_ = Rwo_old;
-    two_cur_ = Two_old;
+    m_Rwo_cur = Rwo_old;
+    m_two_cur = Two_old;
 #endif
 
 #ifdef USE_INLIER
@@ -496,22 +468,29 @@ void PointCloudObjTracker::PnPResultHandle() {
     int KTrackerPnPInliersUnreliableTh =
         Parameters::GetInstance().kTrackerPnPInliersUnreliableNumTh;
 
-    if (Rwo_cur_ == Eigen::Matrix3d::Identity() &&
-        two_cur_ == Eigen::Vector3d::Zero()) {
+    if (m_Rwo_cur == Eigen::Matrix3d::Identity() &&
+        m_two_cur == Eigen::Vector3d::Zero()) {
         m_tracker_state = TrackingBad;
     } else {
         // TODO(zhangye) check the threshold
-
 #ifdef OBJECT_BOX
 #ifdef SUPERPOINT
+#ifdef MONO
+        int proj_success_num = 50;
+#else
         int proj_success_num = m_match_points_projection_num * 0.15;
+#endif
 #else
         int proj_success_num = m_match_points_projection_num * 0.10;
 #endif
 #endif
 #ifdef OBJECT_BAG
 #ifdef SUPERPOINT
+#ifdef MONO
+        int proj_success_num = 40;
+#else
         int proj_success_num = 70;
+#endif
 #else
         int proj_success_num = m_match_points_projection_num * 0.12;
 #endif
@@ -519,7 +498,11 @@ void PointCloudObjTracker::PnPResultHandle() {
 
 #ifdef OBJECT_TOY
 #ifdef SUPERPOINT
+#ifdef MONO
+        int proj_success_num = 40;
+#else
         int proj_success_num = 70;
+#endif
 #else
         int proj_success_num = 70;
 #endif
@@ -531,30 +514,29 @@ void PointCloudObjTracker::PnPResultHandle() {
             VLOG(5) << "tracker pnp inlier num success:" << m_pnp_inliers_num;
             m_tracker_state = TrackingGood;
             mObj->SetPose(
-                m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
-                m_tracker_state, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
-            mObj->SetPoseForFindSimilarKeyframe(
-                Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
+                m_frame_cur->m_frame_index, m_tracker_state, m_Rcw_cur,
+                m_tcw_cur, m_Rwo_cur, m_two_cur);
+            mObj->SetPoseForFindSimilarKeyframe(m_Rcw_cur, m_tcw_cur);
 
-            if (reproj_error >= 0) {
-                // VLOG(0) << "tracker reproj error: " << reproj_error;
+            if (m_reproj_error >= 0) {
+                // VLOG(0) << "tracker reproj error: " << m_reproj_error;
                 STATISTICS_UTILITY::StatsCollector stats_collector_project(
                     "tracker inlier reproj error");
-                stats_collector_project.AddSample(reproj_error);
+                stats_collector_project.AddSample(m_reproj_error);
             }
 
         } else if (m_pnp_inliers_num > KTrackerPnPInliersUnreliableTh) {
             VLOG(5) << "PNP fail but has enough inliers";
             m_tracker_state = TrackingUnreliable;
             mObj->SetPose(
-                m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
-                m_tracker_state, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
+                m_frame_cur->m_frame_index, m_tracker_state, m_Rcw_cur,
+                m_tcw_cur, m_Rwo_cur, m_two_cur);
         } else {
             VLOG(5) << "PNP solve fail!";
             m_tracker_state = TrackingBad;
             mObj->SetPose(
-                m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
-                m_tracker_state, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
+                m_frame_cur->m_frame_index, m_tracker_state, m_Rcw_cur,
+                m_tcw_cur, m_Rwo_cur, m_two_cur);
         }
         if (m_tracker_state == TrackingGood) {
             m_frame_Pre = m_frame_cur;
@@ -565,29 +547,29 @@ void PointCloudObjTracker::PnPResultHandle() {
 #endif
 
 #ifdef USE_REPROJ
-    if (Rwo_cur_ == Eigen::Matrix3d::Identity() &&
-        two_cur_ == Eigen::Vector3d::Zero()) {
+    if (m_Rwo_cur == Eigen::Matrix3d::Identity() &&
+        m_two_cur == Eigen::Vector3d::Zero()) {
         m_tracker_state = TrackingBad;
     } else {
         // 80
-        if (m_pnp_solver_result && reproj_error <= 3.0) {
+        if (m_pnp_solver_result && m_reproj_error <= 3.0) {
             VLOG(5) << "tracker pnp inlier num success:" << m_pnp_inliers_num;
             m_tracker_state = TrackingGood;
             mObj->SetPose(
-                m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
-                m_tracker_state, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
-        } else if (reproj_error <= 4.5) {
+                m_frame_cur->m_frame_index, m_tracker_state, m_Rcw_cur,
+                m_tcw_cur, m_Rwo_cur, m_two_cur);
+        } else if (m_reproj_error <= 4.5) {
             VLOG(5) << "PNP fail but has enough inliers";
             m_tracker_state = TrackingUnreliable;
             mObj->SetPose(
-                m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
-                m_tracker_state, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
+                m_frame_cur->m_frame_index, m_tracker_state, m_Rcw_cur,
+                m_tcw_cur, m_Rwo_cur, m_two_cur);
         } else {
             VLOG(5) << "PNP solve fail!";
             m_tracker_state = TrackingBad;
             mObj->SetPose(
-                m_frame_cur->m_frame_index, m_frame_cur->m_time_stamp,
-                m_tracker_state, Rcw_cur_, tcw_cur_, Rwo_cur_, two_cur_);
+                m_frame_cur->m_frame_index, m_tracker_state, m_Rcw_cur,
+                m_tcw_cur, m_Rwo_cur, m_two_cur);
         }
         if (m_tracker_state == TrackingGood) {
             m_frame_Pre = m_frame_cur;
@@ -634,7 +616,7 @@ void PointCloudObjTracker::ProcessPoseSolverInliers(
     m_pnp_inliers_opticalFlow_num = m_opticalFlow_matches2dTo3d_inlier.size();
     m_pnp_inliers_projection_num = m_projection_matches2dTo3d_inlier.size();
 
-    opticalflow_point2ds_tmp = m_frame_cur->m_opticalflow_point2ds;
+    m_opticalflow_point2ds_tmp = m_frame_cur->m_opticalflow_point2ds;
 
     m_frame_cur->m_opticalflow_point2ds.clear();
     m_frame_cur->m_opticalflow_matches2dto3d.clear();
@@ -642,7 +624,7 @@ void PointCloudObjTracker::ProcessPoseSolverInliers(
     int point2d_index = 0;
     for (const auto &it : m_opticalFlow_matches2dTo3d_inlier) {
         m_frame_cur->m_opticalflow_point2ds.emplace_back(
-            opticalflow_point2ds_tmp[it.first]);
+            m_opticalflow_point2ds_tmp[it.first]);
         m_frame_cur->m_opticalflow_matches2dto3d[point2d_index] = it.second;
         point2d_index++;
     }
@@ -671,7 +653,7 @@ void PointCloudObjTracker::DrawTextInfo(const cv::Mat &img, cv::Mat &img_txt) {
     std::string inlier_txt =
         "proj kp inliers num: " + std::to_string(m_pnp_inliers_projection_num) +
         "| ";
-    std::string reproj_txt = "reproj error: " + std::to_string(reproj_error);
+    std::string reproj_txt = "reproj error: " + std::to_string(m_reproj_error);
 
     std::vector<cv::KeyPoint> opticalFlowMatch;
     std::vector<cv::KeyPoint> opticalFlowInliers;
@@ -737,7 +719,8 @@ void PointCloudObjTracker::ShowTrackerResult() {
     std::vector<cv::Point2d> boxProjResult;
     for (int i = 0; i < mapPointBoundingBox.size(); i++) {
         const Eigen::Matrix3d K = CameraIntrinsic::GetInstance().GetEigenK();
-        Eigen::Vector3d p = K * (Rco_cur_ * mapPointBoundingBox[i] + tco_cur_);
+        Eigen::Vector3d p =
+            K * (m_Rco_cur * mapPointBoundingBox[i] + m_tco_cur);
         cv::Point2d pResult;
         pResult.x = p(0) / p(2);
         pResult.y = p(1) / p(2);
@@ -780,7 +763,7 @@ void PointCloudObjTracker::ShowTrackerResult() {
 
     cv::Mat img_text;
     DrawTextInfo(showResult, img_text);
-    GlobalOcvViewer::UpdateView("Tracker Result", img_text);
+    GlobalOcvViewer::AddView("Tracker Result", img_text);
 }
 
 float PointCloudObjTracker::ComputeAverageReProjError(
@@ -797,7 +780,7 @@ float PointCloudObjTracker::ComputeAverageReProjError(
         auto keypoint = m_frame_cur->m_kpts[matches.first];
 
         auto proj = CameraIntrinsic::GetInstance().GetEigenK() *
-                    (Rco_cur_ * mappoint->GetPose() + tco_cur_);
+                    (m_Rco_cur * mappoint->GetPose() + m_tco_cur);
         Eigen::Vector2d proj_2d =
             Eigen::Vector2d(proj(0) / proj(2), proj(1) / proj(2));
 
@@ -810,10 +793,10 @@ float PointCloudObjTracker::ComputeAverageReProjError(
 
     for (auto matches : m_opticalFlow_matches2dTo3d_inlier) {
         auto mappoint = mObj->GetPointClouds()[matches.second];
-        auto keypoint = opticalflow_point2ds_tmp[matches.first];
+        auto keypoint = m_opticalflow_point2ds_tmp[matches.first];
 
         auto proj = CameraIntrinsic::GetInstance().GetEigenK() *
-                    (Rco_cur_ * mappoint->GetPose() + tco_cur_);
+                    (m_Rco_cur * mappoint->GetPose() + m_tco_cur);
         Eigen::Vector2d proj_2d =
             Eigen::Vector2d(proj(0) / proj(2), proj(1) / proj(2));
 
@@ -830,8 +813,8 @@ float PointCloudObjTracker::ComputeAverageReProjError(
 }
 
 void PointCloudObjTracker::Process(
-    const std::shared_ptr<ObjRecognition::FrameData> &frm) {
-    if ((frm == nullptr || (frm != nullptr && frm->img.data == nullptr) ||
+    const std::shared_ptr<ObjRecognition::FrameForObjRecognition> &frm) {
+    if ((frm == nullptr || (frm != nullptr && frm->m_img.data == nullptr) ||
          mObj == nullptr)) {
         return;
     }
@@ -871,7 +854,7 @@ void PointCloudObjTracker::Process(
         "Time: tracker pose solver");
     tracker_pose_solver.AddSample(timer_poseSolver.Stop());
 
-    reproj_error = ComputeAverageReProjError(totalInliers_3d);
+    m_reproj_error = ComputeAverageReProjError(totalInliers_3d);
 
     PnPResultHandle();
 
@@ -882,24 +865,19 @@ void PointCloudObjTracker::Process(
     ShowTrackerResult();
 
     ResultRecord();
-
-    // SetInfo();
 }
 
 void PointCloudObjTracker::Reset() {
     Clear();
-    VLOG(10) << "PointCloudObjTracker::Reset";
 }
 
 void PointCloudObjTracker::Clear() {
     m_frame_Pre = std::make_shared<TrackerFrame>();
-    m_match_points_num = 0;
     m_project_success_mappoint_num = 0;
     m_pnp_inliers_num = 0;
     m_tracker_state = TrackingBad;
     m_first_detection_good = false;
-
-    VLOG(10) << "PointCloudObjTracker::Clear";
+    m_scale = 0;
 }
 
 bool PointCloudObjTracker::Load(const long long &mem_size, const char *mem) {
@@ -911,38 +889,4 @@ bool PointCloudObjTracker::Save(long long &mem_size, char **mem) {
     VLOG(30) << "PointCloudObjTracker::Save";
     return mObj->Save(mem_size, mem);
 }
-
-void PointCloudObjTracker::SetInfo() {
-
-    m_info.clear();
-    switch (m_tracker_state) {
-    case TrackingGood:
-        m_info += "tracker state: good";
-        break;
-    case TrackingBad:
-        m_info += "tracker state: bad";
-        break;
-    case TrackingUnreliable:
-        m_info += "tracker state: unreliable";
-        break;
-    default:
-        m_info += "tracker state: unknow";
-    }
-    m_info += '\n';
-    m_info += "tracker project MP num: " +
-              std::to_string(m_project_success_mappoint_num) + '\n';
-    m_info += "tracker match MP num: " + std::to_string(m_match_points_num) +
-              " = " + std::to_string(m_match_points_projection_num) + " + " +
-              std::to_string(m_match_points_opticalFlow_num) + '\n';
-    m_info += "tracker pnp inliers num: " + std::to_string(m_pnp_inliers_num) +
-              " = " + std::to_string(m_pnp_inliers_projection_num) + " + " +
-              std::to_string(m_pnp_inliers_opticalFlow_num) + '\n';
-}
-
-int PointCloudObjTracker::GetInfo(std::string &info) {
-
-    info += m_info;
-    return 0;
-}
-
 } // namespace ObjRecognition

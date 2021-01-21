@@ -19,18 +19,19 @@
  * ORB-SLAM3. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "include/ORBSLAM3/LocalMapping.h"
-#include "include/ORBSLAM3/LoopClosing.h"
-#include "include/ORBSLAM3/ORBmatcher.h"
-#include "include/ORBSLAM3/SuperPointMatcher.h"
-#include "include/ORBSLAM3/Optimizer.h"
-#include "include/ORBSLAM3/Converter.h"
+#include "ORBSLAM3/LocalMapping.h"
+#include "ORBSLAM3/LoopClosing.h"
+#include "ORBSLAM3/ORBmatcher.h"
+#include "ORBSLAM3/SuperPointMatcher.h"
+#include "ORBSLAM3/Optimizer.h"
+#include "ORBSLAM3/Converter.h"
 #include "ORBSLAM3/FrameObjectProcess.h"
 #include "Visualizer/GlobalImageViewer.h"
 #include "mode.h"
 #include <glog/logging.h>
 #include <mutex>
 #include <chrono>
+#include <opencv2/core/eigen.hpp>
 
 namespace ORB_SLAM3 {
 
@@ -318,30 +319,12 @@ void LocalMapping::Run() {
                     std::chrono::duration<double, std::milli>>(t8 - t7)
                     .count();
 
-            // DEBUG--
-            /*f_lm << setprecision(6);
-            f_lm << t_procKF << ",";
-            f_lm << t_MPcull << ",";
-            f_lm << t_CheckMP << ",";
-            f_lm << t_searchNeigh << ",";
-            f_lm << t_Opt << ",";
-            f_lm << t_KF_cull << ",";
-            f_lm << setprecision(0) << num_FixedKF_BA << "\n";*/
-            //--
-
             // for objectRecognition
 #ifdef OBJECTRECOGNITION
             if (mpTracker->mState == Tracking::OK) {
-
-                //            if (mpCurrentKeyFrame) {
-                //                ObjRecognition::GlobalOcvViewer::UpdateView(
-                //                    "ORBSLAM3-KeyFrame",
-                //                    mpCurrentKeyFrame->imgLeft);
-                // }
-
                 // objectRecognition callback
-                ObjRecognition::ObjRecogFrameCallbackData *callbackData =
-                    new ObjRecognition::ObjRecogFrameCallbackData();
+                ObjRecognition::CallbackFrame *callbackData =
+                    new ObjRecognition::CallbackFrame();
                 callbackData->id = mpCurrentKeyFrame->mnId;
 
                 cv::Mat Tcw = mpCurrentKeyFrame->GetPose();
@@ -358,7 +341,7 @@ void LocalMapping::Run() {
                 // give ObjectRecognition the grey image
                 cv::Mat kf;
                 kf = mpCurrentKeyFrame->imgLeft;
-                ObjRecognition::ObjRecogImageCallbackData callbackImg;
+                ObjRecognition::CallbackImage callbackImg{};
                 callbackImg.height = kf.cols;
                 callbackImg.width = kf.rows;
                 callbackImg.data =
@@ -367,9 +350,14 @@ void LocalMapping::Run() {
                     callbackImg.data, kf.data,
                     sizeof(unsigned char) * callbackImg.height *
                         callbackImg.width);
-                callbackData->img = callbackImg;
-                callbackData->has_image = true;
-                callbackData->timestamp = mpCurrentKeyFrame->mTimeStamp;
+                callbackData->data =
+                    new unsigned char[callbackImg.height * callbackImg.width];
+                memcpy(
+                    callbackData->data, kf.data,
+                    sizeof(unsigned char) * callbackImg.height *
+                        callbackImg.width);
+                callbackData->width = callbackImg.width;
+                callbackData->height = callbackImg.height;
                 cb_(callbackData);
             }
 #endif
@@ -522,7 +510,7 @@ void LocalMapping::TriangulateForSuperPoint(
     VLOG(0) << "Triangulate on frame num: " << std::to_string(keyframe_num)
             << "/" << std::to_string(allkeyframes.size() - 1);
 
-    SuperPointMatcher superPointmatcher(0.6, false);
+    SuperPointMatcher superPointmatcher(0.6);
     int nn = 10;
     ORB_SLAM3::KeyFrame *currentKeyFrame = allkeyframes[keyframe_num];
     const float ratioFactor = 1.5f * currentKeyFrame->mfScaleFactor_superpoint;

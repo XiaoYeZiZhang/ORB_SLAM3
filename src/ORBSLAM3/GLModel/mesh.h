@@ -1,7 +1,3 @@
-//
-// Created by root on 2020/12/2.
-//
-
 #ifndef TEST2_MESH_H
 #define TEST2_MESH_H
 #include <glm/glm.hpp>

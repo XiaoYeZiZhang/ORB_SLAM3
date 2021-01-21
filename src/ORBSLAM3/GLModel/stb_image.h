@@ -1,7 +1,3 @@
-//
-// Created by root on 2020/12/2.
-//
-
 #ifndef TEST2_STB_IMAGE_H
 #define TEST2_STB_IMAGE_H
 #ifndef STBI_NO_STDIO

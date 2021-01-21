@@ -1,6 +1,3 @@
-//
-// Created by zhangye on 2020/9/16.
-//
 #include <glog/logging.h>
 #include "Detector/DetectorThread.h"
 
@@ -15,33 +12,31 @@ DetectorThread::~DetectorThread() {
 
 void DetectorThread::SetDetector(
     const std::shared_ptr<ObjRecognition::RecognitionBase> &detector) {
-    mDetector = detector;
+    m_detector = detector;
 }
 
 void DetectorThread::Process() {
     VLOG(20) << "DetectorThread::Process";
-    mDetector->Process(mCurData);
+    m_detector->Process(m_curData);
 }
 
 void DetectorThread::Stop() {
     VLOG(20) << "DetectorThread::Stop";
-    mDetector->Clear();
+    m_detector->Clear();
 }
 
 void DetectorThread::Reset() {
     VLOG(20) << "DetectorThread::Reset";
-    mDetector->Reset();
+    m_detector->Reset();
 }
 
-void DetectorThread::GetCurInputData() {
-    std::lock_guard<std::mutex> lck(mInputMutex);
-    if (!mInputQueue.empty()) {
-        VLOG(5) << "detector: queue size: " << mInputQueue.size();
-        mCurData = mInputQueue.back();
-        std::queue<std::shared_ptr<FrameData>> emptyQueue;
-        std::swap(emptyQueue, mInputQueue);
+void DetectorThread::GetNewestData() {
+    std::lock_guard<std::mutex> lck(m_input_mutex);
+    if (!m_input_queue.empty()) {
+        m_curData = m_input_queue[0];
+        m_input_queue.clear();
     } else {
-        mCurData = InputDataPtr();
+        m_curData = InputDataPtr();
     }
 }
 } // namespace ObjRecognition

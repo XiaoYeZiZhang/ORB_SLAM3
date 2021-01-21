@@ -19,15 +19,15 @@
  * ORB-SLAM3. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "include/ORBSLAM3/KeyFrame.h"
-#include "include/ORBSLAM3/Converter.h"
-#include "include/ORBSLAM3/ImuTypes.h"
+#include "ORBSLAM3/KeyFrame.h"
+#include "ORBSLAM3/Converter.h"
+#include "ORBSLAM3/ImuTypes.h"
 #include <mutex>
 #include <opencv2/core/eigen.hpp>
 #include <include/CameraModels/Pinhole.h>
 #include <glog/logging.h>
 #include "include/Tools.h"
-#include "ObjectRecognition/Utility/Camera.h"
+#include "Utility/Camera.h"
 #include "mode.h"
 
 namespace ORB_SLAM3 {
@@ -1064,7 +1064,6 @@ long long KeyFrame::GetMemSizeFor3DObject(
 void KeyFrame::WriteToMemoryFor3DObject(
     long long &mem_pos, char *mem, const Eigen::Matrix4d &Two,
     const bool is_superpoint) {
-    VLOG(10) << "keyframe id: " << mnId;
     Tools::PutDataToMem(mem + mem_pos, &mnId, sizeof(mnId), mem_pos);
 
 #ifdef SAVE_CONNECT_FOR_DETECTOR
@@ -1113,11 +1112,6 @@ void KeyFrame::WriteToMemoryFor3DObject(
     Eigen::Vector3d tco = Rcw * Two.block<3, 1>(0, 3) + Tcw;
     auto init = mem_pos;
     Tools::PackCamCWToMem(tco, Rco, mem_pos, mem);
-    VLOG(5) << "write mem key 5:" << mem_pos - init;
-
-    VLOG(10) << "size: "
-             << ObjRecognition::CameraIntrinsic::GetInstance().Width() << " "
-             << ObjRecognition::CameraIntrinsic::GetInstance().Height();
     Tools::PutDataToMem(
         mem + mem_pos, imgLeft.data,
         sizeof(char) * ObjRecognition::CameraIntrinsic::GetInstance().Width() *

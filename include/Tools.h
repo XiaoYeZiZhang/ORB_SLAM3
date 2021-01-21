@@ -1,7 +1,3 @@
-//
-// Created by zhangye on 2020/9/15.
-//
-
 #ifndef ORB_SLAM3_TOOLS_H
 #define ORB_SLAM3_TOOLS_H
 #include <glog/logging.h>
@@ -10,7 +6,7 @@
 #include <pangolin/gl/gltext.h>
 #include <pangolin/gl/glfont.h>
 #include "ORBSLAM3/QuickHull.h"
-#include "include/ObjectRecognition/Utility/Camera.h"
+#include "Utility/Camera.h"
 namespace Tools {
 static bool InBorder(
     const Eigen::Vector2d &pt, const int &xMin, const int &yMin,
@@ -91,14 +87,6 @@ static void GetBoundingBoxMask(
     std::vector<std::vector<cv::Point>> pts;
     pts.push_back(boxProjResult);
     cv::fillPoly(mask, pts, cv::Scalar(255));
-
-    // show:
-    //    cv::Mat maskShow = mask.clone();
-    //    cv::cvtColor(maskShow, maskShow, cv::COLOR_GRAY2BGR);
-    //    for (const auto &it : boxProjResultShow) {
-    //        cv::drawMarker(maskShow, it, cv::Scalar(0, 0, 255));
-    //    }
-    // GlobalOcvViewer::UpdateView("2D bounding box mask", maskShow);
 }
 
 template <class T1, class T2>
@@ -197,16 +185,13 @@ static void PackCamCWToMem(
     PutDataToMem(mem + mem_pos, &(QR.x()), sizeof(double), mem_pos);
     PutDataToMem(mem + mem_pos, &(QR.y()), sizeof(double), mem_pos);
     PutDataToMem(mem + mem_pos, &(QR.z()), sizeof(double), mem_pos);
-    VLOG(10) << "pose: " << QR.z();
 }
 
 static void PackSUPERPOINTFeatures(
     const std::vector<cv::KeyPoint> &vKpts, const cv::Mat &desp,
     long long &mem_cur, char *mem) {
     unsigned int nKpts = vKpts.size();
-    VLOG(10) << "keyframe kpts: " << nKpts;
     PutDataToMem(mem + mem_cur, &(nKpts), sizeof(nKpts), mem_cur);
-    VLOG(5) << "write mem key 2:" << sizeof(nKpts);
 
     if (nKpts == 0) {
         LOG(FATAL) << "error: PackORBFeatures: nKpts.size = 0, mem_cur = "
@@ -238,10 +223,7 @@ static void PackORBFeatures(
     const std::vector<cv::KeyPoint> &vKpts, const cv::Mat &desp,
     long long &mem_cur, char *mem) {
     unsigned int nKpts = vKpts.size();
-    VLOG(10) << "keyframe kpts: " << nKpts;
     PutDataToMem(mem + mem_cur, &(nKpts), sizeof(nKpts), mem_cur);
-    VLOG(5) << "write mem key 2:" << sizeof(nKpts);
-
     if (nKpts == 0) {
         LOG(FATAL) << "error: PackORBFeatures: nKpts.size = 0, mem_cur = "
                    << mem_cur;

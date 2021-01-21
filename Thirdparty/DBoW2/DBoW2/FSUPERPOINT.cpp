@@ -1,7 +1,3 @@
-//
-// Created by root on 2020/11/9.
-//
-
 #include "FSUPERPOINT.h"
 #include <vector>
 #include <string>

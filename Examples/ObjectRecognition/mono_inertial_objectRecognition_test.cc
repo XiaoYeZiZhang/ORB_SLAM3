@@ -1,19 +1,16 @@
-//
-// Created by root on 2020/10/13.
-//
 #include <iostream>
 #include <algorithm>
 #include <chrono>
 #include <opencv2/core/core.hpp>
 #include <Eigen/Dense>
-#include <include/ObjectRecognition/Utility/GlobalSummary.h>
+#include "GlobalSummary.h"
 #include "ORBSLAM3/System.h"
-#include "Utility/FileIO.h"
-#include "ORBSLAM3/ImuTypes.h"
+#include "FileIO.h"
+#include "ImuTypes.h"
 #include "Utility/Camera.h"
-#include "Utility/Statistics.h"
-#include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
-#include "ORBSLAM3/FrameObjectProcess.h"
+#include "Statistics.h"
+#include "ObjectRecognitionManager.h"
+#include "FrameObjectProcess.h"
 #include "mode.h"
 
 using namespace std;
@@ -34,14 +31,14 @@ public:
     cv::Mat M1l;
 
     // yaml
-    std::string voc_path;
-    std::string voc_path_superpoint;
-    std::string data_path;
-    std::string config_path;
-    std::string slam_saved_path;
-    std::string mappoint_filename;
-    std::string mappoint_filename_superpoint;
-    std::string dataset_name;
+    std::string m_voc_path;
+    std::string m_voc_path_superpoint;
+    std::string m_data_path;
+    std::string m_config_path;
+    std::string m_slam_saved_path;
+    std::string m_mappoint_filename;
+    std::string m_mappoint_filename_superpoint;
+    std::string m_dataset_name;
 
 private:
     void LoadIMU(
@@ -51,13 +48,10 @@ private:
     void LoadImages(
         const string &strPathLeft, const string &strPathTimes,
         vector<string> &vstrImages, vector<double> &vTimeStamps);
-    bool SaveResultInit();
     void ObjectResultParse(const ObjRecognition::ObjRecogResult &result);
-    void SaveObjRecogResult();
 
     vector<cv::Point3f> vAcc, vGyro;
     vector<double> vTimestampsImu;
-    std::string m_result_dir;
     vector<string> vstrImages;
     vector<double> vTimestampsCam;
     int nImages;
@@ -70,14 +64,9 @@ private:
     // 3d object
     std::shared_ptr<ObjRecognition::Object> m_pointCloud =
         std::make_shared<ObjRecognition::Object>(0);
-    std::string camera_pose_result_file_;
-    std::string object_pose_result_file_;
-    std::ofstream camera_pose_result_stream_;
-    std::ofstream object_pose_result_stream_;
     ObjRecognition::ObjRecogResult m_objrecog_result;
     Eigen::Matrix<double, 3, 3> m_Row = Eigen::Matrix<double, 3, 3>::Identity();
     Eigen::Matrix<double, 3, 1> m_tow = Eigen::Matrix<double, 3, 1>::Zero();
-    std::string objrecog_info_str;
 };
 
 void TestViewer::LoadIMU(
@@ -115,51 +104,16 @@ void TestViewer::LoadIMU(
     }
 }
 
-bool TestViewer::SaveResultInit() {
-    // STObjRecognition::GlobalSummary::SetDatasetPath(m_dataset_dir);
-    m_result_dir = slam_saved_path + "/" + GetTimeStampString();
-    if (!CreateFolder(m_result_dir)) {
-        LOG(INFO) << "can't create the result dir" << m_result_dir;
-    }
-
-    camera_pose_result_file_ = m_result_dir + "/camera_pose_result.txt";
-    object_pose_result_file_ = m_result_dir + "/object_pose_result.txt";
-
-    camera_pose_result_stream_.open(camera_pose_result_file_);
-    object_pose_result_stream_.open(object_pose_result_file_);
-
-    if (!camera_pose_result_stream_.is_open()) {
-        LOG(WARNING) << "camera pose result can't open "
-                     << camera_pose_result_file_;
-        return false;
-    }
-
-    if (!object_pose_result_stream_.is_open()) {
-        LOG(WARNING) << "object pose result can't open "
-                     << object_pose_result_file_;
-        return false;
-    }
-    return true;
-}
-
 bool TestViewer::InitObjectRecognition() {
     ObjRecognitionExd::ObjRecongManager::Instance().CreateWithConfig();
 
     // set slam data callback
-
-    // char *voc_buf = nullptr;
-    // unsigned int voc_buf_size = 0;
-    // LoadVoc("/home/zhangye/Develope/ObjectRecognition_ORBSLAM3/Vocabulary/voc.dat.zip",
-    // &voc_buf, voc_buf_size);
-    // ObjRecognitionExd::ObjRecongManager::Instance().LoadDic(voc_buf,
-    // voc_buf_size);
-
 #ifdef SUPERPOINT
     std::string cloud_point_model_dir =
-        slam_saved_path + "/" + mappoint_filename_superpoint;
+        m_slam_saved_path + "/" + m_mappoint_filename_superpoint;
 #else
     std::string cloud_point_model_dir =
-        slam_saved_path + "/" + mappoint_filename;
+        m_slam_saved_path + "/" + m_mappoint_filename;
 #endif
 
     VLOG(0) << "Load Vocabulary Start";
@@ -167,11 +121,11 @@ bool TestViewer::InitObjectRecognition() {
 #ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
 #else
     bool voc_load_res = ObjRecognitionExd::ObjRecongManager::Instance().LoadVoc(
-        voc_path_superpoint);
+        m_voc_path_superpoint);
 #endif
 #else
     bool voc_load_res =
-        ObjRecognitionExd::ObjRecongManager::Instance().LoadVoc(voc_path);
+        ObjRecognitionExd::ObjRecongManager::Instance().LoadVoc(m_voc_path);
 #endif
     VLOG(0) << "Load Vocabulary Done!";
 
@@ -198,7 +152,6 @@ bool TestViewer::InitObjectRecognition() {
     delete[] cloud_point_model_buffer;
     SLAM->SetPointCloudModel(m_pointCloud);
     SLAM->mpViewer->SetPointCloudModel(m_pointCloud);
-    //    SaveResultInit();
     return true;
 }
 
@@ -229,10 +182,9 @@ void TestViewer::LoadImages(
 bool TestViewer::InitSLAM() {
 
     VLOG(0) << "Loading images ...";
-
-    string pathTimeStamps = data_path + "/cam0/timestamp.txt";
-    string pathCam0 = data_path + "/cam0/data";
-    string pathImu = data_path + "/imu0/data.csv";
+    string pathTimeStamps = m_data_path + "/cam0/timestamp.txt";
+    string pathCam0 = m_data_path + "/cam0/data";
+    string pathImu = m_data_path + "/imu0/data.csv";
 
     LoadImages(pathCam0, pathTimeStamps, vstrImages, vTimestampsCam);
     VLOG(0) << "LOADED!";
@@ -250,9 +202,9 @@ bool TestViewer::InitSLAM() {
 
     while (vTimestampsImu[first_imu] <= vTimestampsCam[0])
         first_imu++;
-    first_imu--; // first imu measurement to be considered
+    first_imu--;
 
-    cv::FileStorage fsSettings(config_path, cv::FileStorage::READ);
+    cv::FileStorage fsSettings(m_config_path, cv::FileStorage::READ);
     if (!fsSettings.isOpened()) {
         cerr << "ERROR: Wrong path to settings" << endl;
         return -1;
@@ -299,55 +251,22 @@ bool TestViewer::InitSLAM() {
     is_recognition = true;
 #endif
     SLAM = new ORB_SLAM3::System(
-        voc_path, config_path, ORB_SLAM3::System::IMU_MONOCULAR, true,
+        m_voc_path, m_config_path, ORB_SLAM3::System::IMU_MONOCULAR, true,
         is_recognition);
 
     return true;
 }
 
-void TestViewer::SaveObjRecogResult() {
-    Eigen::Matrix3f R_obj;
-    Eigen::Matrix3f R_camera =
-        ObjRecognition::TypeConverter::Mat3Array2Mat3Eigen(
-            m_objrecog_result.R_camera);
-    Eigen::Vector3f t_camera =
-        Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
-    Eigen::Vector3f t_obj =
-        Eigen::Vector3f::Map(m_objrecog_result.t_obj_buffer, 3);
-
-    R_obj.row(0) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[0], 3);
-    R_obj.row(1) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[3], 3);
-    R_obj.row(2) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[6], 3);
-
-    Eigen::Quaternionf q_camera(R_camera);
-    Eigen::Quaternionf q_obj(R_obj);
-
-    if (m_objrecog_result.frame_index <= 0) {
-        VLOG(10) << "result frame index: " << m_objrecog_result.frame_index;
-        return;
-    }
-
-    camera_pose_result_stream_
-        << std::to_string(m_objrecog_result.time_stamp) << ","
-        << std::setprecision(7) << t_camera(0) << "," << t_camera(1) << ","
-        << t_camera(2) << "," << q_camera.w() << "," << q_camera.x() << ","
-        << q_camera.y() << "," << q_camera.z() << std::endl;
-
-    if (m_objrecog_result.num) {
-        object_pose_result_stream_
-            << std::to_string(m_objrecog_result.time_stamp) << ","
-            << std::setprecision(7) << t_obj(0) << "," << t_obj(1) << ","
-            << t_obj(2) << "," << q_obj.w() << "," << q_obj.x() << ","
-            << q_obj.y() << "," << q_obj.z() << std::endl;
-    }
-}
-
 void TestViewer::ObjectResultParse(
     const ObjRecognition::ObjRecogResult &result) {
     m_objrecog_result = result;
-    Eigen::Matrix<float, 3, 3> Rcw =
-        ObjRecognition::TypeConverter::Mat3Array2Mat3Eigen(
-            m_objrecog_result.R_camera);
+    Eigen::Matrix<float, 3, 3> Rcw;
+    Rcw.row(0) =
+        Eigen::Matrix<float, 3, 1>::Map(m_objrecog_result.R_camera[0], 3);
+    Rcw.row(1) =
+        Eigen::Matrix<float, 3, 1>::Map(m_objrecog_result.R_camera[1], 3);
+    Rcw.row(2) =
+        Eigen::Matrix<float, 3, 1>::Map(m_objrecog_result.R_camera[2], 3);
     Eigen::Vector3f tcw = Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
     Eigen::Matrix<float, 3, 3> Rwo;
     Rwo.col(0) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[0], 3);
@@ -358,12 +277,6 @@ void TestViewer::ObjectResultParse(
 
     Eigen::Matrix3f Rco = Eigen::Matrix3f::Identity();
     Rco = Rcw * Rwo;
-
-    Eigen::Matrix3f Rslam2gl = Eigen::Matrix3f::Zero();
-    Rslam2gl(0, 0) = 1;
-    Rslam2gl(1, 2) = -1;
-    Rslam2gl(2, 1) = 1;
-    Rco = Rco; // * Rslam2gl.transpose();
     Rwo = Rcw.transpose() * Rco;
     Eigen::Matrix3f Row = Eigen::Matrix3f::Identity();
     Eigen::Vector3f tow = Eigen::Vector3f::Zero();
@@ -379,11 +292,6 @@ void TestViewer::ObjectResultParse(
     }
 
     SLAM->mpViewer->SetObjectRecognitionPose(m_Row, m_tow);
-    int info_size = m_objrecog_result.info_length;
-    const char *info_char = m_objrecog_result.info;
-    objrecog_info_str = std::string(info_char);
-    SaveObjRecogResult();
-    // ObjectResultTransmitMultiTabs();
 }
 
 bool TestViewer::RunObjectRecognition() {
@@ -408,11 +316,7 @@ bool TestViewer::RunObjectRecognition() {
         vImuMeas.clear();
 
         if (ni > 0)
-            while (
-                vTimestampsImu[first_imu] <=
-                vTimestampsCam
-                    [ni]) // while(vTimestampsImu[first_imu]<=vTimestampsCam[ni])
-            {
+            while (vTimestampsImu[first_imu] <= vTimestampsCam[ni]) {
                 vImuMeas.push_back(ORB_SLAM3::IMU::Point(
                     vAcc[first_imu].x, vAcc[first_imu].y, vAcc[first_imu].z,
                     vGyro[first_imu].x, vGyro[first_imu].y, vGyro[first_imu].z,
@@ -469,8 +373,6 @@ bool TestViewer::RunObjectRecognition() {
             usleep((T - ttrack) * 1e6); // 1e6
     }
 #ifdef OBJECTRECOGNITION
-    //    ObjRecognition::GlobalSummary::SaveAllPoses(m_result_dir);
-
     std::string statics_result_filename;
 #ifdef SUPERPOINT
     statics_result_filename = "statics_result_SUPERPOINT.txt";
@@ -478,20 +380,13 @@ bool TestViewer::RunObjectRecognition() {
     statics_result_filename = "statics_result_ORB.txt";
 #endif
     ObjRecognition::GlobalSummary::SaveStatics(
-        slam_saved_path, STATISTICS_UTILITY::Statistics::Print(),
+        m_slam_saved_path, STATISTICS_UTILITY::Statistics::Print(),
         statics_result_filename);
-
-    /*ObjRecognition::GlobalSummary::SaveTimer(
-        m_result_dir, STSLAMCommon::Timing::Print());*/
 
     ObjRecognitionExd::ObjRecongManager::Instance().Destroy();
 #endif
 
     SLAM->Shutdown();
-
-    //    const string kf_file = slam_saved_path + "/kf_" + dataset_name +
-    //    ".txt"; const string f_file = slam_saved_path + "/f_" + dataset_name +
-    //    ".txt"; SLAM->SaveTrajectoryEuRoC(f_file);
     return true;
 }
 
@@ -521,15 +416,15 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    fsSettings["voc_path_superpoint"] >> testViewer.voc_path_superpoint;
-    fsSettings["voc_path"] >> testViewer.voc_path;
-    fsSettings["data_path_objRecognition"] >> testViewer.data_path;
-    fsSettings["config_path"] >> testViewer.config_path;
-    fsSettings["saved_path"] >> testViewer.slam_saved_path;
-    fsSettings["mappoint_filename"] >> testViewer.mappoint_filename;
+    fsSettings["voc_path_superpoint"] >> testViewer.m_voc_path_superpoint;
+    fsSettings["voc_path"] >> testViewer.m_voc_path;
+    fsSettings["data_path_objRecognition"] >> testViewer.m_data_path;
+    fsSettings["config_path"] >> testViewer.m_config_path;
+    fsSettings["saved_path"] >> testViewer.m_slam_saved_path;
+    fsSettings["mappoint_filename"] >> testViewer.m_mappoint_filename;
     fsSettings["mappoint_filename_superpoint"] >>
-        testViewer.mappoint_filename_superpoint;
-    fsSettings["dataset_name"] >> testViewer.dataset_name;
+        testViewer.m_mappoint_filename_superpoint;
+    fsSettings["dataset_name"] >> testViewer.m_dataset_name;
     bool initial_slam_result = testViewer.InitSLAM();
 
     if (!initial_slam_result) {
@@ -547,6 +442,5 @@ int main(int argc, char *argv[]) {
 #endif
 
     testViewer.RunObjectRecognition();
-
     return 0;
 }

@@ -23,8 +23,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <mutex>
 #include "Visualizer/GlobalImageViewer.h"
-#include "include/ORBSLAM3/FrameDrawer.h"
-#include "include/ORBSLAM3/Tracking.h"
+#include "FrameDrawer.h"
+#include "Tracking.h"
 
 namespace ORB_SLAM3 {
 
@@ -253,7 +253,7 @@ void FrameDrawer::DrawFrame(bool bOldFeatures) {
     cv::Mat imWithInfo;
     DrawTextInfo(im, state, imWithInfo);
 
-    ObjRecognition::GlobalOcvViewer::UpdateView(
+    ObjRecognition::GlobalOcvViewer::AddView(
         "ORB-SLAM3: Current Frame", imWithInfo);
 }
 

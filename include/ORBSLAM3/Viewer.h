@@ -43,9 +43,6 @@ public:
         System *pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
         Tracking *pTracking, const string &strSettingPath);
 
-    // Main thread function. Draw points, keyframes, the current camera pose and
-    // the last processed frame. Drawing is refreshed according to the camera
-    // fps. We use Pangolin.
     void Run();
 
     void RequestFinish();
@@ -56,11 +53,8 @@ public:
 
     bool isStopped();
 
-    bool isStepByStep();
-
     void Release();
 
-    void SetTrackingPause();
     void SetPointCloudModel(
         std::shared_ptr<ObjRecognition::Object> &pointCloud_model) {
         m_pointCloud_model = pointCloud_model;
@@ -85,12 +79,11 @@ public:
     void Draw3dText();
     void
     DrawPointCloudInImage(const std::vector<Eigen::Vector3d> &pointcloud_pos);
-    void DrawMatchedMappoints();
     void ShowConnectedKeyframes();
     void ShowConnectedMapPoints();
 
     bool GetIsStopFlag() {
-        return is_stop;
+        return m_is_stop;
     }
 
 private:
@@ -128,38 +121,38 @@ private:
     std::vector<cv::Mat> m_trajectory;
 
     // draw another window for objRecognition
-    int switch_window_flag;
-    bool is_stop;
-    pangolin::OpenGlRenderState s_cam_slam;
-    pangolin::View d_cam_slam;
-    pangolin::OpenGlRenderState s_cam_objRecognition;
-    pangolin::View d_cam_objRecognition;
-    pangolin::OpenGlRenderState s_cam_detector;
-    pangolin::View d_cam_detector;
+    int m_switch_window_flag;
+    bool m_is_stop;
+    pangolin::OpenGlRenderState m_s_cam_slam;
+    pangolin::View m_d_cam_slam;
+    pangolin::OpenGlRenderState m_s_cam_objRecognition;
+    pangolin::View m_d_cam_objRecognition;
+    pangolin::OpenGlRenderState m_s_cam_detector;
+    pangolin::View m_d_cam_detector;
 
     Camera m_camera;
-    cv::Mat img_from_objRecognition;
-    int slam_state_from_objRecognition;
-    int img_num;
-    cv::Mat Tcw_;
-    std::mutex mMutexPoseImage;
-    std::unique_ptr<pangolin::Var<bool>> menuFollowCamera;
-    std::unique_ptr<pangolin::Var<bool>> menuCamView;
-    std::unique_ptr<pangolin::Var<bool>> menuTopView;
-    std::unique_ptr<pangolin::Var<bool>> menuShowPoints;
-    std::unique_ptr<pangolin::Var<bool>> menuShowKeyFrames;
-    std::unique_ptr<pangolin::Var<bool>> menuShowGraph;
-    std::unique_ptr<pangolin::Var<bool>> menuShowCameraTrajectory;
-    std::unique_ptr<pangolin::Var<bool>> menuShow3DObject;
-    std::unique_ptr<pangolin::Var<bool>> menuShowMatched3DObject;
-    std::unique_ptr<pangolin::Var<bool>> menuShowInertialGraph;
-    std::unique_ptr<pangolin::Var<bool>> menuReset;
-    std::unique_ptr<pangolin::Var<bool>> menuStepByStep; // false, true
-    std::unique_ptr<pangolin::Var<bool>> menuStep;
-    std::unique_ptr<pangolin::Var<bool>> menuStop;
-    pangolin::GlTexture imageTexture;
-    int image_width;
-    int image_height;
+    cv::Mat m_img_from_objRecognition;
+    int m_slam_state_from_objRecognition;
+    int m_img_num;
+    cv::Mat m_cam_pos;
+    std::mutex m_pose_image_mutex;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_follow_camera;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_cam_view;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_top_view;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_show_points;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_show_keyframes;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_show_graph;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_show_camera_trajectory;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_show_3DObject;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_show_matched_3DObject;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_show_inertial_graph;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_reset;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_stepbystep;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_step;
+    std::unique_ptr<pangolin::Var<bool>> m_menu_stop;
+    pangolin::GlTexture m_image_texture;
+    int m_image_width;
+    int m_image_height;
     std::vector<Eigen::Vector3d> m_boundingbox;
 };
 

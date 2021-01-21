@@ -61,6 +61,16 @@ ${ASSIMP_INCLUDE_DIRS}
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/include
 ${PROJECT_SOURCE_DIR}/include/CameraModels
+${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Common
+  ${PROJECT_SOURCE_DIR}/include/ORBSLAM3
+${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Detector
+${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Tracker
+${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Struct
+${PROJECT_SOURCE_DIR}/include/ObjectRecognition/ObjectRecognitionSystem
+${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Utility
+${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Utility/FeatureExtractor
+${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Utility/StatisticsResult
+${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Visualizer
 ${EIGEN3_INCLUDE_DIR}
 ${Pangolin_INCLUDE_DIRS}
 ${GFLAS_INCLUDE_DIRS}
@@ -76,7 +86,6 @@ include_directories(${PROJECT_SOURCE_DIR}/include/PoseSolver)
 include_directories(${PROJECT_SOURCE_DIR}/Thirdparty)
 
 set (ORBSLAM3_FILES
-        include/ORBSLAM3/Synchronizer.h
         include/ORBSLAM3/SuperPoint.h
         include/ORBSLAM3/SPextractor.h
         include/ORBSLAM3/SuperPointMatcher.h
@@ -139,8 +148,7 @@ set (ORBSLAM3_FILES
         include/ORBSLAM3/MLPnPsolver.h
         include/ORBSLAM3/TwoViewReconstruction.h
         include/ObjectRecognition/Utility/Camera.h
-        include/ObjectRecognition/Utility/Utility.h
-        include/ORBSLAM3/FrameObjectProcess.cc
+        src/ORBSLAM3/FrameObjectProcess.cc
         include/ORBSLAM3/FrameObjectProcess.h
         include/ORBSLAM3/QuickHull.cc
         include/ORBSLAM3/QuickHull.h
@@ -157,41 +165,25 @@ set(ORBSLAM3_CAMERAMODEL_FILES
         include/CameraModels/KannalaBrandt8.h)
 
 set(OBJECTRECOGNITION_FILES
-        include/ObjectRecognition/Utility/Statistics.h
-        src/ObjectRecognition/Utility/Statistics.cc
-        include/ObjectRecognition/Utility/Timer.h
-        src/ObjectRecognition/Utility/Timer.cc
-        include/ObjectRecognition/Utility/Accumulator.h
+        "include/ObjectRecognition/Utility/StatisticsResult/Statistics.h"
+        src/ObjectRecognition/Utility/StatisticResult/Statistics.cc
+        "include/ObjectRecognition/Utility/StatisticsResult/Timer.h"
+        src/ObjectRecognition/Utility/StatisticResult/Timer.cc
+        "include/ObjectRecognition/Utility/StatisticsResult/Accumulator.h"
         include/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionManager.h
         include/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionSystem.h
-        include/ObjectRecognition/Interface/HandleBase.h
-        include/ObjectRecognition/Utility/Thread/LockAnnotaion.h
-        include/ObjectRecognition/Utility/Thread/MessageQueue.h
-        include/ObjectRecognition/Utility/Thread/Mutex.h
-        include/ObjectRecognition/Utility/Thread/TaskQueue.h
-        include/ObjectRecognition/Utility/Thread/Thread.h
-        include/ObjectRecognition/Utility/Thread/ThreadBase.h
         include/ObjectRecognition/Visualizer/GlobalImageViewer.h
         src/ObjectRecognition/Visualizer/GlobalImageViewer.cc
         src/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionManager.cc
         src/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionSystem.cc
-        src/ObjectRecognition/Utility/Thread/MessageQueue.cc
-        src/ObjectRecognition/Utility/Thread/Mutex.cc
-        src/ObjectRecognition/Utility/Thread/Runconfig.cc
-        src/ObjectRecognition/Utility/Thread/TaskQueue.cc
-        src/ObjectRecognition/Utility/Thread/Thread.cc
-        src/ObjectRecognition/Utility/Thread/ThreadBase.cc
-        include/ObjectRecognition/Utility/Performance.h
-        src/ObjectRecognition/Utility/Performance.cc
         include/Tools.h
         include/ObjectRecognition/Detector/DetectorThread.h
         src/ObjectRecognition/Detector/DetectorThread.cc
         include/ObjectRecognition/Detector/DetectorPointCloud.h
         src/ObjectRecognition/Detector/DetectorPointCloud.cc
         include/ObjectRecognition/Utility/ThreadBase.h
-        src/ObjectRecognition/Utility/ThreadBase.cc
         include/ObjectRecognition/Struct/Frame.h
-        include/ObjectRecognition/Utility/RecognitionBase.h
+        include/ObjectRecognition/Common/RecognitionBase.h
         include/ObjectRecognition/Tracker/TrackerThread.h
         src/ObjectRecognition/Tracker/TrackerThread.cc
         src/ObjectRecognition/Struct/Object.cc
@@ -199,15 +191,9 @@ set(OBJECTRECOGNITION_FILES
         include/ObjectRecognition/Struct/PointCloudObject.h
         src/ObjectRecognition/Struct/PointCloudObject.cc
         include/ObjectRecognition/Struct/FrameBase.h
-        src/ObjectRecognition/Struct/FrameBase.cc
-        src/ObjectRecognition/Detector/DetectorFrame.cc
         include/ObjectRecognition/Detector/DetectorFrame.h
         src/ObjectRecognition/Utility/Parameters.cc
         include/ObjectRecognition/Utility/Parameters.h
-        #include/ObjectRecognition/Optimizer/Factor.h
-        #include/ObjectRecognition/Optimizer/LBAOptimizer.h
-        #src/ObjectRecognition/Optimizer/LBAOptimizer.cc
-        src/ObjectRecognition/Tracker/TrackerFrame.cc
         include/ObjectRecognition/Tracker/TrackerFrame.h
         src/ObjectRecognition/Tracker/TrackerPointCloud.cc
         include/ObjectRecognition/Tracker/TrackerPointCloud.h
@@ -215,77 +201,20 @@ set(OBJECTRECOGNITION_FILES
         src/ObjectRecognition/Tracker/TrackerCommon.cc
         src/ObjectRecognition/Detector/DetectorCommon.cc
         include/ObjectRecognition/Detector/DetectorCommon.h
-        src/ObjectRecognition/Utility/FeatureExtractor/FeatureExtractor.cc
         src/ObjectRecognition/Utility/FeatureExtractor/ORBExtractor.cc
-        src/ObjectRecognition/Utility/FeatureExtractor/ORBExtractorFactory.cc
-        src/ObjectRecognition/Utility/FeatureExtractor/ORBExtractorHPC.cc
-        include/ObjectRecognition/Utility/FeatureExtractor/FeatureExtractor.h
         include/ObjectRecognition/Utility/FeatureExtractor/ORBExtractor.h
-        include/ObjectRecognition/Utility/FeatureExtractor/ORBExtractorHPC.h
         src/ObjectRecognition/Utility/FileIO.cc
         include/ObjectRecognition/Utility/FileIO.h
-        include/ObjectRecognition/Utility/GlobalSummary.h
-        src/ObjectRecognition/Utility/GlobalSummary.cc
-        )
-set(CERES_SOLVER_FILES
-        include/ceres-solver/include/ceres/autodiff_cost_function.h
-        include/ceres-solver/include/ceres/c_api.h
-        include/ceres-solver/include/ceres/autodiff_local_parameterization.h
-        include/ceres-solver/include/ceres/ceres.h
-        include/ceres-solver/include/ceres/conditioned_cost_function.h
-        include/ceres-solver/include/ceres/cost_function.h
-        include/ceres-solver/include/ceres/cost_function_to_functor.h
-        include/ceres-solver/include/ceres/covariance.h
-        include/ceres-solver/include/ceres/crs_matrix.h
-        include/ceres-solver/include/ceres/cubic_interpolation.h
-        include/ceres-solver/include/ceres/dynamic_autodiff_cost_function.h
-        include/ceres-solver/include/ceres/dynamic_cost_function.h
-        include/ceres-solver/include/ceres/dynamic_cost_function_to_functor.h
-        include/ceres-solver/include/ceres/dynamic_numeric_diff_cost_function.h
-        include/ceres-solver/include/ceres/fpclassify.h
-        include/ceres-solver/include/ceres/gradient_checker.h
-        include/ceres-solver/include/ceres/gradient_problem.h
-        include/ceres-solver/include/ceres/gradient_problem_solver.h
-        include/ceres-solver/include/ceres/iteration_callback.h
-        include/ceres-solver/include/ceres/jet.h
-        include/ceres-solver/include/ceres/local_parameterization.h
-        include/ceres-solver/include/ceres/loss_function.h
-        include/ceres-solver/include/ceres/normal_prior.h
-        include/ceres-solver/include/ceres/numeric_diff_cost_function.h
-        include/ceres-solver/include/ceres/numeric_diff_options.h
-        include/ceres-solver/include/ceres/ordered_groups.h
-        include/ceres-solver/include/ceres/problem.h
-        include/ceres-solver/include/ceres/rotation.h
-        include/ceres-solver/include/ceres/sized_cost_function.h
-        include/ceres-solver/include/ceres/solver.h
-        include/ceres-solver/include/ceres/types.h
-        include/ceres-solver/include/ceres/version.h
-        include/ceres-solver/include/ceres/internal/autodiff.h
-        include/ceres-solver/include/ceres/internal/config.h
-        include/ceres-solver/include/ceres/internal/disable_warnings.h
-        include/ceres-solver/include/ceres/internal/eigen.h
-        include/ceres-solver/include/ceres/internal/fixed_array.h
-        include/ceres-solver/include/ceres/internal/macros.h
-        include/ceres-solver/include/ceres/internal/manual_constructor.h
-        include/ceres-solver/include/ceres/internal/numeric_diff.h
-        include/ceres-solver/include/ceres/internal/port.h
-        include/ceres-solver/include/ceres/internal/reenable_warnings.h
-        include/ceres-solver/include/ceres/internal/scoped_ptr.h
-        include/ceres-solver/include/ceres/internal/variadic_evaluate.h
+        "include/ObjectRecognition/Utility/StatisticsResult/GlobalSummary.h"
+        src/ObjectRecognition/Utility/StatisticResult/GlobalSummary.cc
         )
 
 set (POSE_SOLVER_FILES
-        include/PoseSolver/essential3.h
         include/PoseSolver/Generator.h
-        include/PoseSolver/geometry.h
-        include/PoseSolver/p2p.h
         include/PoseSolver/PoseSolver.h
         src/PoseSolver/Generator.cc
-        src/PoseSolver/p2p.cc
-        src/PoseSolver/PoseSolver.cc
         src/PoseSolver/PoseSolverRansac.cc
         src/PoseSolver/PoseSolverRefine.cc
-        src/PoseSolver/essential3.cc
         )
 
 set (DBOW3_FILES
@@ -317,7 +246,6 @@ set (SOURCE_FILES
         ${ORBSLAM3_FILES}
         ${OBJECTRECOGNITION_FILES}
         ${POSE_SOLVER_FILES}
-        ${CERES_SOLVER_FILES}
         ${DBOW3_FILES}
         ${ORBSLAM3_CAMERAMODEL_FILES}
         ${MODEL_FILE})
@@ -327,7 +255,6 @@ add_library(${PROJECT_NAME} SHARED  ${SOURCE_FILES}
 )
 
 add_subdirectory(Thirdparty/g2o)
-#link_libraries(${ASSIMP_LIBRARIES})
 
 target_link_libraries(${PROJECT_NAME}
 ${ASSIMP_LIBRARIES}

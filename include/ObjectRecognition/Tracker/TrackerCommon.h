@@ -1,12 +1,8 @@
-//
-// Created by zhangye on 2020/9/16.
-//
-
 #ifndef ORB_SLAM3_TRACKERCOMMON_H
 #define ORB_SLAM3_TRACKERCOMMON_H
 #include <vector>
 #include <opencv2/core/types.hpp>
-#include "Struct/PointCloudObject.h"
+#include "PointCloudObject.h"
 #include "Struct/Frame.h"
 
 namespace ObjRecognition {
@@ -53,21 +49,9 @@ int SearchByProjection_Superpoint(
     std::vector<bool> &matchKeyPointsState,
     std::map<int, MapPointIndex> &matches2dTo3d);
 
-bool SolvePnP(
-    const std::map<int, MapPointIndex> &matches2dTo3d,
-    const std::vector<cv::Point2d> &keyPoints,
-    const std::vector<Eigen::Vector3d> &pointClouds3dObj,
-    const Eigen::Matrix3d &initialRco, const Eigen::Vector3d &initialTco,
-    const cv::Mat &Kcv, Eigen::Matrix3d &resultRco, Eigen::Vector3d &resultTco,
-    std::map<int, MapPointIndex> &matches2dTo3dNew, int &inlierNum);
-
 void DrawBoundingBox(
     const cv::Mat &showResult, std::vector<cv::Point2d> &boxProjResult,
     cv::Scalar &color);
-
-void ExtractKeyPointsAndDes(
-    const std::shared_ptr<ObjRecognition::FrameData> &frm,
-    std::vector<cv::KeyPoint> &imgKeyPoints, cv::Mat &imgDescriptor);
 
 void GetPointCloudBoundingBox(
     const std::shared_ptr<Object> &obj,

@@ -19,14 +19,15 @@
  * ORB-SLAM3. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "include/ORBSLAM3/Atlas.h"
-#include "include/ORBSLAM3/Viewer.h"
+#include "ORBSLAM3/Atlas.h"
+#include "ORBSLAM3/Viewer.h"
 #include "GeometricCamera.h"
 #include "Pinhole.h"
 #include "KannalaBrandt8.h"
-#include "ObjectRecognition/Utility/Camera.h"
+#include "Utility/Camera.h"
 #include "include/Tools.h"
 #include "mode.h"
+#include <opencv2/core/eigen.hpp>
 #include <glog/logging.h>
 
 namespace ORB_SLAM3 {
@@ -335,10 +336,12 @@ long long Atlas::GetMemSizeFor3DObject(
             mspMaps.begin(), mspMaps.end(), std::back_inserter(saved_map));
         sort(saved_map.begin(), saved_map.end(), compFunctor());
 
-#ifdef SUPERPOINT
-        int covisualize_keyframe_num = 4;
-#else
         int covisualize_keyframe_num = 0;
+#ifdef SUPERPOINT
+        covisualize_keyframe_num = 4;
+#endif
+#ifdef MONO
+        covisualize_keyframe_num = 4;
 #endif
         for (Map *pMi : saved_map) {
             for (MapPoint *pMPi :
@@ -431,9 +434,6 @@ bool Atlas::WriteToMemoryFor3DObject(
     nMPs = m_saved_mappoint_for_3dobject_.size();
     nKFs = m_saved_keyframe_for_3dobject_.size();
 
-    VLOG(10) << "write to memory for mappoints: " << nMPs;
-    VLOG(10) << "write to memory for keyframes: " << nKFs;
-    VLOG(5) << "writememsize1" << mem_pos;
     Tools::PutDataToMem(mem + mem_pos, &nMPs, sizeof(nMPs), mem_pos);
 
     Eigen::Matrix4d m_object_Two = Eigen::Matrix4d::Identity();

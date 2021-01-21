@@ -1,21 +1,18 @@
-//
-// Created by root on 2020/10/13.
-//
 #include <ctime>
 #include <opencv2/core/core.hpp>
 #include <Eigen/Dense>
-#include <include/ORBSLAM3/SPextractor.h>
+#include "SPextractor.h"
 #include "ORBSLAM3/System.h"
-#include "Utility/GlobalSummary.h"
-#include "Utility/FileIO.h"
-#include "Utility/Parameters.h"
-#include "ORBSLAM3/ImuTypes.h"
-#include "Utility/Camera.h"
-#include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
-#include "include/Tools.h"
-#include "ORBSLAM3/FrameObjectProcess.h"
-#include "ORBSLAM3/ViewerAR.h"
+#include "GlobalSummary.h"
+#include "FileIO.h"
+#include "Parameters.h"
+#include "ImuTypes.h"
+#include "Camera.h"
+#include "Tools.h"
+#include "FrameObjectProcess.h"
+#include "ViewerAR.h"
 #include "mode.h"
+#include <opencv2/core/eigen.hpp>
 using namespace std;
 using namespace std::chrono;
 class TestViewer {
@@ -58,7 +55,6 @@ private:
         std::vector<cv::DMatch> &goodMatches);
     void ScanDebugMode();
     void SfMDebugMode();
-    std::string m_result_dir;
     vector<string> vstrImages;
     vector<double> vTimestampsCam;
     vector<cv::Point3f> vAcc, vGyro;
@@ -220,43 +216,12 @@ bool TestViewer::InitSLAM() {
         return -1;
     }
 
-    cv::Mat K_l, K_r, P_l, P_r, R_l, R_r, D_l, D_r;
-    fsSettings["LEFT.K"] >> K_l;
-    fsSettings["RIGHT.K"] >> K_r;
-    fsSettings["LEFT.P"] >> P_l;
-    fsSettings["RIGHT.P"] >> P_r;
-    fsSettings["LEFT.R"] >> R_l;
-    fsSettings["RIGHT.R"] >> R_r;
-    fsSettings["LEFT.D"] >> D_l;
-    fsSettings["RIGHT.D"] >> D_r;
-
-    int rows_l = fsSettings["LEFT.height"];
-    int cols_l = fsSettings["LEFT.width"];
-    int rows_r = fsSettings["RIGHT.height"];
-    int cols_r = fsSettings["RIGHT.width"];
-
-    if (K_l.empty() || K_r.empty() || P_l.empty() || P_r.empty() ||
-        R_l.empty() || R_r.empty() || D_l.empty() || D_r.empty() ||
-        rows_l == 0 || rows_r == 0 || cols_l == 0 || cols_r == 0) {
-        cerr << "ERROR: Calibration parameters to rectify stereo are missing!"
-             << endl;
-        return -1;
-    }
-
-    // get map, use remap() to get the rectified image
-    cv::initUndistortRectifyMap(
-        K_l, D_l, R_l, P_l.rowRange(0, 3).colRange(0, 3),
-        cv::Size(cols_l, rows_l), CV_32F, M1l, M2l);
-    cv::initUndistortRectifyMap(
-        K_r, D_r, R_r, P_r.rowRange(0, 3).colRange(0, 3),
-        cv::Size(cols_r, rows_r), CV_32F, M1r, M2r);
-
     double fx = fsSettings["Camera.fx"];
     double fy = fsSettings["Camera.fy"];
     double cx = fsSettings["Camera.cx"];
     double cy = fsSettings["Camera.cy"];
-    int width = cols_l;
-    int height = rows_l;
+    int width = fsSettings["Camera.width"];
+    int height = fsSettings["Camera.height"];
     ObjRecognition::CameraIntrinsic::GetInstance().SetParameters(
         fx, fy, cx, cy, width, height);
 

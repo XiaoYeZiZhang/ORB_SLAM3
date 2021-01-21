@@ -1,11 +1,7 @@
-//
-// Created by root on 2020/10/21.
-//
-
 #include <string>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
-#include "ORBSLAM3/SPextractor.h"
+#include "SPextractor.h"
 #include <glog/logging.h>
 #include <chrono>
 using namespace std::chrono;
@@ -141,13 +137,6 @@ int main(int argc, char *argv[]) {
     }
 
     cv::Mat mask = cv::Mat();
-    // cv::Mat mask = img1.clone();
-    // mask = cv::Scalar::all(255);
-    // for (size_t i = 0; i < 50; i++) {
-    // for (size_t j = 0; j < img1.cols; j++) {
-    // mask.at<float>(i, j) = 0;
-    // }
-    // }
     (*SPextractor)(img1, mask, keypoints1, descriptor1);
     m_orb_detector->detectAndCompute(
         img1, cv::Mat(), keypoints1_opencv, descriptor1_opencv);

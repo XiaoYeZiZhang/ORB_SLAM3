@@ -1,7 +1,3 @@
-//
-// Created by root on 2020/10/9.
-//
-
 #include <pangolin/display/opengl_render_state.h>
 #include <pangolin/gl/gl.h>
 #include "ORBSLAM3/ViewerCommon.h"

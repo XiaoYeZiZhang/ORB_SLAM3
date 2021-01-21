@@ -1,10 +1,6 @@
-//
-// Created by zhangye on 2020/9/16.
-//
 #include <glog/logging.h>
 #include "Tracker/TrackerCommon.h"
 #include "Utility/Camera.h"
-#include "Utility/Utility.h"
 #include "ORBSLAM3/SuperPointMatcher.h"
 #include "mode.h"
 
@@ -86,7 +82,6 @@ void ProjectSearch(
             projectPoints.emplace_back(point2d);
         }
     }
-    VLOG(10) << "PointCloudObjTracker::Project done";
 }
 
 void GetFeaturesInArea(
@@ -138,7 +133,6 @@ int SearchByProjection(
 
     int matches = 0;
     const int kDistThreshold = 80;
-    const float kRatioThreshold = 0.95;
     matchKeyPointsState.resize(projectPoints.size());
     for (int i = 0, j = 0; i < pointClouds.size() && j < projectPoints.size();
          i++) {
@@ -182,14 +176,11 @@ int SearchByProjection(
         }
 
         MapPointIndex mpIndex = i;
-        // VLOG(5) << "Trackerbest: " << bestDist;
         if (bestDist < kDistThreshold) {
-            //            if (bestDist < bestDist2 * kRatioThreshold) {
             matches++;
             matchKeyPointsState[j] = true;
             matches2dTo3d.insert(
                 std::pair<int, MapPointIndex>(bestIndex, mpIndex));
-            //            }
         }
         j++;
     }
@@ -211,7 +202,6 @@ int SearchByProjection_Superpoint(
     int matches = 0;
     // TODO(zhangye): need to change to the right value
     const float kDistThreshold = 1.0;
-    const float kRatioThreshold = 0.95;
     matchKeyPointsState.resize(projectPoints.size());
     for (int i = 0, j = 0; i < pointClouds.size() && j < projectPoints.size();
          i++) {
@@ -257,114 +247,16 @@ int SearchByProjection_Superpoint(
 
         MapPointIndex mpIndex = i;
         if (bestDist < kDistThreshold) {
-            //            if (bestDist < bestDist2 * kRatioThreshold) {
             matches++;
             matchKeyPointsState[j] = true;
             matches2dTo3d.insert(
                 std::pair<int, MapPointIndex>(bestIndex, mpIndex));
-            //            }
         }
         j++;
     }
     // TODO(Zhangye) :check the orientation????
     VLOG(20) << ("PointCloudObjTracker::SearchByProjection done");
     return matches;
-}
-
-bool SolvePnP(
-    const std::map<int, MapPointIndex> &matches2dTo3d,
-    const std::vector<cv::Point2d> &keyPoints,
-    const std::vector<Eigen::Vector3d> &pointClouds3dObj,
-    const Eigen::Matrix3d &initialRco, const Eigen::Vector3d &initialTco,
-    const cv::Mat &Kcv, Eigen::Matrix3d &resultRco, Eigen::Vector3d &resultTco,
-    std::map<int, MapPointIndex> &matches2dTo3dNew, int &inlierNum) {
-    std::vector<cv::Point2f> points2d;
-    std::vector<cv::Point3f> points3dObj;
-    for (auto iter = matches2dTo3d.begin(); iter != matches2dTo3d.end();
-         iter++) {
-        cv::Point2f point2d = static_cast<cv::Point2f>(keyPoints[iter->first]);
-        points2d.emplace_back(point2d);
-        cv::Point3f point3fObj = static_cast<cv::Point3f>(cv::Point3d(
-            pointClouds3dObj[iter->second](0),
-            pointClouds3dObj[iter->second](1),
-            pointClouds3dObj[iter->second](2)));
-        points3dObj.emplace_back(point3fObj);
-    }
-
-    cv::Mat r, rco, tco, D, tmpRco;
-    TypeConverter::Eigen2CV(initialRco, tmpRco);
-    cv::Rodrigues(tmpRco, rco);
-    TypeConverter::Eigen2CV(initialTco, tco);
-    bool pnpSuccess = false;
-    cv::Mat inliers;
-    const int pnpIterationCount = 100;
-    const double pnpConfidence = 0.99;
-    const float pnpReprojectionError = 5.9;
-    pnpSuccess = cv::solvePnPRansac(
-        points3dObj, points2d, Kcv, D, rco, tco, true, pnpIterationCount,
-        pnpReprojectionError, pnpConfidence, inliers);
-    inlierNum = inliers.rows;
-    if (pnpSuccess) {
-
-        cv::Rodrigues(rco, r);
-        TypeConverter::CV2Eigen(r, resultRco);
-        TypeConverter::CV2Eigen(tco, resultTco);
-
-        std::vector<int> inlierIndex;
-        for (int i = 0; i < inliers.rows; i++) {
-            int index = inliers.at<int>(i, 0);
-            inlierIndex.emplace_back(index);
-        }
-
-        int index_ = 0;
-        int inliersNum = 0;
-        for (auto iter = matches2dTo3d.begin(); iter != matches2dTo3d.end();
-             iter++) {
-            if (index_ == inlierIndex[inliersNum]) {
-                matches2dTo3dNew.insert(
-                    std::pair<int, MapPointIndex>(iter->first, iter->second));
-                inliersNum++;
-            }
-            if (inliersNum == inliers.rows)
-                break;
-            index_++;
-        }
-
-        // compute project error
-        double projectError = 0.0;
-        Eigen::Matrix3d K = CameraIntrinsic::GetInstance().GetEigenK();
-        for (int i = 0; i < inliers.rows; i++) {
-            int index = inliers.at<int>(i, 0);
-            cv::Point3f inlier3d = points3dObj[index];
-            cv::Point2f inlier2d = points2d[index];
-            Eigen::Vector3d inlierProjectedMat =
-                Eigen::Vector3d(inlier3d.x, inlier3d.y, inlier3d.z);
-            Eigen::Vector3d inlierProjectedMat3d =
-                K * (resultRco * inlierProjectedMat + resultTco);
-            Eigen::Vector3d inlierProjectedMat2d;
-            inlierProjectedMat2d(0) =
-                inlierProjectedMat3d(0) / inlierProjectedMat3d(2);
-            inlierProjectedMat2d(1) =
-                inlierProjectedMat3d(1) / inlierProjectedMat3d(2);
-            cv::Point2f inlierProjected =
-                cv::Point2f(inlierProjectedMat2d(0), inlierProjectedMat2d(1));
-            projectError += sqrt(
-                (inlierProjected.x - inlier2d.x) *
-                    (inlierProjected.x - inlier2d.x) +
-                (inlierProjected.y - inlier2d.y) *
-                    (inlierProjected.y - inlier2d.y));
-        }
-        projectError /= inliers.rows;
-        VLOG(5) << "pnp projectedError:::" << projectError;
-        if (projectError > pnpReprojectionError)
-            pnpSuccess = false;
-        //        if(projectError > 5.0)
-        //            LOG(FATAL) << "something go wrong";
-        VLOG(5) << "pnp inliers: " << inliers.rows;
-    }
-    VLOG(5) << "pnp result: R" << resultRco;
-    VLOG(5) << "pnp result: t" << resultTco;
-    return pnpSuccess;
 }
 
 void DrawBoundingBox(
@@ -383,14 +275,6 @@ void DrawBoundingBox(
     cv::line(showResult, boxProjResult[1], boxProjResult[5], color);
     cv::line(showResult, boxProjResult[2], boxProjResult[6], color);
     cv::line(showResult, boxProjResult[3], boxProjResult[7], color);
-}
-
-void ExtractKeyPointsAndDes(
-    const std::shared_ptr<ObjRecognition::FrameData> &frm,
-    std::vector<cv::KeyPoint> &imgKeyPoints, cv::Mat &imgDescriptor) {
-    cv::Mat img = frm->img.clone();
-    imgKeyPoints = frm->mKpts;
-    imgDescriptor = frm->mDesp;
 }
 
 void GetPointCloudBoundingBox(

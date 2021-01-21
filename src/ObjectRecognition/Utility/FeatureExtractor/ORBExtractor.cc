@@ -7,9 +7,6 @@ using namespace cv;
 using namespace std;
 
 namespace SLAMCommon {
-
-/* ORB SLAM Code */
-
 class ExtractorNode {
 public:
     ExtractorNode() : bNoMore(false) {
@@ -990,27 +987,6 @@ int ORBExtractor::ComputeDescriptors(
     return result;
 }
 
-int ORBExtractor::DetectAndCompute(
-    const cv::Mat &image, std::vector<cv::KeyPoint> &outKeyPoints,
-    cv::Mat &outDescriptors, const cv::Mat &mask) {
-    std::vector<cv::Mat> imagePyramid;
-    std::vector<std::vector<cv::KeyPoint>> keyPointsWithScale;
-
-    int result = DetectKeyPoints(image, imagePyramid, keyPointsWithScale, mask);
-    if (0 != result) {
-        return result;
-    }
-
-    result =
-        ComputeDescriptors(imagePyramid, keyPointsWithScale, outDescriptors);
-    if (0 != result) {
-        return result;
-    }
-
-    outKeyPoints = ScaleKeyPointsToRawImage(keyPointsWithScale);
-    return result;
-}
-
 int ORBExtractor::ComputeDescriptorsWithoutScale(
     const cv::Mat &image, std::vector<cv::KeyPoint> &keyPoints,
     cv::Mat &outDescriptors) {
@@ -1027,18 +1003,6 @@ int ORBExtractor::ComputeDescriptorsWithoutScale(
     }
 
     return 0;
-}
-
-int ORBExtractor::ComputeDescriptorsAndAnglesWithoutScale(
-    const cv::Mat &image, std::vector<cv::KeyPoint> &keyPoints,
-    cv::Mat &outDescriptors) {
-    int result =
-        ComputeDescriptorsWithoutScale(image, keyPoints, outDescriptors);
-    if (0 == result) {
-        result = ComputeKeyPointsOrientation(image, keyPoints, umax);
-    }
-
-    return result;
 }
 
 int ORBExtractor::CullKeyPoints(
@@ -1058,12 +1022,10 @@ int ORBExtractor::CullKeyPoints(
         std::vector<KeyPoint> &keypoints = inOutKeyPoints[level];
 
         if (mask.empty()) {
-            // 无mask, 使用orbslam原始的均匀化方案
             keypoints = DistributeOctTree(
                 keypoints, minBorderX, maxBorderX, minBorderY, maxBorderY,
                 mnFeaturesPerLevel[level], level);
         } else {
-            // 有mask, 使用opencv的response排序
             KeyPointsFilterByPixelsMask(
                 keypoints, mask, minBorderX, minBorderY, mvScaleFactor[level]);
             KeyPointsFilter::retainBest(keypoints, mnFeaturesPerLevel[level]);
@@ -1107,7 +1069,6 @@ std::vector<cv::KeyPoint> ORBExtractor::ScaleKeyPointsToRawImage(
     if (nlevels != keyPointsWithScale.size()) {
         return result;
     }
-
     // reserve size
     result.reserve(GetKeyPointsCount(keyPointsWithScale));
 
