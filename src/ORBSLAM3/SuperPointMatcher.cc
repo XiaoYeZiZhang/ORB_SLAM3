@@ -2,8 +2,6 @@
 #include "mode.h"
 namespace ORB_SLAM3 {
 
-// TODO(zhangye) find the meaning
-const float SuperPointMatcher::TH_HIGH = 0.70;
 const float SuperPointMatcher::TH_LOW = 0.30;
 const int SuperPointMatcher::HISTO_LENGTH = 30;
 
@@ -374,7 +372,6 @@ int SuperPointMatcher::SearchByProjection(
                 if (bestDist <= TH_LOW) {
                     CurrentKeyFrame.AddSuperpointMapPoint(
                         pMP_superpoint, bestIdx2);
-                    // TODO(zhangye): check this condition
                     pMP_superpoint->AddObservation(
                         &CurrentKeyFrame, bestIdx2, true);
                     pMP_superpoint->ComputeDistinctiveDescriptors(true);

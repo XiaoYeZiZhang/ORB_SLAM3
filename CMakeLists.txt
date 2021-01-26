@@ -66,7 +66,7 @@ ${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Common
 ${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Detector
 ${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Tracker
 ${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Struct
-${PROJECT_SOURCE_DIR}/include/ObjectRecognition/ObjectRecognitionSystem
+${PROJECT_SOURCE_DIR}/include/ObjectRecognition/ObjectRecognitionThread
 ${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Utility
 ${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Utility/FeatureExtractor
 ${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Utility/StatisticsResult
@@ -82,7 +82,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 include_directories(${PROJECT_SOURCE_DIR}/include/ceres-solver/include)
 include_directories(${PROJECT_SOURCE_DIR}/include/ObjectRecognition)
 include_directories(${PROJECT_SOURCE_DIR}/include/ObjectRecognition/Utility/FeatureExtractor)
-include_directories(${PROJECT_SOURCE_DIR}/include/PoseSolver)
+include_directories(include/ObjectRecognition/PoseSolver)
 include_directories(${PROJECT_SOURCE_DIR}/Thirdparty)
 
 set (ORBSLAM3_FILES
@@ -170,12 +170,10 @@ set(OBJECTRECOGNITION_FILES
         "include/ObjectRecognition/Utility/StatisticsResult/Timer.h"
         src/ObjectRecognition/Utility/StatisticResult/Timer.cc
         "include/ObjectRecognition/Utility/StatisticsResult/Accumulator.h"
-        include/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionManager.h
-        include/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionSystem.h
+        include/ObjectRecognition/ObjectRecognitionThread/ObjectRecognitionThread.h
         include/ObjectRecognition/Visualizer/GlobalImageViewer.h
         src/ObjectRecognition/Visualizer/GlobalImageViewer.cc
-        src/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionManager.cc
-        src/ObjectRecognition/ObjectRecognitionSystem/ObjectRecognitionSystem.cc
+        src/ObjectRecognition/ObjectRecognitionThread/ObjectRecognitionThread.cc
         include/Tools.h
         include/ObjectRecognition/Detector/DetectorThread.h
         src/ObjectRecognition/Detector/DetectorThread.cc
@@ -183,7 +181,7 @@ set(OBJECTRECOGNITION_FILES
         src/ObjectRecognition/Detector/DetectorPointCloud.cc
         include/ObjectRecognition/Utility/ThreadBase.h
         include/ObjectRecognition/Struct/Frame.h
-        include/ObjectRecognition/Common/RecognitionBase.h
+        include/ObjectRecognition/ObjectRecognitionThread/RecognitionBase.h
         include/ObjectRecognition/Tracker/TrackerThread.h
         src/ObjectRecognition/Tracker/TrackerThread.cc
         src/ObjectRecognition/Struct/Object.cc
@@ -210,11 +208,10 @@ set(OBJECTRECOGNITION_FILES
         )
 
 set (POSE_SOLVER_FILES
-        include/PoseSolver/Generator.h
-        include/PoseSolver/PoseSolver.h
-        src/PoseSolver/Generator.cc
-        src/PoseSolver/PoseSolverRansac.cc
-        src/PoseSolver/PoseSolverRefine.cc
+        include/ObjectRecognition/PoseSolver/Generator.h
+        include/ObjectRecognition/PoseSolver/PoseSolver.h
+        src/ObjectRecognition/PoseSolver/Generator.cc
+        src/ObjectRecognition/PoseSolver/PoseSolverRansac.cc
         )
 
 set (DBOW3_FILES

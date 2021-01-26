@@ -184,7 +184,6 @@ int SearchByProjection(
         }
         j++;
     }
-    // TODO(Zhangye) :check the orientation????
     VLOG(20) << ("PointCloudObjTracker::SearchByProjection done");
     return matches;
 }
@@ -200,7 +199,7 @@ int SearchByProjection_Superpoint(
     const int width = CameraIntrinsic::GetInstance().Width();
     const int height = CameraIntrinsic::GetInstance().Height();
     int matches = 0;
-    // TODO(zhangye): need to change to the right value
+    // TODO(zhangye): tune this threshold
     const float kDistThreshold = 1.0;
     matchKeyPointsState.resize(projectPoints.size());
     for (int i = 0, j = 0; i < pointClouds.size() && j < projectPoints.size();
@@ -213,7 +212,6 @@ int SearchByProjection_Superpoint(
         matchKeyPointsState[j] = false;
         std::vector<int> vIndices;
         vIndices.reserve(keyPoints.size());
-        // is this method need??  if the object is moved by a long distance???
         GetFeaturesInArea(pointProject, width, height, keyPoints, vIndices);
         if (vIndices.empty()) {
             j++;
@@ -254,7 +252,6 @@ int SearchByProjection_Superpoint(
         }
         j++;
     }
-    // TODO(Zhangye) :check the orientation????
     VLOG(20) << ("PointCloudObjTracker::SearchByProjection done");
     return matches;
 }

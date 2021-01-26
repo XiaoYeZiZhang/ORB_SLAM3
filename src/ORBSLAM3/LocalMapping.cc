@@ -88,7 +88,6 @@ LocalMapping::LocalMapping(
     mNumKFCulling = 0;
 
     // DEBUG: times and data from LocalMapping in each frame
-
     strSequence = ""; //_strSeqName;
 
     // f_lm.open("localMapping_times" + strSequence + ".txt");

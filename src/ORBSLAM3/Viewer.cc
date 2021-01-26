@@ -164,12 +164,6 @@ bool Viewer::ParseViewerParamFile(cv::FileStorage &fSettings) {
     return !b_miss_params;
 }
 
-void Viewer::SetObjectRecognitionPose(
-    const Eigen::Matrix3d &Row, const Eigen::Vector3d &tow) {
-    m_Row = Row;
-    m_tow = tow;
-}
-
 void Viewer::DrawObjRecognitionInit() {
     // define projection and initial movelview matrix: default
     m_s_cam_objRecognition = pangolin::OpenGlRenderState();
@@ -206,10 +200,6 @@ void Viewer::DrawSLAMInit() {
         std::make_unique<pangolin::Var<bool>>("menu.Show Graph", false, true);
     m_menu_show_camera_trajectory = std::make_unique<pangolin::Var<bool>>(
         "menu.Show Camera trajectory", true, true);
-    m_menu_show_3DObject =
-        std::make_unique<pangolin::Var<bool>>("menu.Show 3DObject", true, true);
-    m_menu_show_matched_3DObject = std::make_unique<pangolin::Var<bool>>(
-        "menu.Show Matched 3DObject", true, true);
     m_menu_show_inertial_graph = std::make_unique<pangolin::Var<bool>>(
         "menu.Show Inertial Graph", true, true);
     m_menu_reset =
@@ -423,9 +413,7 @@ void Viewer::Draw() {
     }
 
     if (mpTracker->m_objRecognition_mode_) {
-        *m_menu_show_3DObject = true;
         *m_menu_show_camera_trajectory = true;
-        *m_menu_show_matched_3DObject = true;
     }
 
 #ifdef OBJECTRECOGNITION
@@ -540,31 +528,6 @@ void Viewer::Draw() {
                 mpMapDrawer->DrawCameraTrajectory(m_trajectory);
             }
 
-            if (*m_menu_show_3DObject) {
-                typedef std::shared_ptr<ObjRecognition::MapPoint> MPPtr;
-                glColor3f(0.0f, 1.0f, 0.0f);
-                glPointSize(4.0);
-
-                Eigen::Isometry3f T = Eigen::Isometry3f::Identity();
-                T.rotate(m_Row.cast<float>());
-                T.pretranslate(m_tow.cast<float>());
-
-                glBegin(GL_POINTS);
-                if (m_pointCloud_model) {
-                    std::vector<MPPtr> &pointClouds =
-                        m_pointCloud_model->GetPointClouds();
-                    for (int i = 0; i < pointClouds.size(); i++) {
-                        Eigen::Vector3f p =
-                            pointClouds[i]->GetPose().cast<float>();
-                        p = T.inverse() * p;
-                        glVertex3f(p.x(), p.y(), p.z());
-                    }
-                }
-                glEnd();
-                if (*m_menu_show_matched_3DObject) {
-                }
-            }
-
             if (*m_menu_stop) {
                 m_is_stop = true;
                 break;
@@ -577,8 +540,6 @@ void Viewer::Draw() {
                 *m_menu_show_points = true;
                 bFollow = true;
                 *m_menu_follow_camera = false;
-                *m_menu_show_3DObject = true;
-                *m_menu_show_matched_3DObject = true;
                 *m_menu_show_camera_trajectory = true;
                 // mpSystem->Reset();
                 mpSystem->ResetActiveMap();
@@ -599,9 +560,9 @@ void Viewer::Draw() {
 
                 m_d_cam_objRecognition.Activate(m_s_cam_objRecognition);
                 // draw boundingbox:
+
                 ObjRecognition::ObjRecogResult result =
-                    ObjRecognitionExd::ObjRecongManager::Instance()
-                        .GetObjRecognitionResult();
+                    GetObjRecognitionResult();
 
                 Eigen::Matrix<float, 3, 3> Rwo;
                 Rwo.col(0) = Eigen::Vector3f::Map(&result.R_obj_buffer[0], 3);
@@ -824,5 +785,102 @@ bool Viewer::Stop() {
 void Viewer::Release() {
     unique_lock<mutex> lock(mMutexStop);
     mbStopped = false;
+}
+ObjRecognition::ObjRecogResult Viewer::GetObjRecognitionResult() {
+    double timestamp = 0;
+    ObjRecognition::FrameIndex frmIndex = -1;
+    ObjRecognition::ObjRecogState state =
+        ObjRecognition::ObjRecogState::TrackingBad;
+    Eigen::Matrix3d R_camera = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d t_camera = Eigen::Vector3d::Zero();
+    Eigen::Matrix3d R_obj = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d t_obj = Eigen::Vector3d::Zero();
+    Eigen::Matrix3d Row = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d tow = Eigen::Vector3d::Zero();
+    Eigen::Matrix3d Rwo = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d two = Eigen::Vector3d::Zero();
+    Eigen::Matrix3d Rco = Eigen::Matrix3d::Identity();
+    Eigen::Vector3d tco = Eigen::Vector3d::Zero();
+
+    m_thread_handler->GetResult(
+        frmIndex, timestamp, state, R_camera, t_camera, Rwo, two);
+    Rco = R_camera * Rwo;
+    tco = R_camera * two + t_camera;
+    Row = Rco.transpose() * (R_camera);
+    tow = Rco.transpose() * (t_camera - tco);
+    Rwo = Row.transpose();
+    two = -Rwo * tow;
+
+    Eigen::Matrix3f R_camera_f = R_camera.cast<float>();
+    Eigen::Vector3f t_camera_f = t_camera.cast<float>();
+    Eigen::Matrix3f R_obj_f = Rwo.cast<float>();
+    Eigen::Vector3f t_obj_f = two.cast<float>();
+
+    ObjRecognition::ObjRecogResult objrecog_result;
+
+    objrecog_result.R_obj_buffer = new float[9];
+    objrecog_result.t_obj_buffer = new float[3];
+    objrecog_result.bounding_box = new float[24];
+
+    objrecog_result.state_buffer = new int[1];
+    objrecog_result.state_buffer[0] = 0;
+    if (state == ObjRecognition::ObjRecogState::TrackingGood) {
+        objrecog_result.state_buffer[0] = 0;
+        objrecog_result.num = 1;
+    } else {
+        objrecog_result.state_buffer[0] = -1;
+        objrecog_result.num = 0;
+    }
+
+    std::memcpy(
+        &objrecog_result.t_camera, t_camera_f.data(),
+        3 * sizeof(t_camera_f[0]));
+    std::memcpy(
+        &objrecog_result.R_camera[0], Eigen::Vector3f(R_camera_f.row(0)).data(),
+        3 * sizeof(t_camera_f[0]));
+    std::memcpy(
+        &objrecog_result.R_camera[1], Eigen::Vector3f(R_camera_f.row(1)).data(),
+        3 * sizeof(t_camera_f[0]));
+    std::memcpy(
+        &objrecog_result.R_camera[2], Eigen::Vector3f(R_camera_f.row(2)).data(),
+        3 * sizeof(t_camera_f[0]));
+
+    std::memcpy(
+        &(objrecog_result.t_obj_buffer)[0], t_obj_f.data(),
+        3 * sizeof(t_obj_f[0]));
+    std::memcpy(
+        &(objrecog_result.R_obj_buffer)[0],
+        Eigen::Vector3f(R_obj_f.col(0)).data(), 3 * sizeof(t_obj_f[0]));
+    std::memcpy(
+        &(objrecog_result.R_obj_buffer)[3],
+        Eigen::Vector3f(R_obj_f.col(1)).data(), 3 * sizeof(t_obj_f[0]));
+    std::memcpy(
+        &(objrecog_result.R_obj_buffer)[6],
+        Eigen::Vector3f(R_obj_f.col(2)).data(), 3 * sizeof(t_obj_f[0]));
+
+    std::vector<Eigen::Vector3d> bounding_box;
+    if (m_pointCloud_model != nullptr) {
+        bounding_box = m_pointCloud_model->GetBoundingBox();
+        for (size_t index = 0; index < bounding_box.size(); index++) {
+            objrecog_result.bounding_box[index * 3] = bounding_box.at(index)[0];
+            objrecog_result.bounding_box[index * 3 + 1] =
+                bounding_box.at(index)[1];
+            objrecog_result.bounding_box[index * 3 + 2] =
+                bounding_box.at(index)[2];
+        }
+    }
+
+    if (bounding_box.empty()) {
+        objrecog_result.num = 0;
+    }
+
+    std::vector<Eigen::Vector3d> pointCloud_pos;
+    for (const auto &pointcloud : m_pointCloud_model->GetPointClouds()) {
+        pointCloud_pos.emplace_back(pointcloud->GetPose());
+    }
+
+    objrecog_result.pointCloud_pos.clear();
+    objrecog_result.pointCloud_pos = pointCloud_pos;
+    return objrecog_result;
 }
 } // namespace ORB_SLAM3

@@ -308,7 +308,6 @@ void TestViewer::FindMatchByKNN(
 
 void TestViewer::SfMProcess() {
 #ifdef SUPERPOINT
-    // TODO(zhangye): DO SFM USING SUPERPOINT
     VLOG(0) << "DOING SFM USING SUPERPOINT, PLEASE WAIT...";
     keyframes_slam = SLAM->mpAtlas->GetAllKeyFrames();
 #ifdef USE_NO_VOC_FOR_SCAN_SFM
@@ -466,8 +465,7 @@ bool TestViewer::RunScanner() {
         std::chrono::monotonic_clock::time_point t1 =
             std::chrono::monotonic_clock::now();
 #endif
-        cv::Mat Tcw = SLAM->TrackMonocular(
-            im, tframe); // TODO change to monocular_inertial
+        cv::Mat Tcw = SLAM->TrackMonocular(im, tframe);
 
         cv::Mat im_clone = im.clone();
         int state = SLAM->GetTrackingState();

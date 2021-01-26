@@ -9,26 +9,7 @@
 #include <glog/logging.h>
 #include <Eigen/Eigen>
 
-#define CFG_VERBOSE
-
-namespace PS {
-
-extern int REFINE_MAX_ITERATIONS;
-extern float REFINE_MIN_DEPTH;
-extern float REFINE_STD_FEATURE;
-extern float REFINE_STD_GRAVITY;
-extern float REFINE_CONVERGE_ROTATION;
-extern float REFINE_CONVERGE_TRANSLATION;
-
-extern int REFINE_DL_MAX_ITERATIONS;
-extern float REFINE_DL_RADIUS_INITIAL;
-extern float REFINE_DL_RADIUS_MIN;
-extern float REFINE_DL_RADIUS_MAX;
-extern float REFINE_DL_GAIN_RATIO_MIN;
-extern float REFINE_DL_GAIN_RATIO_MAX;
-extern float REFINE_DL_RADIUS_FACTOR_INCREASE;
-extern float REFINE_DL_RADIUS_FACTOR_DECREASE;
-
+namespace PoseSolver {
 class Pose {
 public:
     inline Pose operator/(const Pose &T) const {
@@ -41,7 +22,6 @@ public:
 public:
     Eigen::Matrix3f m_R;
     Eigen::Vector3f m_t;
-
     Pose() {
         m_R.setIdentity();
         m_t.setZero();
@@ -50,8 +30,6 @@ public:
     }
 };
 
-// class Point3D : public Eigen::Vector3f {};
-// class Point2D : public Eigen::Vector2f {};
 typedef Eigen::Vector3f Point3D;
 typedef Eigen::Vector2f Point2D;
 
@@ -83,40 +61,15 @@ public:
 
 struct IterationSummary {
     int nr_iterations = 0;
-    const Pose *C_T_W = nullptr;
     const MatchSet3D *matches_3d = nullptr;
     const std::vector<MatchSet2D> *matches_2d = nullptr;
     const std::vector<int> *inliers_3d = nullptr;
     const std::vector<std::vector<int>> *inliers_2d = nullptr;
 };
 
-enum CallbackReturnType {
-    ABORT,          // Abort the iteration, solver will return false
-    TERMINATE_SUCC, // Abort the iteration, solver will return true
-    CONTINUE        // Continue
-};
+enum CallbackReturnType { ABORT, TERMINATE_SUCC, CONTINUE };
 using IterationCallback =
     std::function<CallbackReturnType(const IterationSummary &summary)>;
-
-// Several convinient callbacks.
-class ExternalBreakCallback {
-public:
-    /// (Semantics of) Breaker should be pointer type
-    using Breaker = std::shared_ptr<std::atomic_bool>;
-    // using Breaker = volatile bool *;
-
-    explicit ExternalBreakCallback(const Breaker &breaker) : breaker_(breaker) {
-        CHECK(breaker != nullptr);
-    }
-
-    CallbackReturnType operator()(const IterationSummary &) const {
-        return static_cast<bool>(*breaker_) ? CallbackReturnType::ABORT
-                                            : CallbackReturnType::CONTINUE;
-    }
-
-private:
-    const Breaker breaker_;
-};
 
 class EarlyBreakBy3DInlierCounting {
 public:
@@ -148,44 +101,22 @@ private:
 };
 
 struct Options {
-    float focal_length = -1;
     float max_reproj_err = -1;
     int ransac_iterations = 100;
     double ransac_confidence = 0.99;
-    Eigen::Vector3f gravity_dir = Eigen::Vector3f::Zero();
-    bool enable_3d_solver = true;
-    bool enable_2d_solver = true;
-    bool prefer_pure_2d_solver = true;
-    bool enable_gravity_solver = false;
-    bool try_refine_translation_before_optimization_for_2d_only_matches = false;
     std::vector<IterationCallback> callbacks;
-
-    void CheckValidity() const {
-        CHECK_NE(focal_length, -1) << "focal_length not set.";
-        CHECK_NE(max_reproj_err, -1) << "max_reproj_err not set.";
-        float max_reproj_err_pixel = max_reproj_err * focal_length;
-        CHECK_LT(max_reproj_err_pixel, 50)
-            << "max_reproj_error(" << max_reproj_err_pixel
-            << " pixels) seems too large, NOTE the max_reproj_err should be "
-               "normalized by focal length.";
-    }
 };
 
-bool Ransac(
+bool Ransac_Tracker(
     const Options &options, const MatchSet3D &M3D,
     const std::vector<MatchSet2D> &Ms2D, Pose *T, std::vector<int> *I3D,
     std::vector<std::vector<int>> *I2D);
 
-bool Refine(
-    const float f, const MatchSet3D &M3D, const std::vector<MatchSet2D> &Ms2D,
-    Pose *T, const Eigen::Vector3f *g = NULL,
-    const float min_translation = 0.0f);
-
-bool RansacAndRefine(
-    const Options &options, const MatchSet3D &matches_3d,
-    const std::vector<MatchSet2D> &matches_2d, Pose *C_T_W,
-    std::vector<int> *inliers_3d, std::vector<std::vector<int>> *inliers_2d);
-} // namespace PS
+bool Ransac_Detector(
+    const Options &options, const MatchSet3D &M3D,
+    const std::vector<MatchSet2D> &Ms2D, Pose *T, std::vector<int> *I3D,
+    std::vector<std::vector<int>> *I2D);
+} // namespace PoseSolver
 
 namespace Eigen {
 

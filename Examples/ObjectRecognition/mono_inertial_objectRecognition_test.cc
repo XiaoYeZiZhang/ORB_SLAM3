@@ -2,14 +2,13 @@
 #include <algorithm>
 #include <chrono>
 #include <opencv2/core/core.hpp>
-#include <Eigen/Dense>
 #include "GlobalSummary.h"
 #include "ORBSLAM3/System.h"
 #include "FileIO.h"
 #include "ImuTypes.h"
 #include "Utility/Camera.h"
 #include "Statistics.h"
-#include "ObjectRecognitionManager.h"
+#include "ObjectRecognitionThread.h"
 #include "FrameObjectProcess.h"
 #include "mode.h"
 
@@ -48,7 +47,6 @@ private:
     void LoadImages(
         const string &strPathLeft, const string &strPathTimes,
         vector<string> &vstrImages, vector<double> &vTimeStamps);
-    void ObjectResultParse(const ObjRecognition::ObjRecogResult &result);
 
     vector<cv::Point3f> vAcc, vGyro;
     vector<double> vTimestampsImu;
@@ -65,8 +63,11 @@ private:
     std::shared_ptr<ObjRecognition::Object> m_pointCloud =
         std::make_shared<ObjRecognition::Object>(0);
     ObjRecognition::ObjRecogResult m_objrecog_result;
-    Eigen::Matrix<double, 3, 3> m_Row = Eigen::Matrix<double, 3, 3>::Identity();
-    Eigen::Matrix<double, 3, 1> m_tow = Eigen::Matrix<double, 3, 1>::Zero();
+
+    std::shared_ptr<ObjRecognition::ObjRecogThread> m_objrecog_thread =
+        std::make_shared<ObjRecognition::ObjRecogThread>();
+    std::shared_ptr<DBoW3::Vocabulary> m_voc =
+        std::make_shared<DBoW3::Vocabulary>();
 };
 
 void TestViewer::LoadIMU(
@@ -105,7 +106,12 @@ void TestViewer::LoadIMU(
 }
 
 bool TestViewer::InitObjectRecognition() {
-    ObjRecognitionExd::ObjRecongManager::Instance().CreateWithConfig();
+    m_objrecog_thread->SetVocabulary(m_voc);
+    m_objrecog_thread->Init();
+    if (!m_objrecog_thread->StartThread()) {
+        VLOG(0) << "create objRecognition thread failed";
+        return -1;
+    }
 
     // set slam data callback
 #ifdef SUPERPOINT
@@ -120,21 +126,19 @@ bool TestViewer::InitObjectRecognition() {
 #ifdef SUPERPOINT
 #ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
 #else
-    bool voc_load_res = ObjRecognitionExd::ObjRecongManager::Instance().LoadVoc(
-        m_voc_path_superpoint);
-#endif
-#else
-    bool voc_load_res =
-        ObjRecognitionExd::ObjRecongManager::Instance().LoadVoc(m_voc_path);
-#endif
-    VLOG(0) << "Load Vocabulary Done!";
-
-#ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
-#else
-    if (!voc_load_res) {
+    if (!m_voc.get()) {
         LOG(ERROR) << "vocabulary load fail!";
     }
+    m_voc.get()->load(m_voc_path_superpoint);
+
 #endif
+#else
+    if (!m_voc.get()) {
+        LOG(ERROR) << "vocabulary load fail!";
+    }
+    m_voc.get()->load(m_voc_path);
+#endif
+    VLOG(0) << "Load Vocabulary Done!";
 
     int model_id = 0;
     char *cloud_point_model_buffer = nullptr;
@@ -142,9 +146,17 @@ bool TestViewer::InitObjectRecognition() {
     ReadPointCloudModelToBuffer(
         cloud_point_model_dir, &cloud_point_model_buffer,
         cloud_point_model_buf_size);
-    ObjRecognitionExd::ObjRecongManager::Instance().LoadModel(
-        model_id, cloud_point_model_buffer, cloud_point_model_buf_size,
-        m_pointCloud);
+    m_pointCloud = std::make_shared<ObjRecognition::Object>(model_id);
+    if (!m_pointCloud->LoadPointCloud(
+            cloud_point_model_buf_size, cloud_point_model_buffer)) {
+        LOG(ERROR) << "Load PointCloud failed, not set model";
+        return -1;
+    }
+#ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
+#else
+    m_pointCloud->SetVocabulary(m_voc);
+#endif
+    m_objrecog_thread->SetModel(m_pointCloud);
 
     STATISTICS_UTILITY::StatsCollector pointCloudNum("Mappoint num");
     pointCloudNum.AddSample(m_pointCloud->GetPointCloudsNum());
@@ -152,6 +164,10 @@ bool TestViewer::InitObjectRecognition() {
     delete[] cloud_point_model_buffer;
     SLAM->SetPointCloudModel(m_pointCloud);
     SLAM->mpViewer->SetPointCloudModel(m_pointCloud);
+    SLAM->mpViewer->SetThreadHandler(m_objrecog_thread);
+    ObjRecognition::ObjRecongManager::Instance().SetThreadHandler(
+        m_objrecog_thread);
+
     return true;
 }
 
@@ -257,43 +273,6 @@ bool TestViewer::InitSLAM() {
     return true;
 }
 
-void TestViewer::ObjectResultParse(
-    const ObjRecognition::ObjRecogResult &result) {
-    m_objrecog_result = result;
-    Eigen::Matrix<float, 3, 3> Rcw;
-    Rcw.row(0) =
-        Eigen::Matrix<float, 3, 1>::Map(m_objrecog_result.R_camera[0], 3);
-    Rcw.row(1) =
-        Eigen::Matrix<float, 3, 1>::Map(m_objrecog_result.R_camera[1], 3);
-    Rcw.row(2) =
-        Eigen::Matrix<float, 3, 1>::Map(m_objrecog_result.R_camera[2], 3);
-    Eigen::Vector3f tcw = Eigen::Vector3f::Map(m_objrecog_result.t_camera, 3);
-    Eigen::Matrix<float, 3, 3> Rwo;
-    Rwo.col(0) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[0], 3);
-    Rwo.col(1) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[3], 3);
-    Rwo.col(2) = Eigen::Vector3f::Map(&m_objrecog_result.R_obj_buffer[6], 3);
-    Eigen::Vector3f two =
-        Eigen::Vector3f::Map(&m_objrecog_result.t_obj_buffer[0], 3);
-
-    Eigen::Matrix3f Rco = Eigen::Matrix3f::Identity();
-    Rco = Rcw * Rwo;
-    Rwo = Rcw.transpose() * Rco;
-    Eigen::Matrix3f Row = Eigen::Matrix3f::Identity();
-    Eigen::Vector3f tow = Eigen::Vector3f::Zero();
-    Row = Rwo.transpose();
-    tow = -Row * two;
-
-    if (result.num == 1) {
-        m_Row = Row.cast<double>(); // world -> obj
-        m_tow = tow.cast<double>();
-    } else {
-        m_Row = Eigen::Matrix3d::Identity();
-        m_tow = Eigen::Vector3d::Zero();
-    }
-
-    SLAM->mpViewer->SetObjectRecognitionPose(m_Row, m_tow);
-}
-
 bool TestViewer::RunObjectRecognition() {
     cv::Mat im;
     int proccIm = 0;
@@ -332,9 +311,7 @@ bool TestViewer::RunObjectRecognition() {
             std::chrono::monotonic_clock::now();
 #endif
 
-        cv::Mat camPos = SLAM->TrackMonocular(
-            im, tframe,
-            vImuMeas); // TODO change to monocular_inertial
+        cv::Mat camPos = SLAM->TrackMonocular(im, tframe, vImuMeas);
 
         cv::Mat im_clone = im.clone();
         int slam_state = SLAM->GetTrackingState();
@@ -358,11 +335,6 @@ bool TestViewer::RunObjectRecognition() {
             std::chrono::duration_cast<std::chrono::duration<double>>(t2 - t1)
                 .count();
 
-#ifdef OBJECTRECOGNITION
-        ObjectResultParse(ObjRecognitionExd::ObjRecongManager::Instance()
-                              .GetObjRecognitionResult());
-#endif
-
         double T = 0;
         if (ni < nImages - 1)
             T = vTimestampsCam[ni + 1] - tframe;
@@ -383,7 +355,11 @@ bool TestViewer::RunObjectRecognition() {
         m_slam_saved_path, STATISTICS_UTILITY::Statistics::Print(),
         statics_result_filename);
 
-    ObjRecognitionExd::ObjRecongManager::Instance().Destroy();
+    m_objrecog_thread->RequestReset();
+    m_objrecog_thread->WaitEndReset();
+    m_objrecog_thread->StartThread();
+    m_objrecog_thread->RequestStop();
+    m_objrecog_thread->WaitEndStop();
 #endif
 
     SLAM->Shutdown();
@@ -394,6 +370,10 @@ int main(int argc, char *argv[]) {
 #ifdef OBJECTRECOGNITION
 #else
     LOG(FATAL) << "not in the object detection and tracking mode";
+#endif
+#ifdef MONO
+#else
+    LOG(FATAL) << "not in the mono mode";
 #endif
     if (argc < 1) {
         cerr << endl << "Usage: ./ path_to_yaml " << endl;

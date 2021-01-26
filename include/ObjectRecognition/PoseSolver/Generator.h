@@ -6,7 +6,7 @@
 #include <glog/logging.h>
 #include "PoseSolver.h"
 #include <Eigen/Geometry>
-namespace PS {
+namespace PoseSolver {
 struct MatchData {
     MatchData(
         const std::vector<MatchSet2D> &matches_2d, const MatchSet3D &matches_3d)
@@ -20,16 +20,9 @@ struct MatchData {
 class HypoGenerator {
 public:
     virtual ~HypoGenerator() = default;
-
-    // Probability of inlier pose proposal.
     virtual double
     SuccProb(double inlier_ratio_3d, double inlier_ratio_2d) const = 0;
-
-    // Generate one hypothesis.
     virtual bool RunOnce(Pose *C_T_W) = 0;
-
-    // Whether does the matches contain enough data to generate hypothesis.
-    virtual bool HasEnoughSupport() const = 0;
 
 protected:
     std::default_random_engine rand_eng_;
@@ -44,8 +37,6 @@ public:
     void set_ref_frame_index(int index) {
         frame_index_ = index;
     }
-
-    // List of 2D matches, which contains enough data to generate hypothesis.
     virtual std::vector<int> GetSupport2DMatches() const = 0;
 
 private:
@@ -85,8 +76,6 @@ public:
 
     bool RunOnce(Pose *C_T_W) override;
 
-    bool HasEnoughSupport() const override;
-
 private:
     std::unique_ptr<ScaleFreeGenerator> scale_free_gen_;
     std::vector<int> scale_free_gen_support_matches_;
@@ -105,8 +94,6 @@ public:
 
     bool RunOnce(Pose *C_T_W) override;
 
-    bool HasEnoughSupport() const override;
-
 private:
     const MatchSet3D matches_;
 };
@@ -123,8 +110,6 @@ public:
     bool RunOnce(Pose *cur_T_ref) override;
 
     std::vector<int> GetSupport2DMatches() const override;
-
-    bool HasEnoughSupport() const override;
 
     Eigen::Vector2f SolveDepth(
         const Eigen::Vector2f &pt_ref, const Eigen::Vector2f &pt_cur,
@@ -144,8 +129,6 @@ public:
     SuccProb(double inlier_ratio_3d, double inlier_ratio_2d) const override;
 
     bool RunOnce(Pose *C_T_W) override;
-
-    bool HasEnoughSupport() const override;
 
 private:
     static bool SolveTranslationalScale(
@@ -170,22 +153,12 @@ public:
 
     bool RunOnce(Pose *C_T_W) override;
 
-    bool HasEnoughSupport() const override;
-
 private:
     std::vector<std::unique_ptr<HypoGenerator>> generators_;
     std::vector<int> weights_;
     int idx_ = 0, count_ = 0;
 };
 
-template <typename T, typename... Args>
-inline std::unique_ptr<T> MakeIfHasEnoughSupport(Args... args) {
-    std::unique_ptr<T> ptr = std::make_unique<T>(std::forward<Args>(args)...);
-    if (!ptr->HasEnoughSupport())
-        return nullptr;
-    return ptr;
-}
-
-} // namespace PS
+} // namespace PoseSolver
 
 #endif // POSE_SOLVER_GENERATOR_H_

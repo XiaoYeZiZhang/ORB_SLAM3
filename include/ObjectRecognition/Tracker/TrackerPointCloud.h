@@ -2,7 +2,7 @@
 #define ORB_SLAM3_TRACKERPOINTCLOUD_H
 #include "Struct/PointCloudObject.h"
 #include "PoseSolver/PoseSolver.h"
-#include "Common/RecognitionBase.h"
+#include "include/ObjectRecognition/ObjectRecognitionThread/RecognitionBase.h"
 #include "Tracker/TrackerFrame.h"
 namespace ObjRecognition {
 
@@ -19,16 +19,14 @@ public:
     bool Save(long long &mem_size, char **mem);
 
 private:
-    void PreProcess(const std::shared_ptr<FrameForObjRecognition> &frm);
-
-    PS::MatchSet3D FindProjection3DMatch();
+    PoseSolver::MatchSet3D FindProjection3DMatch();
     void PnPResultHandle();
     void ResultRecord();
 
-    PS::MatchSet3D FindOpticalFlow3DMatch();
+    PoseSolver::MatchSet3D FindOpticalFlow3DMatch();
     bool PoseSolver(
-        const PS::MatchSet3D &matches_3d,
-        const std::vector<PS::MatchSet2D> &matches_2d,
+        const PoseSolver::MatchSet3D &matches_3d,
+        const std::vector<PoseSolver::MatchSet2D> &matches_2d,
         std::vector<int> &inliers_3d);
     void ProcessPoseSolverInliers(const std::vector<int> &inliers_3d);
     void OpticalFlowRejectWithF(

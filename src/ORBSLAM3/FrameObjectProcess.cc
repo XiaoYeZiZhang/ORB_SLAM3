@@ -86,7 +86,6 @@ void FrameObjectProcess::ProcessFrame(ORB_SLAM3::KeyFrame *&pKF) {
     ObjRecognition::GlobalOcvViewer::AddView(
         "New Keypoints to Extract:", img_txt);
 
-    // TODO(zhangye): keys and keysun???
     std::vector<cv::KeyPoint> keypoints_old = pKF->mvKeys;
     cv::Mat descriptor_old = pKF->mDescriptors.clone();
 

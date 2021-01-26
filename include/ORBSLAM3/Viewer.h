@@ -28,6 +28,7 @@
 #include "System.h"
 #include <mutex>
 #include <utility>
+#include "ObjectRecognitionThread.h"
 #include "ScannerStruct/Struct.h"
 #include "Struct/PointCloudObject.h"
 namespace ORB_SLAM3 {
@@ -59,10 +60,12 @@ public:
         std::shared_ptr<ObjRecognition::Object> &pointCloud_model) {
         m_pointCloud_model = pointCloud_model;
     }
-    bool both;
-    void SetObjectRecognitionPose(
-        const Eigen::Matrix3d &Row, const Eigen::Vector3d &tow);
+    void SetThreadHandler(
+        std::shared_ptr<ObjRecognition::ObjRecogThread> &thread_handler) {
+        m_thread_handler = thread_handler;
+    }
 
+    bool both;
     // draw another window for objRecognition
     void SwitchWindow();
     void Draw();
@@ -116,6 +119,7 @@ private:
 
     // objectRecognition
     std::shared_ptr<ObjRecognition::Object> m_pointCloud_model;
+    std::shared_ptr<ObjRecognition::ObjRecogThread> m_thread_handler;
     Eigen::Matrix<double, 3, 3> m_Row = Eigen::Matrix<double, 3, 3>::Identity();
     Eigen::Matrix<double, 3, 1> m_tow = Eigen::Matrix<double, 3, 1>::Zero();
     std::vector<cv::Mat> m_trajectory;
@@ -143,8 +147,6 @@ private:
     std::unique_ptr<pangolin::Var<bool>> m_menu_show_keyframes;
     std::unique_ptr<pangolin::Var<bool>> m_menu_show_graph;
     std::unique_ptr<pangolin::Var<bool>> m_menu_show_camera_trajectory;
-    std::unique_ptr<pangolin::Var<bool>> m_menu_show_3DObject;
-    std::unique_ptr<pangolin::Var<bool>> m_menu_show_matched_3DObject;
     std::unique_ptr<pangolin::Var<bool>> m_menu_show_inertial_graph;
     std::unique_ptr<pangolin::Var<bool>> m_menu_reset;
     std::unique_ptr<pangolin::Var<bool>> m_menu_stepbystep;
@@ -154,6 +156,7 @@ private:
     int m_image_width;
     int m_image_height;
     std::vector<Eigen::Vector3d> m_boundingbox;
+    ObjRecognition::ObjRecogResult GetObjRecognitionResult();
 };
 
 } // namespace ORB_SLAM3

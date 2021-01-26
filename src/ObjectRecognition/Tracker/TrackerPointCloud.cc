@@ -24,21 +24,21 @@ void PointCloudObjTracker::SetPointCloudObj(
     mObj = pointCloudPtr;
 }
 
-static PS::Point2D NormalizePoint2D(
+static PoseSolver::Point2D NormalizePoint2D(
     const cv::Point2d &pt, const float &fx, const float &fy, const float &cx,
     const float &cy) {
-    PS::Point2D p2d;
+    PoseSolver::Point2D p2d;
     p2d(0) = (pt.x - cx) / fx;
     p2d(1) = (pt.y - cy) / fy;
     return std::move(p2d);
 }
 
-PS::MatchSet3D Generate3DMatch(
+PoseSolver::MatchSet3D Generate3DMatch(
     const TrackerFrame::Ptr frame,
     const std::map<int, MapPointIndex> &matches2dTo3d,
     const std::vector<cv::Point2d> &keyPoints,
     const std::vector<Eigen::Vector3d> &pointClouds3dObj) {
-    PS::MatchSet3D matchset_3d;
+    PoseSolver::MatchSet3D matchset_3d;
     const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
     float fx = static_cast<float>(Kcv.at<double>(0, 0));
     float fy = static_cast<float>(Kcv.at<double>(1, 1));
@@ -48,13 +48,13 @@ PS::MatchSet3D Generate3DMatch(
     frame->m_projection_matches3d_vec.clear();
     for (auto iter = matches2dTo3d.begin(); iter != matches2dTo3d.end();
          iter++) {
-        PS::Point3D point_3d(
+        PoseSolver::Point3D point_3d(
             pointClouds3dObj[iter->second](0),
             pointClouds3dObj[iter->second](1),
             pointClouds3dObj[iter->second](2));
-        PS::Point2D point_2d =
+        PoseSolver::Point2D point_2d =
             NormalizePoint2D(keyPoints[iter->first], fx, fy, cx, cy);
-        PS::Match3D match_3d(point_3d, point_2d);
+        PoseSolver::Match3D match_3d(point_3d, point_2d);
         matchset_3d.push_back(std::move(match_3d));
         frame->m_projection_matches3d_vec.emplace_back(
             iter->first, iter->second);
@@ -63,23 +63,10 @@ PS::MatchSet3D Generate3DMatch(
     return std::move(matchset_3d);
 }
 
-void PointCloudObjTracker::PreProcess(
-    const std::shared_ptr<ObjRecognition::FrameForObjRecognition> &frm) {
-
-    m_frame_cur = std::make_shared<TrackerFrame>();
-    m_frame_cur->m_frame_index = frm->m_frmIndex;
-    m_frame_cur->m_raw_image = frm->m_img.clone();
-    m_frame_cur->m_desp = frm->m_desp.clone();
-    m_frame_cur->m_kpts = frm->m_kpts;
-
-    m_Rcw_cur = frm->m_Rcw;
-    m_tcw_cur = frm->m_tcw;
-}
-
-PS::MatchSet3D OpticalFlowGenerate3DMatch(
+PoseSolver::MatchSet3D OpticalFlowGenerate3DMatch(
     const std::shared_ptr<TrackerFrame> &frame,
     const std::vector<Eigen::Vector3d> pointClouds3dObj) {
-    PS::MatchSet3D matchset_3d;
+    PoseSolver::MatchSet3D matchset_3d;
     const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
     auto fx = static_cast<float>(Kcv.at<double>(0, 0));
     auto fy = static_cast<float>(Kcv.at<double>(1, 1));
@@ -89,12 +76,12 @@ PS::MatchSet3D OpticalFlowGenerate3DMatch(
     // 2d pos, 3d pos
     frame->m_opticalflow_matches3d_vec.clear();
     for (const auto &it : frame->m_opticalflow_matches2dto3d) {
-        PS::Point3D point_3d(
+        PoseSolver::Point3D point_3d(
             pointClouds3dObj[it.second](0), pointClouds3dObj[it.second](1),
             pointClouds3dObj[it.second](2));
-        PS::Point2D point_2d = NormalizePoint2D(
+        PoseSolver::Point2D point_2d = NormalizePoint2D(
             frame->m_opticalflow_point2ds[it.first], fx, fy, cx, cy);
-        PS::Match3D match_3d(point_3d, point_2d);
+        PoseSolver::Match3D match_3d(point_3d, point_2d);
         matchset_3d.push_back(match_3d);
         frame->m_opticalflow_matches3d_vec.emplace_back(it.first, it.second);
     }
@@ -196,8 +183,8 @@ void PointCloudObjTracker::RemoveOpticalFlow3dMatchOutliers(
     }
 }
 
-PS::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
-    PS::MatchSet3D matchset_3d;
+PoseSolver::MatchSet3D PointCloudObjTracker::FindOpticalFlow3DMatch() {
+    PoseSolver::MatchSet3D matchset_3d;
 #ifdef USE_NO_OPTICALFLOW_FOR_TRACKER
     return matchset_3d;
 #else
@@ -293,9 +280,9 @@ void RemoveOpticalFlowAndProjectionCommonMatch(
     //    }
 }
 
-PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
+PoseSolver::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
 
-    PS::MatchSet3D matchset_3d;
+    PoseSolver::MatchSet3D matchset_3d;
     const std::vector<MapPoint::Ptr> pointClouds = mObj->GetPointClouds();
     if (pointClouds.empty()) {
         LOG(ERROR) << "No pointclouds model here!";
@@ -345,7 +332,6 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
     m_projection_matches2dTo3d_cur.clear();
 
 #ifdef SUPERPOINT
-    // TODO(zhangye): use only norm2 for projection search?
     ObjTrackerCommon::SearchByProjection_Superpoint(
         projectPoints, pointClouds, projectFailState, keyPointsOrigin,
         descriptors, matchKeyPointsState, m_projection_matches2dTo3d_cur);
@@ -374,8 +360,8 @@ PS::MatchSet3D PointCloudObjTracker::FindProjection3DMatch() {
 }
 
 bool PointCloudObjTracker::PoseSolver(
-    const PS::MatchSet3D &matches_3d,
-    const std::vector<PS::MatchSet2D> &matches_2d,
+    const PoseSolver::MatchSet3D &matches_3d,
+    const std::vector<PoseSolver::MatchSet2D> &matches_2d,
     std::vector<int> &inliers_3d) {
 
     m_pnp_solver_result = false;
@@ -387,34 +373,27 @@ bool PointCloudObjTracker::PoseSolver(
         return false;
     }
 
-    PS::Options options;
-    PS::Pose T;
+    PoseSolver::Options options;
+    PoseSolver::Pose T;
     inliers_3d.clear();
     std::vector<std::vector<int>> inliers_2d;
     const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
 
     const float kPnpReprojectionError = 4.0;
-    options.focal_length = static_cast<float>(Kcv.at<double>(0, 0));
-    options.max_reproj_err = kPnpReprojectionError / options.focal_length;
-    options.enable_2d_solver = false;
-    options.enable_3d_solver = true;
+    options.max_reproj_err =
+        kPnpReprojectionError / (static_cast<float>(Kcv.at<double>(0, 0)));
     options.ransac_iterations = 100;
     options.ransac_confidence = 0.90;
-    options.prefer_pure_2d_solver = false;
-    options.try_refine_translation_before_optimization_for_2d_only_matches =
-        true;
-
     const int kPnpMinMatchesNum = 0;
 
     int kPnpMinInlierNum =
         Parameters::GetInstance().kTrackerPnPInliersGoodNumTh_PoseSolver;
 
     const double kPnpMinInlierRatio = 0.0;
-    options.callbacks.emplace_back(PS::EarlyBreakBy3DInlierCounting(
+    options.callbacks.emplace_back(PoseSolver::EarlyBreakBy3DInlierCounting(
         kPnpMinMatchesNum, kPnpMinInlierNum, kPnpMinInlierRatio));
-    options.CheckValidity();
 
-    m_pnp_solver_result = PS::Ransac(
+    m_pnp_solver_result = PoseSolver::Ransac_Tracker(
         options, matches_3d, matches_2d, &T, &inliers_3d, &inliers_2d);
 
     Eigen::Matrix3d Rco = T.m_R.cast<double>();
@@ -472,7 +451,6 @@ void PointCloudObjTracker::PnPResultHandle() {
         m_two_cur == Eigen::Vector3d::Zero()) {
         m_tracker_state = TrackingBad;
     } else {
-        // TODO(zhangye) check the threshold
 #ifdef OBJECT_BOX
 #ifdef SUPERPOINT
 #ifdef MONO
@@ -838,11 +816,18 @@ void PointCloudObjTracker::Process(
     }
 
     TIMER_UTILITY::Timer timer;
-    PreProcess(frm);
+    m_frame_cur = std::make_shared<TrackerFrame>();
+    m_frame_cur->m_frame_index = frm->m_frmIndex;
+    m_frame_cur->m_raw_image = frm->m_img.clone();
+    m_frame_cur->m_desp = frm->m_desp.clone();
+    m_frame_cur->m_kpts = frm->m_kpts;
 
-    PS::MatchSet3D totalMatchSet_3d = FindOpticalFlow3DMatch();
+    m_Rcw_cur = frm->m_Rcw;
+    m_tcw_cur = frm->m_tcw;
 
-    PS::MatchSet3D matchset_3d = FindProjection3DMatch();
+    PoseSolver::MatchSet3D totalMatchSet_3d = FindOpticalFlow3DMatch();
+
+    PoseSolver::MatchSet3D matchset_3d = FindProjection3DMatch();
     totalMatchSet_3d.insert(
         totalMatchSet_3d.end(), matchset_3d.begin(), matchset_3d.end());
 

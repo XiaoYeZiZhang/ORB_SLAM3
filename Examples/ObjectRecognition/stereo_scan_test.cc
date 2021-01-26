@@ -342,7 +342,6 @@ void TestViewer::FindMatchByKNN(
 
 void TestViewer::SfMProcess() {
 #ifdef SUPERPOINT
-    // TODO(zhangye): DO SFM USING SUPERPOINT
     VLOG(0) << "DOING SFM USING SUPERPOINT, PLEASE WAIT...";
     keyframes_slam = SLAM->mpAtlas->GetAllKeyFrames();
 #ifdef USE_NO_VOC_FOR_SCAN_SFM
@@ -413,6 +412,7 @@ void TestViewer::SfMProcess() {
     }
     VLOG(0) << "All keyframe exract superpoint done !";
 
+    // TODO(zhangye) SFM process need to rewrite, more BA??
     for (auto key_num = 0; key_num < keyframes_for_SfM.size(); key_num++) {
         SLAM->mpLocalMapper->TriangulateForSuperPoint(
             keyframes_for_SfM, key_num, start_sfm_keyframe_id);
@@ -512,7 +512,7 @@ bool TestViewer::RunScanner() {
 #endif
         cv::Mat Tcw = SLAM->TrackStereo(
             imLeftRect, imRightRect, tframe, vector<ORB_SLAM3::IMU::Point>(),
-            vstrImageLeft[ni]); // TODO change to monocular_inertial
+            vstrImageLeft[ni]);
 
         cv::Mat im_clone_left = imLeftRect.clone();
         int state = SLAM->GetTrackingState();

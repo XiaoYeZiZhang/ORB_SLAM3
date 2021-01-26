@@ -203,7 +203,7 @@ System::System(
 #endif
 
 #ifdef OBJECTRECOGNITION
-    mpLocalMapper->SetObjRecogCallback(ObjRecognitionExd::ObjRecogCallback);
+    mpLocalMapper->SetObjRecogCallback(ObjRecognition::ObjRecogCallback);
 #endif
 
     mptLocalMapping = new thread(&ORB_SLAM3::LocalMapping::Run, mpLocalMapper);

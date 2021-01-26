@@ -21,18 +21,16 @@ public:
     bool Save(long long &mem_size, char **mem);
 
 private:
-    void PreProcess(
-        const std::shared_ptr<ObjRecognition::FrameForObjRecognition> &frm);
-    std::vector<PS::MatchSet2D> Find2DMatches(
+    std::vector<PoseSolver::MatchSet2D> Find2DMatches(
         const std::vector<KeyFrame::Ptr> &allKFs,
         std::vector<KeyFrame::Ptr> &kf_mathceds);
-    PS::MatchSet3D Find3DMatch();
-    PS::MatchSet3D
+    PoseSolver::MatchSet3D Find3DMatch();
+    PoseSolver::MatchSet3D
     Find3DMatchByConnection(const std::vector<KeyFrame::Ptr> &kf_mathceds);
 
     bool PoseSolver(
-        const PS::MatchSet3D &matches_3d,
-        const std::vector<PS::MatchSet2D> &matches_2d,
+        const PoseSolver::MatchSet3D &matches_3d,
+        const std::vector<PoseSolver::MatchSet2D> &matches_2d,
         std::vector<int> &inliers_3d,
         std::vector<std::vector<int>> &inliers_2d);
     void PnPResultHandle();

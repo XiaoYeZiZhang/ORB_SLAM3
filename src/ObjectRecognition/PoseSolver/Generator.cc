@@ -19,7 +19,7 @@ using Eigen::Matrix3f;
 using Eigen::Vector2f;
 using Eigen::Vector3f;
 
-namespace PS {
+namespace PoseSolver {
 
 template <typename It, typename T>
 void ReplaceWith(It beg, It end, T to_be_replaced, T replaced_with) {
@@ -69,11 +69,6 @@ bool HybridGenerator::RunOnce(Pose *C_T_W) {
 
     scale_only_gen_->set_relative_pose(ref_frame, cur_T_ref);
     return scale_only_gen_->RunOnce(C_T_W);
-}
-
-bool HybridGenerator::HasEnoughSupport() const {
-    return scale_free_gen_->HasEnoughSupport() &&
-           scale_only_gen_->HasEnoughSupport();
 }
 
 double PnPGenerator::SuccProb(
@@ -130,10 +125,6 @@ bool PnPGenerator::RunOnce(Pose *C_T_W) {
     C_T_W->m_t = tmp_t.cast<float>();
 
     return true;
-}
-
-bool PnPGenerator::HasEnoughSupport() const {
-    return matches_.size() >= 4u;
 }
 
 Vector2f Essential5Generator::SolveDepth(
@@ -251,12 +242,6 @@ std::vector<int> Essential5Generator::GetSupport2DMatches() const {
     return indices;
 }
 
-bool Essential5Generator::HasEnoughSupport() const {
-    return std::any_of(
-        matches_.begin(), matches_.end(),
-        [](const MatchSet2D &ms) { return ms.size() >= 6u; });
-}
-
 double ScaleSolver3D::SuccProb(
     double inlier_ratio_3d, double /* inlier_ratio_2d */) const {
     return inlier_ratio_3d;
@@ -298,14 +283,9 @@ bool ScaleSolver3D::RunOnce(Pose *C_T_W) {
     return true;
 }
 
-bool ScaleSolver3D::HasEnoughSupport() const {
-    return !data_.matches_3d.empty();
-}
-
 bool ScaleSolver3D::SolveTranslationalScale(
-    const Vector3f &pt_ref /* 3D point in ref frame */,
-    const Vector2f &pt_cur /* 2D point in cur frame */,
-    const Matrix3f &cur_R_ref, const Vector3f &cur_t_ref, float *scale) {
+    const Vector3f &pt_ref, const Vector2f &pt_cur, const Matrix3f &cur_R_ref,
+    const Vector3f &cur_t_ref, float *scale) {
     Eigen::Matrix<float, 3, 2> A;
     A.col(0) = pt_cur.homogeneous();
     A.col(1) = -cur_t_ref;
@@ -358,12 +338,4 @@ bool RoundRobinGenerator::RunOnce(Pose *C_T_W) {
     ++count_;
     return generators_[idx_]->RunOnce(C_T_W);
 }
-
-bool RoundRobinGenerator::HasEnoughSupport() const {
-    return std::any_of(
-        generators_.begin(), generators_.end(),
-        [](const std::unique_ptr<HypoGenerator> &gen) {
-            return gen->HasEnoughSupport();
-        });
-}
-} // namespace PS
+} // namespace PoseSolver

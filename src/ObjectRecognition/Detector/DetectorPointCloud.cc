@@ -30,10 +30,10 @@ void PointCloudObjDetector::SetVoc(
     m_voc = pVoc;
 }
 
-static PS::Point2D NormalizePoint2D(
+static PoseSolver::Point2D NormalizePoint2D(
     const cv::Point2d &pt, const float &fx, const float &fy, const float &cx,
     const float &cy) {
-    PS::Point2D p2d;
+    PoseSolver::Point2D p2d;
     p2d(0) = (pt.x - cx) / fx;
     p2d(1) = (pt.y - cy) / fy;
     return std::move(p2d);
@@ -62,7 +62,7 @@ void MatchKeyFramesShow(
     }
 }
 
-std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
+std::vector<PoseSolver::MatchSet2D> Generate2DMatchesFromKeyFrame(
     const std::shared_ptr<DetectorFrame> &frm,
     const std::vector<KeyFrame::Ptr> &kf_matches) {
 
@@ -73,7 +73,7 @@ std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
 
     int matches2d_count = 0;
     cv::Mat frmDesp = frm->m_desp;
-    std::vector<PS::MatchSet2D> matchs_2ds;
+    std::vector<PoseSolver::MatchSet2D> matchs_2ds;
 
     if (kf_matches.empty())
         return matchs_2ds;
@@ -82,7 +82,7 @@ std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
     frm->m_dmatches_2d.clear();
     for (int index = 0; index < kf_matches.size(); index++) {
         CHECK_NOTNULL(kf_matches.at(index).get());
-        PS::MatchSet2D matches;
+        PoseSolver::MatchSet2D matches;
         std::vector<cv::DMatch> dmatches;
         cv::Mat kfDesp = kf_matches.at(index)->GetDesciriptor();
 
@@ -100,13 +100,13 @@ std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
         frm->m_dmatches_2d.push_back(dmatches);
         matches2d_count = dmatches.size();
         for (const auto &it : dmatches) {
-            PS::Point2D queryP2d =
+            PoseSolver::Point2D queryP2d =
                 NormalizePoint2D(frm->m_kpts[it.queryIdx].pt, fx, fy, cx, cy);
-            PS::Point2D matchP2d = NormalizePoint2D(
+            PoseSolver::Point2D matchP2d = NormalizePoint2D(
                 kf_matches.at(index)->GetKeyPoints()[it.trainIdx].pt, fx, fy,
                 cx, cy);
             matches.push_back(std::move(
-                PS::Match2D(std::move(matchP2d), std::move(queryP2d))));
+                PoseSolver::Match2D(std::move(matchP2d), std::move(queryP2d))));
         }
 
         Eigen::Matrix3d Rcw_kf;
@@ -128,22 +128,12 @@ std::vector<PS::MatchSet2D> Generate2DMatchesFromKeyFrame(
     return matchs_2ds;
 }
 
-void PointCloudObjDetector::PreProcess(
-    const std::shared_ptr<ObjRecognition::FrameForObjRecognition> &frm) {
-    m_frame_cur = std::make_shared<DetectorFrame>();
-    m_frame_cur->m_frame_index = frm->m_frmIndex;
-    m_frame_cur->m_raw_image = frm->m_img.clone();
-    m_frame_cur->m_desp = frm->m_desp.clone();
-    m_frame_cur->m_kpts = frm->m_kpts;
-    m_Rcw_cur = frm->m_Rcw;
-    m_tcw_cur = frm->m_tcw;
-}
-
-std::vector<PS::MatchSet2D> PointCloudObjDetector::Find2DMatches(
+std::vector<PoseSolver::MatchSet2D> PointCloudObjDetector::Find2DMatches(
     const std::vector<KeyFrame::Ptr> &allKFs,
     std::vector<KeyFrame::Ptr> &kf_mathceds) {
 
 #ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
+    // TODO(zhangye) find the right similar keyframes in superpoint mode
     Eigen::Matrix3d Rcw_for_similar_keyframe;
     Eigen::Vector3d tcw_for_similar_keyframe;
     m_obj->GetPoseForFindSimilarKeyframe(
@@ -214,7 +204,7 @@ std::vector<PS::MatchSet2D> PointCloudObjDetector::Find2DMatches(
         "Time: detector query from map");
     detector_find_2d_match_time.AddSample(timer.Stop());
 #endif
-    std::vector<PS::MatchSet2D> matches_2ds;
+    std::vector<PoseSolver::MatchSet2D> matches_2ds;
 
     if (kf_mathceds.empty()) {
         LOG(ERROR) << "first frame has no candidate similar keyframes";
@@ -230,9 +220,9 @@ std::vector<PS::MatchSet2D> PointCloudObjDetector::Find2DMatches(
     return matches_2ds;
 }
 
-PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection(
+PoseSolver::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection(
     const std::vector<KeyFrame::Ptr> &kf_mathceds_by_pose) {
-    PS::MatchSet3D matches_3d;
+    PoseSolver::MatchSet3D matches_3d;
 
 #ifdef USE_NO_VOC_FOR_OBJRECOGNITION_SUPERPOINT
     std::vector<KeyFrame::Ptr> kf_mathceds = kf_mathceds_by_pose;
@@ -253,8 +243,6 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection(
     for (const KeyFrame::Ptr &kf : kf_mathceds) {
         auto connect_kf_ids = kf->m_connect_kfs;
         connect_kf_ids.emplace_back(kf->GetID());
-        // VLOG(0) << "single image connected keyframes:"
-        //<< kf->m_connect_kfs.size();
         for (auto connect_kf_id : connect_kf_ids) {
             associated_keyframe_ids.insert(connect_kf_id);
             if (m_obj->m_mp_keyframes.find(connect_kf_id) !=
@@ -264,7 +252,6 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection(
                 for (auto mappoint_id : connected_mappoints_id) {
                     if (m_obj->m_pointclouds_map.find(mappoint_id) ==
                         m_obj->m_pointclouds_map.end()) {
-                        // not in the boundingbox
                         continue;
                     }
                     associated_mappoints.insert(
@@ -315,10 +302,9 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection(
 
     std::vector<cv::DMatch> goodMatches;
 #ifdef SUPERPOINT
-    // TODO(zhangye): use only norm2 distance for superpoint match?
-
+    // TODO(zhangye): is it reasonable to use only norm2 distance for superpoint
+    // match?
     ObjDetectionCommon::FindMatchByKNN_SuperPoint(frmDesp, pcDesp, goodMatches);
-
 #else
     const float ratio_threshold = 0.70;
     ObjDetectionCommon::FindMatchByKNN(
@@ -341,7 +327,6 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection(
         "detector 2D-3D matches num");
     stats_collector_knn.AddSample(m_knn_match_num);
 
-    // 8
     const int kGoodMatchNumTh =
         Parameters::GetInstance().kDetectorKNNMatchNumTh;
     if (m_knn_match_num < kGoodMatchNumTh) {
@@ -362,11 +347,11 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection(
     }
 
     for (int i = 0; i < ptsObj.size(); i++) {
-        PS::Point3D point_3d(
+        PoseSolver::Point3D point_3d(
             (double)ptsObj[i].x, (double)ptsObj[i].y, (double)ptsObj[i].z);
-        PS::Point2D point_2d =
+        PoseSolver::Point2D point_2d =
             NormalizePoint2D((cv::Point2d)ptsImg[i], fx, fy, cx, cy);
-        PS::Match3D match_3d(point_3d, point_2d);
+        PoseSolver::Match3D match_3d(point_3d, point_2d);
         matches_3d.push_back(match_3d);
     }
 
@@ -375,9 +360,9 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatchByConnection(
     return matches_3d;
 }
 
-PS::MatchSet3D PointCloudObjDetector::Find3DMatch() {
+PoseSolver::MatchSet3D PointCloudObjDetector::Find3DMatch() {
     TIMER_UTILITY::Timer timer;
-    PS::MatchSet3D matches_3d;
+    PoseSolver::MatchSet3D matches_3d;
     cv::Mat pcDesp;
 
     const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
@@ -399,7 +384,8 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatch() {
 
     std::vector<cv::DMatch> goodMatches;
 #ifdef SUPERPOINT
-    // TODO(zhangye): use only norm2 distance for superpoint match?
+    // TODO(zhangye): is it reasonable to use only norm2 distance for superpoint
+    // match?
     ObjDetectionCommon::FindMatchByKNN_SuperPoint(frmDesp, pcDesp, goodMatches);
 #else
     const float ratio_threshold = 0.70;
@@ -444,11 +430,11 @@ PS::MatchSet3D PointCloudObjDetector::Find3DMatch() {
     }
 
     for (int i = 0; i < ptsObj.size(); i++) {
-        PS::Point3D point_3d(
+        PoseSolver::Point3D point_3d(
             (double)ptsObj[i].x, (double)ptsObj[i].y, (double)ptsObj[i].z);
-        PS::Point2D point_2d =
+        PoseSolver::Point2D point_2d =
             NormalizePoint2D((cv::Point2d)ptsImg[i], fx, fy, cx, cy);
-        PS::Match3D match_3d(point_3d, point_2d);
+        PoseSolver::Match3D match_3d(point_3d, point_2d);
         matches_3d.push_back(match_3d);
     }
 
@@ -482,27 +468,22 @@ void GetMatch2dTo3dInliers(
 }
 
 bool PointCloudObjDetector::PoseSolver(
-    const PS::MatchSet3D &matches_3d,
-    const std::vector<PS::MatchSet2D> &matches_2d, std::vector<int> &inliers_3d,
-    std::vector<std::vector<int>> &inliers_2d) {
-    PS::Options options;
-    PS::Pose T;
+    const PoseSolver::MatchSet3D &matches_3d,
+    const std::vector<PoseSolver::MatchSet2D> &matches_2d,
+    std::vector<int> &inliers_3d, std::vector<std::vector<int>> &inliers_2d) {
+
+    PoseSolver::Options options;
+    PoseSolver::Pose T;
     m_pnp_inliers_num = 0;
     m_pnp_inliers_3d_num = 0;
     m_pnp_inliers_2d_num = 0;
-
     const float kPnpReprojectionError = 4.0;
     const cv::Mat Kcv = CameraIntrinsic::GetInstance().GetCVK();
 
-    options.focal_length = static_cast<float>(Kcv.at<double>(0, 0));
-    options.max_reproj_err = kPnpReprojectionError / options.focal_length;
-    options.enable_2d_solver = true;
-    options.enable_3d_solver = true;
+    options.max_reproj_err =
+        kPnpReprojectionError / (static_cast<float>(Kcv.at<double>(0, 0)));
     options.ransac_iterations = 100;
     options.ransac_confidence = 0.85;
-    options.prefer_pure_2d_solver = false;
-    options.try_refine_translation_before_optimization_for_2d_only_matches =
-        true;
     const int kPnpMinMatchesNum = 0;
 
 #ifdef OBJ_WITH_KF
@@ -517,17 +498,17 @@ bool PointCloudObjDetector::PoseSolver(
 #ifdef OBJECT_TOY
     kPnpMinInlierNum = m_knn_match_num * 0.13;
 #endif
-
 #endif
+
     const double kPnpMinInlierRatio = 0.0;
-    options.callbacks.emplace_back(PS::EarlyBreakBy3DInlierCounting(
+    options.callbacks.emplace_back(PoseSolver::EarlyBreakBy3DInlierCounting(
         kPnpMinMatchesNum, kPnpMinInlierNum, kPnpMinInlierRatio));
-    options.CheckValidity();
 
     if (matches_3d.empty()) {
         m_pnp_solver_result = false;
     }
-    m_pnp_solver_result = PS::Ransac(
+
+    m_pnp_solver_result = PoseSolver::Ransac_Detector(
         options, matches_3d, matches_2d, &T, &inliers_3d, &inliers_2d);
 
     Eigen::Matrix3d Rco = T.m_R.cast<double>();
@@ -677,7 +658,8 @@ void PointCloudObjDetector::PnPResultHandle() {
             }
         }
 #endif
-        // TODO(zhangye) check!
+        // TODO(zhangye) find the right way for similar keyframe in superpoint
+        // mode
         m_obj->SetPoseForFindSimilarKeyframe(m_Rcw_cur, m_tcw_cur);
         m_obj->SetPose(
             m_frame_cur->m_frame_index, m_detect_state, m_Rcw_cur, m_tcw_cur,
@@ -914,9 +896,15 @@ void PointCloudObjDetector::Process(
     }
 
     TIMER_UTILITY::Timer timer;
-    PreProcess(frm);
+    m_frame_cur = std::make_shared<DetectorFrame>();
+    m_frame_cur->m_frame_index = frm->m_frmIndex;
+    m_frame_cur->m_raw_image = frm->m_img.clone();
+    m_frame_cur->m_desp = frm->m_desp.clone();
+    m_frame_cur->m_kpts = frm->m_kpts;
+    m_Rcw_cur = frm->m_Rcw;
+    m_tcw_cur = frm->m_tcw;
 
-    std::vector<PS::MatchSet2D> matchset_2d;
+    std::vector<PoseSolver::MatchSet2D> matchset_2d;
     std::vector<KeyFrame::Ptr> kf_mathceds;
 #ifdef USE_OLNY_SCAN_MAPPOINT
 #else
@@ -927,7 +915,7 @@ void PointCloudObjDetector::Process(
 #endif
 
 #ifdef USE_CONNECT_FOR_DETECTOR
-    PS::MatchSet3D matchset_3d;
+    PoseSolver::MatchSet3D matchset_3d;
     if (kf_mathceds.empty()) {
         VLOG(0) << "use without connection";
         matchset_3d = Find3DMatch();
@@ -941,7 +929,7 @@ void PointCloudObjDetector::Process(
         }
     }
 #else
-    PS::MatchSet3D matchset_3d = Find3DMatch();
+    PoseSolver::MatchSet3D matchset_3d = Find3DMatch();
 #endif
 
     std::vector<int> inliers_3d;

@@ -2,7 +2,7 @@
 #define ORB_SLAM3_TRACKERTHREAD_H
 #include <memory>
 #include <glog/logging.h>
-#include "Common/RecognitionBase.h"
+#include "include/ObjectRecognition/ObjectRecognitionThread/RecognitionBase.h"
 #include "Utility/ThreadBase.h"
 #include "Struct/Frame.h"
 

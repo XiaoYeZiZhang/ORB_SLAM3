@@ -243,7 +243,6 @@ void ViewerAR::ProjectMapPointInImage(
                 Eigen::Vector3d pos_c_3 = Eigen::Vector3d(
                     pos_c(0) / pos_c(3), pos_c(1) / pos_c(3),
                     pos_c(2) / pos_c(3));
-                // TODO(zhangye): distort???
                 Eigen::Vector3d pos_i =
                     ObjRecognition::CameraIntrinsic::GetInstance().GetEigenK() *
                     pos_c_3;

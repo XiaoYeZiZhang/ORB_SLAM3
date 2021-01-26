@@ -28,7 +28,7 @@
 #include "Tracking.h"
 #include "KeyFrameDatabase.h"
 #include "Initializer.h"
-#include "ObjectRecognitionSystem/ObjectRecognitionManager.h"
+#include "ObjectRecognitionThread.h"
 #include <mutex>
 
 namespace ORB_SLAM3 {

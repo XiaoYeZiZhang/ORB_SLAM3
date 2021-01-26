@@ -1,22 +1,25 @@
 #include <iostream>
 #include <iomanip>
+#include <include/ObjectRecognition/Utility/Camera.h>
 #include "ORBSLAM3/SPextractor.h"
 #include "Parameters.h"
 #include "GlobalImageViewer.h"
 #include "Statistics.h"
 #include "Timer.h"
-#include "ObjectRecognitionSystem.h"
+#include "ObjectRecognitionThread.h"
 #include "ORBExtractor.h"
 #include "mode.h"
 
 namespace ObjRecognition {
+
 ObjRecogThread::ObjRecogThread() {
-    m_SPextractor = new ORB_SLAM3::SPextractor(
-        64, Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
-        Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007, true);
 }
 
 int ObjRecogThread::Init() {
+    m_SPextractor = new ORB_SLAM3::SPextractor(
+        64, Parameters::GetInstance().KSPExtractor_nFeatures, 1.2,
+        Parameters::GetInstance().KSPExtractor_nlevels, 0.015, 0.007, true);
+
     m_pointcloudobj_detector =
         std::make_shared<ObjRecognition::PointCloudObjDetector>();
     m_detector_thread.SetDetector(m_pointcloudobj_detector);
@@ -186,5 +189,46 @@ void ObjRecogThread::Stop() {
     m_tracker_thread.RequestStop();
     m_detector_thread.WaitEndStop();
     m_tracker_thread.WaitEndStop();
+}
+
+ObjRecongManager &ObjRecongManager::Instance() {
+    static ObjRecongManager instance;
+    return instance;
+}
+void ObjRecongManager::SetThreadHandler(
+    std::shared_ptr<ObjRecognition::ObjRecogThread> &thread_handler) {
+    m_objrecog_thread = thread_handler;
+}
+
+ObjRecongManager::ObjRecongManager() {
+}
+
+ObjRecongManager::~ObjRecongManager() {
+}
+
+int ObjRecongManager::Run(const ObjRecognition::CallbackFrame &platform_frame) {
+    STATISTICS_UTILITY::StatsCollector pointCloudFrameNum("Image number");
+    pointCloudFrameNum.IncrementOne();
+
+    std::shared_ptr<ObjRecognition::CallbackFrame> frame =
+        std::make_shared<ObjRecognition::CallbackFrame>();
+    frame->id = platform_frame.id;
+    std::memcpy(&frame->t, &platform_frame.t, 3 * sizeof(platform_frame.t[0]));
+    for (int index = 0; index < 3; index++) {
+        std::memcpy(
+            &frame->R[index], &platform_frame.R[index],
+            3 * sizeof(platform_frame.R[index][0]));
+    }
+    frame->width = 0;
+    frame->height = 0;
+    frame->width = ObjRecognition::CameraIntrinsic::GetInstance().Width();
+    frame->height = ObjRecognition::CameraIntrinsic::GetInstance().Height();
+    frame->data = new unsigned char[frame->height * frame->width];
+    std::memcpy(
+        frame->data, platform_frame.data,
+        sizeof(char) * frame->height * frame->width);
+
+    m_objrecog_thread->PushData(frame);
+    return 0;
 }
 } // namespace ObjRecognition

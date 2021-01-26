@@ -1462,6 +1462,7 @@ int Optimizer::PoseOptimization(Frame *pFrame) {
     return nInitialCorrespondences - nBad;
 }
 
+// TODO(zhangye) bug if all keframes are fixed
 void Optimizer::LocalBundleAdjustment_Superpoint(Atlas *atlas_superpoint) {
     Map *currentMap = atlas_superpoint->GetCurrentMap();
     list<KeyFrame *> lLocalKeyFrames;
